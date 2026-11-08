@@ -127,3 +127,25 @@ document.addEventListener('click', async e => {
   const [col, id] = b.dataset.del.split('|');
   try { await deleteDoc(doc(db, COLS[col], id)); } catch (err) { toast(t('fail') + err.message); }
 });
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCmGYoMqvaTDafiHb7q9Vk7vE4n1w2tWBI",
+  authDomain: "am-a-geo.firebaseapp.com",
+  projectId: "am-a-geo",
+  storageBucket: "am-a-geo.firebasestorage.app",
+  messagingSenderId: "724200458201",
+  appId: "1:724200458201:web:14f851dbaf89d49170bbc8",
+  measurementId: "G-XSVLE7P0V6"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
