@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEOData | AM Geomatics</title>
+<meta name="description" content="GEOData: free shapefiles, geodatabases, GIS courses, programs and data sources in one place.">
+<link rel="icon" href="assets/logo-for-light.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="lang-ar" data-theme="dark">
+<canvas id="earth" aria-hidden="true"></canvas>
+<div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="glow"></i></div>
+
+<header class="nav">
+  <a class="brand" href="#home" aria-label="GEOData">
+    <img class="logo-d" src="assets/logo-for-dark.png" alt="GEOData">
+    <img class="logo-l" src="assets/logo-for-light.png" alt="GEOData">
+  </a>
+  <nav id="links">
+    <a href="#home" data-i="home"></a>
+    <a href="#data" data-i="data"></a>
+    <a href="#courses" data-i="courses"></a>
+    <a href="#programs" data-i="programs"></a>
+    <a href="#sites" data-i="sites"></a>
+    <a href="#about" data-i="about"></a>
+    <a href="#admin" id="adminLink" hidden><span data-i="admin"></span><em id="pc"></em></a>
+  </nav>
+  <div class="actions">
+    <button class="ibtn" id="theme" aria-label="Theme"></button>
+    <button class="ibtn" id="lang" aria-label="Language"></button>
+    <button class="ibtn" id="bell" hidden aria-label="Notifications"><img class="ico" src="assets/icon-bell.png" alt=""><i id="dot" hidden></i></button>
+    <button class="btn ghost" id="login"><img class="ico" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
+    <div id="user" hidden><img class="ico" src="assets/icon-user.png" alt=""><b id="uname"></b><button class="link" id="logout" data-i="logout"></button></div>
+    <button class="ibtn burger" id="burger" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<main>
+  <section id="home" class="page">
+    <div class="hero">
+      <div class="orbit" aria-hidden="true"></div>
+      <h1 data-i="h1"></h1>
+      <p class="lead" data-i="lead"></p>
+      <form id="heroSearch" class="hsearch">
+        <input type="search" name="q" data-ph="heroPh" autocomplete="off">
+        <button class="btn" data-i="search"></button>
+      </form>
+      <div class="cats">
+        <a href="#data"><img class="ico" src="assets/icon-data.png" alt=""><span data-i="data"></span></a>
+        <a href="#courses"><img class="ico" src="assets/icon-courses.png" alt=""><span data-i="courses"></span></a>
+        <a href="#programs"><img class="ico" src="assets/icon-programs.png" alt=""><span data-i="programs"></span></a>
+        <a href="#sites"><img class="ico" src="assets/icon-sites.png" alt=""><span data-i="sites"></span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="data" class="page coll"></section>
+  <section id="courses" class="page coll"></section>
+  <section id="programs" class="page coll"></section>
+  <section id="sites" class="page coll"></section>
+
+  <section id="about" class="page">
+    <div class="about">
+      <h2 data-i="about"></h2>
+      <p data-i="aboutP"></p>
+    </div>
+  </section>
+  <section id="admin" class="page"><div class="phead"><h2 data-i="admin"></h2><p data-i="adminD"></p></div><div class="grid" id="adminList"></div></section>
+</main>
+
+<footer>© 2026 GEOData, AM Geomatics</footer>
+
+<dialog id="authM">
+  <button class="x" type="button" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <form id="authF" data-mode="login">
+    <div class="tabs">
+      <button type="button" class="on" data-mode="login" data-i="login"></button>
+      <button type="button" data-mode="reg" data-i="register"></button>
+    </div>
+    <input class="only-reg" name="name" data-ph="name" autocomplete="name">
+    <input type="email" name="email" data-ph="email" required autocomplete="email">
+    <input type="password" name="pass" data-ph="pass" required minlength="6" autocomplete="current-password">
+    <button class="btn" data-i="go"></button>
+  </form>
+</dialog>
+
+<dialog id="addM">
+  <button class="x" type="button" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <form id="addF">
+    <h3 id="addT"></h3>
+    <input name="title" data-ph="title" required>
+    <div class="only-data row">
+      <select name="format"><option>Shapefile</option><option>Geodatabase</option><option>GeoTIFF</option><option>GeoJSON / KML</option></select>
+      <input type="date" name="date">
+    </div>
+    <textarea name="details" rows="4" data-ph="details"></textarea>
+    <input type="url" name="link" data-ph="link" required>
+    <button class="btn" data-i="publish"></button>
+  </form>
+</dialog>
+
+<dialog id="notifM"><button class="x" type="button" aria-label="Close" onclick="this.closest('dialog').close()">✕</button><h3 data-i="notifs"></h3><div id="notifL"></div></dialog>
+
+<div id="toast" role="status"></div>
+<script type="module" src="globe.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
