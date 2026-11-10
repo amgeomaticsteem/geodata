@@ -193,6 +193,28 @@ function safeHttps(value) {
     return parsed.protocol === "https:" ? parsed.href : "";
   } catch { return ""; }
 }
+async function urlIsReachable(value, timeoutMs = 4000) {
+  const url = safeHttps(value);
+  if (!url) return false;
+  try {
+    const head = await fetch(url, {
+      method:"HEAD", redirect:"follow",
+      signal:AbortSignal.timeout(timeoutMs)
+    });
+    if (head.ok) { try { await head.body?.cancel(); } catch {} return true; }
+    if (![403,405,501].includes(head.status)) return false;
+    try { await head.body?.cancel(); } catch {}
+  } catch {}
+  try {
+    const probe = await fetch(url, {
+      method:"GET", redirect:"follow", headers:{ Range:"bytes=0-0" },
+      signal:AbortSignal.timeout(timeoutMs)
+    });
+    const ok = probe.ok;
+    try { await probe.body?.cancel(); } catch {}
+    return ok;
+  } catch { return false; }
+}
 async function fetchJson(url, timeoutMs = 6500) {
   try {
     const response = await fetch(url, {
@@ -221,22 +243,28 @@ async function searchGeoBoundaries(context, avoidLinks) {
     if (!data || !data.boundaryID) return null;
     const zip = safeHttps(data.staticDownloadLink);
     const geojson = safeHttps(data.gjDownloadURL);
+    const [zipWorks, geojsonWorks] = await Promise.all([
+      zip ? urlIsReachable(zip) : false,
+      geojson ? urlIsReachable(geojson) : false
+    ]);
+    const verifiedZip = zipWorks ? zip : "";
+    const verifiedGeoJSON = geojsonWorks ? geojson : "";
     const preview = safeHttps(data.imagePreview);
     const year = data.boundaryYearRepresented || "year not specified";
     const license = data.boundaryLicense || "See source metadata";
     const count = data.admUnitCount ? " · " + data.admUnitCount + " administrative unit(s)" : "";
-    const mainLink = zip || geojson || safeHttps(endpoint);
+    const mainLink = verifiedZip || verifiedGeoJSON;
     if (!mainLink) return null;
     const source = {
-      title: country.name + " administrative boundaries — " + level + " (" + (zip ? "ZIP / Shapefile" : "GeoJSON") + ")",
+      title: country.name + " administrative boundaries — " + level + " (" + (verifiedZip ? "ZIP / Shapefile" : "GeoJSON") + ")",
       link: mainLink,
       sectionLabel: "geoBoundaries · " + level,
       source: "geoBoundaries · Open data",
       details: "Represented year: " + year + count + ". License: " + license + ". Source: " + (data.boundarySource || "geoBoundaries") + ".",
-      format: zip ? "ZIP / Shapefile" : "GeoJSON",
+      format: verifiedZip ? "ZIP / Shapefile" : "GeoJSON",
       license,
       extraLinks: [
-        geojson && geojson !== mainLink ? { label:"GeoJSON download", url:geojson } : null,
+        verifiedGeoJSON && verifiedGeoJSON !== mainLink ? { label:"GeoJSON download", url:verifiedGeoJSON } : null,
         preview ? { label:"Preview map", url:preview } : null,
         { label:"Metadata (API)", url:endpoint }
       ].filter(Boolean)
@@ -292,15 +320,16 @@ async function searchHDX(context, country, avoidLinks) {
     const page = safeHttps("https://data.humdata.org/dataset/" + (dataset.name || dataset.id));
     const resources = Array.isArray(dataset.resources) ? dataset.resources : [];
     const candidate = resources.find(item => safeHttps(item.url) && !/api_show|resource_show/i.test(item.url));
-    const direct = safeHttps(candidate?.url || "");
+    const candidateUrl = safeHttps(candidate?.url || "");
+    const direct = candidateUrl && await urlIsReachable(candidateUrl) ? candidateUrl : "";
     const source = {
       title:String(dataset.title || "HDX geospatial dataset").slice(0,180),
-      link:direct || page,
+      link:page || direct,
       sectionLabel:"HDX · " + String(candidate?.format || "Dataset"),
       source:"Humanitarian Data Exchange",
       details:String(dataset.notes || "Open the dataset page to inspect available files, dates, licenses and geographic coverage.").replace(/<[^>]*>/g," ").slice(0,420),
       format:String(candidate?.format || ""),
-      extraLinks:page && page !== direct ? [{ label:"Dataset details", url:page }] : []
+      extraLinks:direct ? [{ label:"Download " + String(candidate?.format || "resource"), url:direct }] : []
     };
     return isNewAlternative(source, avoidLinks) ? source : null;
   }).filter(Boolean);
@@ -356,10 +385,10 @@ LANGUAGE AND STYLE:
 RESPONSE FORMATTING AND LINKS:
 - Use standard Markdown in every answer: **bold** for important terms, short paragraphs, and bullet or numbered lists for steps.
 - Do not output Markdown markers as decorative literal text; use them only as formatting syntax.
-- Never leave a URL as a naked line or raw inline text. When a verified HTTPS URL is available in the supplied resource records, format it as a descriptive Markdown link: [Download Egypt country boundaries — ADM0 (Shapefile)](https://exact-url-from-record).
-- Link labels must identify the actual item, including country/area, administrative level (such as ADM0 or ADM1), and file format when known. Use the user's language for the label.
-- Do not invent, shorten, rewrite, or guess URLs. If a verified link is unavailable, say that clearly rather than fabricating one.
-- Keep link labels concise and useful; do not use labels such as "click here" or "link".
+- Do not write raw URLs or Markdown links in the answer body. The website displays separately verified, clickable source cards below your reply.
+- Mention the source names and distinguish direct file downloads, ArcGIS item/service pages, and dataset catalog pages.
+- Do not invent, shorten, rewrite, or guess URLs. If no verified link is available, say that clearly rather than fabricating one.
+- Keep source names descriptive and useful; do not refer to them as merely "link" or "click here".
 
 GEOData WEBSITE KNOWLEDGE:
 - The website contains four public sections: spatial data/projects, courses, programs/software, and useful GIS websites.
@@ -430,7 +459,11 @@ export default {
       return json({ answer: language === "en" ? REFUSAL_EN : REFUSAL_AR, refused: true }, 200, origin);
     }
 
-    const resources = cleanResources(body.resources);
+    const rawResources = cleanResources(body.resources);
+    const resources = (await Promise.all(rawResources.map(async item => {
+      if (!item.link) return item;
+      return await urlIsReachable(item.link) ? item : null;
+    }))).filter(Boolean);
     const language = body.language === "en" ? "en" : "ar";
     const externalSources = await discoverExternalSources(messages, currentQuestion);
     const messagesForModel = [
