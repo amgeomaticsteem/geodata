@@ -29,6 +29,8 @@ const LABEL = {
   approve:['قبول','Approve'], reject:['رفض','Reject'], reason:['سبب الرفض (اختياري):','Reason for rejection (optional):'],
   sent:['طلبك اتبعت للمراجعة.','Your submission has been sent for review.'],
   noSuggestion:['مفيش اقتراحات مطابقة لسه. جرّب حرف أو كلمتين تانيين.','No close suggestions yet. Try another letter or two.'],
+  footer:['© 2026 GEOData — جميع الحقوق محفوظة','© 2026 GEOData — All rights reserved'],
+  shapefile:['شيب فايل (Shapefile)','Shapefile'], geodatabase:['قاعدة بيانات جغرافية (Geodatabase)','Geodatabase'], geotiff:['صورة جغرافية (GeoTIFF)','GeoTIFF'], geojson:['GeoJSON / KML','GeoJSON / KML'],
   resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License']
 };
 let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '';
@@ -286,7 +288,10 @@ function applyLang() {
   root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.body.className = 'lang-' + lang + ' ready';
   $$('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
-  $$('[data-ph]').forEach(el => el.placeholder = t(el.dataset.ph));
+  $('[data-ph]').forEach(el => el.placeholder = t(el.dataset.ph));
+  const metaDescription = $('meta[name="description"]');
+  if(metaDescription) metaDescription.content = lang === 'ar' ? 'GEOData: مكتبة مجانية للبيانات الجغرافية والدورات والبرامج ومصادر الاستشعار عن بعد.' : 'GEOData: free geospatial data, GIS courses, software and remote-sensing resources.';
+  document.title = 'GEOData | AM Geomatics';
   $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
   $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
   drawAll(); renderExtra();
