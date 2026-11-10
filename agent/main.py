@@ -124,7 +124,7 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
     budget = budget if budget is not None else [MAX_TRANSLATION_CHARS_PER_RUN]
     output = dict(record)
     for field in ("title", "details", "format", "license"):
-        value = clean_text(output.get(field, ""), 1200)
+        value = clean_text(output.get(field, ""), 10000)
         if not value:
             continue
         source = source_language(value)
