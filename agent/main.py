@@ -98,11 +98,84 @@ def translation_chunks(value: str, limit: int = 420) -> list[str]:
         chunks.append(current.strip())
     return chunks
 
+GIS_GLOSSARY_VERSION = 1
+GIS_TERMS = [
+    (r"\\bfeature layers?\\b", "طبقة معالم", "Feature layer"),
+    (r"\\bfeature services?\\b", "خدمة معالم", "Feature service"),
+    (r"\\bArcGIS Pro\\b", "ArcGIS Pro", "ArcGIS Pro"),
+    (r"\\bArcGIS Online\\b", "ArcGIS Online", "ArcGIS Online"),
+    (r"\\bQGIS\\b", "QGIS", "QGIS"),
+    (r"\\bArcGIS\\b", "ArcGIS", "ArcGIS"),
+    (r"\\bGIS\\b", "نظم المعلومات الجغرافية (GIS)", "GIS"),
+    (r"\\bfeatures\\b", "معالم", "Features"),
+    (r"\\bfeature\\b", "معلم", "Feature"),
+    (r"\\blayers\\b", "طبقات", "Layers"),
+    (r"\\blayer\\b", "طبقة", "Layer"),
+    (r"\\braster data\\b", "بيانات نقطية", "Raster data"),
+    (r"\\braster\\b", "بيانات نقطية", "Raster"),
+    (r"\\bvector data\\b", "بيانات متجهة", "Vector data"),
+    (r"\\bvector\\b", "بيانات متجهة", "Vector"),
+    (r"\\bshapefiles?\\b", "ملف Shapefile", "Shapefile"),
+    (r"\\bgeodatabases?\\b", "قاعدة بيانات جغرافية", "Geodatabase"),
+    (r"\\bremote sensing\\b", "الاستشعار عن بعد", "Remote sensing"),
+    (r"\\battribute tables?\\b", "جدول السمات", "Attribute table"),
+    (r"\\bdigital elevation model\\b", "نموذج الارتفاع الرقمي (DEM)", "Digital elevation model"),
+    (r"\\bDEM\\b", "DEM", "DEM"),
+    (r"\\bNDVI\\b", "NDVI", "NDVI"),
+    (r"\\bMNDWI\\b", "MNDWI", "MNDWI"),
+    (r"نظم المعلومات الجغرافية", "نظم المعلومات الجغرافية (GIS)", "Geographic Information Systems (GIS)"),
+    (r"طبقة معالم", "طبقة معالم", "Feature layer"),
+    (r"خدمة معالم", "خدمة معالم", "Feature service"),
+    (r"معالم", "معالم", "Features"),
+    (r"طبقات", "طبقات", "Layers"),
+    (r"طبقة", "طبقة", "Layer"),
+    (r"بيانات نقطية", "بيانات نقطية", "Raster data"),
+    (r"بيانات متجهة", "بيانات متجهة", "Vector data"),
+    (r"شيب فايل", "ملف Shapefile", "Shapefile"),
+    (r"قاعدة بيانات جغرافية", "قاعدة بيانات جغرافية", "Geodatabase"),
+    (r"الاستشعار عن بعد", "الاستشعار عن بعد", "Remote sensing"),
+    (r"جدول السمات", "جدول السمات", "Attribute table"),
+    (r"نموذج الارتفاع الرقمي", "نموذج الارتفاع الرقمي (DEM)", "Digital elevation model"),
+]
+
+
+def protect_gis_terms(value: str, source: str, target: str) -> tuple[str, dict[str, str]]:
+    protected = value
+    restore: dict[str, str] = {}
+    for index, (pattern, arabic, english) in enumerate(sorted(GIS_TERMS, key=lambda item: len(item[0]), reverse=True)):
+        source_pattern = pattern if source == "en" else arabic
+        replacement = arabic if target == "ar" else english
+        if not source_pattern or not replacement:
+            continue
+        marker = f"ZXGEO{index:03d}XZ"
+        protected, count = re.subn(source_pattern, marker, protected, flags=re.I)
+        if count:
+            restore[marker] = replacement
+    return protected, restore
+
+
+def correct_known_gis_translation(source: str, translated: str, target: str) -> str:
+    value = translated or ""
+    if target == "ar":
+        if re.search(r"\\bQGIS\\b", source, flags=re.I):
+            value = re.sub(r"نظم\\s+المعلومات\\s+(?:القطرية|القطريه)", "QGIS", value)
+        if re.search(r"\\bfeatures?\\b", source, flags=re.I):
+            value = re.sub(r"مميزات|ميزات", "معالم", value)
+        value = value.replace("نظم المعلومات الجغرافية القطرية", "نظم المعلومات الجغرافية (GIS)")
+    else:
+        value = re.sub(r"نظم المعلومات الجغرافية", "Geographic Information Systems", value)
+        value = value.replace("طبقة معالم", "Feature layer").replace("معالم", "Features")
+        value = value.replace("بيانات نقطية", "Raster data").replace("بيانات متجهة", "Vector data")
+        value = value.replace("الاستشعار عن بعد", "Remote sensing")
+    return value
+
+
 def translate_mymemory(value: str, source: str, target: str) -> str:
     if not value or source == target:
         return value
+    protected, restore = protect_gis_terms(value, source, target)
     translated: list[str] = []
-    for chunk in translation_chunks(value):
+    for chunk in translation_chunks(protected):
         params = {
             "q": chunk,
             "langpair": f"{source}|{target}",
@@ -116,13 +189,19 @@ def translate_mymemory(value: str, source: str, target: str) -> str:
             raise RuntimeError("Translation service returned an empty result")
         translated.append(html.unescape(result))
         time.sleep(0.15)
-    return " ".join(translated).strip()
+    output = " ".join(translated).strip()
+    for marker, replacement in restore.items():
+        if marker not in output:
+            raise RuntimeError("Translation service altered a protected GIS term.")
+        output = output.replace(marker, replacement)
+    return correct_known_gis_translation(value, output, target)
 
 def apply_bilingual_fields(record: dict, existing: dict | None = None,
                            budget: list[int] | None = None) -> dict:
     existing = existing or {}
     budget = budget if budget is not None else [MAX_TRANSLATION_CHARS_PER_RUN]
     output = dict(record)
+    glossary_current = int(existing.get("glossaryVersion", 0) or 0) >= GIS_GLOSSARY_VERSION
     for field in ("title", "details", "format", "license", "theme", "coverage"):
         value = clean_text(output.get(field, ""), 10000)
         if not value:
@@ -132,23 +211,86 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
         output[f"{field}_{source}"] = value
         saved_target = existing.get(f"{field}_{target}")
         previous_source = existing.get(f"{field}_{source}")
-        if saved_target and previous_source == value:
-            output[f"{field}_{target}"] = saved_target
+        if saved_target and previous_source == value and glossary_current:
+            output[f"{field}_{target}"] = correct_known_gis_translation(value, saved_target, target)
             continue
         cost = len(value)
         if budget[0] < cost:
             print(f"[WARN] Translation budget reached; leaving {field!r} in its original language.")
+            if saved_target and previous_source == value:
+                output[f"{field}_{target}"] = correct_known_gis_translation(value, saved_target, target)
             continue
         try:
             translated = translate_mymemory(value, source, target)
             if translated:
                 output[f"{field}_{target}"] = translated
-                output["translationProvider"] = "MyMemory"
+                output["translationProvider"] = "MyMemory + GEOData GIS glossary"
                 budget[0] -= cost
         except Exception as exc:
             print(f"[WARN] Could not translate {field!r} to {target}: {exc}")
-    # Publisher names are proper names and are intentionally preserved.
+            if saved_target and previous_source == value:
+                output[f"{field}_{target}"] = correct_known_gis_translation(value, saved_target, target)
+    output["glossaryVersion"] = GIS_GLOSSARY_VERSION
     return output
+
+DATA_CATEGORY_RULES = [
+    ("admin_boundaries", ("boundary", "governorate", "administrative", "district", "shiyakha", "حدود", "محافظة", "مركز", "قسم", "شياخة")),
+    ("demographics", ("population", "demographic", "census", "settlement", "السكان", "تعداد", "ديموغراف")),
+    ("transport", ("road", "railway", "transport", "airport", "port", "طرق", "نقل", "سكة حديد", "مطار", "ميناء")),
+    ("land_cover", ("land cover", "landcover", "land use", "vegetation", "forest", "غطاء أرضي", "غطاء ارضي", "غطاء نباتي", "استخدامات الأراضي")),
+    ("elevation", ("elevation", "dem", "terrain", "contour", "ارتفاع", "نموذج ارتفاع", "تضاريس", "كنتور")),
+    ("hydrography", ("water", "river", "canal", "coast", "hydrology", "مياه", "نهر", "ترعة", "قناة", "ساحل", "هيدرولوج")),
+    ("agriculture", ("agriculture", "soil", "crop", "irrigation", "زراعة", "تربة", "محاصيل", "ري")),
+    ("buildings", ("building", "school", "hospital", "health facility", "مباني", "مدارس", "مستشفى", "صحة", "منشآت")),
+    ("imagery", ("sentinel", "landsat", "imagery", "satellite", "aerial", "صورة فضائية", "استشعار عن بعد", "مرئيات")),
+    ("climate", ("climate", "temperature", "precipitation", "weather", "مناخ", "حرارة", "أمطار", "طقس")),
+    ("geology", ("geology", "geological", "rock", "جيولوج", "صخور", "معادن")),
+    ("utilities", ("utility", "electric", "power", "pipeline", "infrastructure", "مرافق", "كهرباء", "طاقة", "بنية أساسية")),
+]
+COURSE_CATEGORY_RULES = [
+    ("remote_sensing", ("remote sensing", "satellite", "sentinel", "landsat", "استشعار عن بعد", "استشعار فضائي")),
+    ("programming", ("python", "programming", "coding", "javascript", "برمجة", "بايثون", "كود")),
+    ("spatial_analysis", ("spatial analysis", "geoprocessing", "network analysis", "تحليل مكاني", "تحليل شبكات", "معالجة جغرافية")),
+    ("cartography", ("cartography", "map design", "mapping", "خرائط", "كارتوجرافيا", "إخراج خرائط")),
+    ("surveying", ("surveying", "gnss", "gps", "photogrammetry", "مساحة", "رفع مساحي", "تصوير مساحي")),
+    ("geomatics", ("geomatics", "lidar", "geodesy", "جيوماتكس", "ليدار", "جيوديسيا")),
+    ("databases", ("database", "sql", "postgis", "geodatabase", "قواعد بيانات", "قاعدة بيانات")),
+    ("gis_fundamentals", ("gis", "qgis", "arcgis", "geographic information", "نظم المعلومات الجغرافية", "أساسيات نظم المعلومات")),
+]
+
+
+def classify_record(record: dict, collection_name: str) -> dict:
+    output = {}
+    if collection_name == "projects":
+        if record.get("category"):
+            return {"category": record["category"]}
+        text = " ".join(str(record.get(key, "")) for key in
+                        ("title", "details", "format", "theme", "sourceName", "publisherName")).lower()
+        for category, terms in DATA_CATEGORY_RULES:
+            if any(term in text for term in terms):
+                output["category"] = category
+                break
+        output.setdefault("category", "other")
+    elif collection_name == "courses":
+        if record.get("category"):
+            output["category"] = record["category"]
+        else:
+            text = " ".join(str(record.get(key, "")) for key in
+                            ("title", "details", "format", "publisherName")).lower()
+            for category, terms in COURSE_CATEGORY_RULES:
+                if any(term in text for term in terms):
+                    output["category"] = category
+                    break
+            output.setdefault("category", "other")
+        if record.get("courseLanguage") in {"ar", "en", "both"}:
+            output["courseLanguage"] = record["courseLanguage"]
+        else:
+            text = " ".join(str(record.get(key, "")) for key in ("title", "details"))
+            has_ar = bool(re.search(r"[\\u0600-\\u06ff]", text))
+            has_en = bool(re.search(r"[A-Za-z]", text))
+            output["courseLanguage"] = "both" if has_ar and has_en else ("ar" if has_ar else "en")
+    return output
+
 
 def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
     counts: dict[str, int] = {}
@@ -159,10 +301,15 @@ def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
             for snapshot in snapshots:
                 data = snapshot.to_dict() or {}
                 localized = apply_bilingual_fields(data, data, budget)
+                classification = classify_record(data, collection_name)
+                for key, value in classification.items():
+                    if not data.get(key):
+                        localized[key] = value
                 patch = {
                     key: value for key, value in localized.items()
-                    if (key.endswith("_ar") or key.endswith("_en") or key == "translationProvider")
-                    and value and value != data.get(key)
+                    if (key.endswith("_ar") or key.endswith("_en") or key in
+                        {"translationProvider", "glossaryVersion", "category", "courseLanguage"})
+                    and value is not None and value != data.get(key)
                 }
                 if patch:
                     snapshot.reference.set(patch, merge=True)
@@ -427,6 +574,7 @@ def upsert_records(db, firestore_module, collection_name: str, records: list[dic
             ref = collection.document(doc_id)
             old = None
         payload = apply_bilingual_fields(record, old or {}, translation_budget)
+        payload.update(classify_record({**(old or {}), **record}, collection_name))
         payload["agentUpdatedAt"] = firestore_module.SERVER_TIMESTAMP
         payload["createdAt"] = (old or {}).get("createdAt") or firestore_module.SERVER_TIMESTAMP
         if old:

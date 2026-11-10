@@ -94,7 +94,8 @@
     <input class="only-reg" name="name" data-ph="name" autocomplete="name">
     <input type="email" name="email" data-ph="email" required autocomplete="email">
     <input type="password" name="pass" data-ph="pass" required minlength="6" autocomplete="current-password">
-    <button class="btn" data-i="go"></button>
+    <p id="authError" class="auth-error" role="alert" hidden></p>
+    <button class="btn" type="submit" data-i="go"></button>
   </form>
 </dialog>
 
@@ -103,9 +104,21 @@
   <form id="addF">
     <h3 id="addT"></h3>
     <input name="title" data-ph="title" required>
+    <div class="only-data form-field">
+      <label for="dataCategory" data-i="categoryLabel"></label>
+      <select name="dataCategory" id="dataCategory"></select>
+    </div>
     <div class="only-data row">
       <select name="format"><option data-i="shapefile">Shapefile</option><option data-i="geodatabase">Geodatabase</option><option data-i="geotiff">GeoTIFF</option><option data-i="geojson">GeoJSON / KML</option></select>
       <input type="date" name="date">
+    </div>
+    <div class="only-courses form-field">
+      <label for="courseCategory" data-i="categoryLabel"></label>
+      <select name="courseCategory" id="courseCategory"></select>
+    </div>
+    <div class="only-courses form-field">
+      <label for="courseLanguage" data-i="courseLanguage"></label>
+      <select name="courseLanguage" id="courseLanguage"></select>
     </div>
     <textarea name="details" rows="4" data-ph="details"></textarea>
     <input type="url" name="link" data-ph="link" required>
@@ -129,6 +142,8 @@
   <div class="detail-meta">
     <div><small data-i="publisher"></small><b id="detailPublisher"></b></div>
     <div><small data-i="date"></small><b id="detailDate"></b></div>
+    <div><small data-i="categoryLabel"></small><b id="detailSubjectCategory"></b></div>
+    <div><small data-i="courseLanguage"></small><b id="detailCourseLanguage"></b></div>
     <div><small data-i="theme"></small><b id="detailTheme"></b></div>
     <div><small data-i="coverage"></small><b id="detailCoverage"></b></div>
     <div><small data-i="source"></small><b id="detailSource"></b></div>

@@ -32,12 +32,52 @@ const LABEL = {
   noSuggestion:['مفيش اقتراحات مطابقة لسه. جرّب حرف أو كلمتين تانيين.','No close suggestions yet. Try another letter or two.'],
   footer:['© 2026 GEOData — جميع الحقوق محفوظة','© 2026 GEOData — All rights reserved'],
   shapefile:['شيب فايل (Shapefile)','Shapefile'], geodatabase:['قاعدة بيانات جغرافية (Geodatabase)','Geodatabase'], geotiff:['صورة جغرافية (GeoTIFF)','GeoTIFF'], geojson:['GeoJSON / KML','GeoJSON / KML'],
-  resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], theme:['التصنيف','Theme'], coverage:['النطاق الجغرافي','Geographic coverage'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License']
-};
-let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '';
+  resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], theme:['التصنيف','Theme'], coverage:['النطاق الجغرافي','Geographic coverage'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License'],
+  categoryLabel:['التصنيف','Category'], courseLanguage:['لغة الدورة','Course language'],
+  allCategories:['كل التصنيفات','All categories'], allLanguages:['كل اللغات','All languages'],
+  languageAr:['العربية','Arabic'], languageEn:['الإنجليزية','English'], languageBoth:['العربية والإنجليزية','Arabic and English'],
+  previousPage:['السابق','Previous'], nextPage:['التالي','Next'], pageOf:['صفحة','Page'], of:['من','of'], loading:['جارٍ تحميل الصفحة…','Loading page…'],
+  authInvalid:['الإيميل أو كلمة المرور غير صحيحين. راجع البيانات وحاول تاني.','Email or password is incorrect. Check your details and try again.'],
+  authUserNotFound:['الحساب ده مش موجود. اعمل حساب جديد الأول.','No account found. Create an account first.'],
+  authEmailInUse:['الإيميل ده مسجل بالفعل. جرّب تسجيل الدخول.','This email is already registered. Try logging in.'],
+  authWeakPassword:['كلمة المرور ضعيفة. استخدم 6 أحرف على الأقل.','Password is too weak. Use at least 6 characters.'],
+  authUnauthorized:['الدومين الحالي مش مضاف في Firebase Authorized domains.','This website domain is not authorized in Firebase Authentication.'],
+  authProviderOff:['تسجيل الدخول بالبريد وكلمة المرور غير مفعّل في Firebase.','Email/password sign-in is disabled in Firebase.'],
+  authRateLimit:['محاولات كتير. استنى شوية وجرب تاني.','Too many attempts. Please wait and try again.'],
+  authNetwork:['في مشكلة اتصال. افحص الإنترنت وجرب تاني.','Network error. Check your connection and try again.'],
+  authGeneric:['تعذر تسجيل الدخول.','Could not sign in.'],
+  cat_admin_boundaries:['حدود وتقسيمات إدارية','Administrative boundaries'],
+  cat_demographics:['السكان والديموغرافيا','Population and demographics'],
+  cat_transport:['النقل والطرق','Transport and roads'],
+  cat_land_cover:['الغطاء الأرضي والبيئة','Land cover and environment'],
+  cat_elevation:['الارتفاعات والتضاريس','Elevation and terrain'],
+  cat_hydrography:['المياه والهيدرولوجيا','Water and hydrology'],
+  cat_agriculture:['الزراعة والتربة','Agriculture and soils'],
+  cat_buildings:['المباني والخدمات','Buildings and facilities'],
+  cat_imagery:['الصور الفضائية والجوية','Satellite and aerial imagery'],
+  cat_climate:['المناخ والطقس','Climate and weather'],
+  cat_geology:['الجيولوجيا','Geology'],
+  cat_utilities:['المرافق والبنية الأساسية','Utilities and infrastructure'],
+  cat_other:['أخرى','Other'],
+  course_gis_fundamentals:['أساسيات GIS','GIS fundamentals'],
+  course_remote_sensing:['الاستشعار عن بعد','Remote sensing'],
+  course_spatial_analysis:['التحليل المكاني','Spatial analysis'],
+  course_programming:['البرمجة وPython','Programming and Python'],
+  course_cartography:['الكارتوجرافيا ورسم الخرائط','Cartography and mapping'],
+  course_surveying:['المساحة والرفع المساحي','Surveying'],
+  course_geomatics:['الجيوماتكس','Geomatics'],
+  course_databases:['قواعد البيانات المكانية','Spatial databases'],
+  course_other:['أخرى','Other']
+let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
 try { lang = localStorage.lang || lang; theme = localStorage.theme || theme; } catch {}
 let renderExtra = () => {};
 const store = {};
+const PAGE_SIZE = 12;
+const DATA_CATEGORIES = ['admin_boundaries','demographics','transport','land_cover','elevation','hydrography','agriculture','buildings','imagery','climate','geology','utilities','other'];
+const COURSE_CATEGORIES = ['gis_fundamentals','remote_sensing','spatial_analysis','programming','cartography','surveying','geomatics','databases','other'];
+const COURSE_LANGUAGES = ['ar','en','both'];
+const categoryLabel = (col,value) => value ? t((col==='courses'?'course_':'cat_')+value) : '';
+const pageState = Object.fromEntries(Object.keys(COLS).map(col=>[col,{page:1,total:0,totalPages:1,pages:{},lastDocs:{},loaded:new Map(),category:'',courseLanguage:'',loading:false,countPromise:null}]));
 const t = key => (LABEL[key] || [key,key])[lang === 'ar' ? 0 : 1];
 const save = (key, value) => { try { localStorage[key] = value; } catch {} };
 const admin = () => !!user && (user.email || '').toLowerCase() === ADMIN;
@@ -48,7 +88,45 @@ const authM = $('#authM'), authF = $('#authF'), addM = $('#addM'), addF = $('#ad
 
 /* ---------- Language helpers and free machine-translation cache ---------- */
 const TRANSLATE_ENDPOINT = 'https://api.mymemory.translated.net/get';
-const CACHE_KEY = 'geodata_translation_cache_v2';
+const CACHE_KEY = 'geodata_translation_cache_v3_gis';
+const GIS_GLOSSARY = [
+  {pattern:'\\bfeature layers?\\b',ar:'طبقة معالم',en:'Feature layer'},
+  {pattern:'\\bfeature services?\\b',ar:'خدمة معالم',en:'Feature service'},
+  {pattern:'\\bArcGIS Pro\\b',ar:'ArcGIS Pro',en:'ArcGIS Pro'},
+  {pattern:'\\bArcGIS Online\\b',ar:'ArcGIS Online',en:'ArcGIS Online'},
+  {pattern:'\\bQGIS\\b',ar:'QGIS',en:'QGIS'},
+  {pattern:'\\bArcGIS\\b',ar:'ArcGIS',en:'ArcGIS'},
+  {pattern:'\\bGIS\\b',ar:'نظم المعلومات الجغرافية (GIS)',en:'GIS'},
+  {pattern:'\\bfeatures\\b',ar:'معالم',en:'Features'},
+  {pattern:'\\bfeature\\b',ar:'معلم',en:'Feature'},
+  {pattern:'\\blayers\\b',ar:'طبقات',en:'Layers'},
+  {pattern:'\\blayer\\b',ar:'طبقة',en:'Layer'},
+  {pattern:'\\braster data\\b',ar:'بيانات نقطية',en:'Raster data'},
+  {pattern:'\\braster\\b',ar:'بيانات نقطية',en:'Raster'},
+  {pattern:'\\bvector data\\b',ar:'بيانات متجهة',en:'Vector data'},
+  {pattern:'\\bvector\\b',ar:'بيانات متجهة',en:'Vector'},
+  {pattern:'\\bshapefiles?\\b',ar:'ملف Shapefile',en:'Shapefile'},
+  {pattern:'\\bgeodatabases?\\b',ar:'قاعدة بيانات جغرافية',en:'Geodatabase'},
+  {pattern:'\\bremote sensing\\b',ar:'الاستشعار عن بعد',en:'Remote sensing'},
+  {pattern:'\\battribute tables?\\b',ar:'جدول السمات',en:'Attribute table'},
+  {pattern:'\\bdigital elevation model\\b',ar:'نموذج الارتفاع الرقمي (DEM)',en:'Digital elevation model'},
+  {pattern:'\\bDEM\\b',ar:'DEM',en:'DEM'},
+  {pattern:'\\bNDVI\\b',ar:'NDVI',en:'NDVI'},
+  {pattern:'\\bMNDWI\\b',ar:'MNDWI',en:'MNDWI'},
+  {pattern:'نظم المعلومات الجغرافية',ar:'نظم المعلومات الجغرافية (GIS)',en:'Geographic Information Systems (GIS)'},
+  {pattern:'طبقة معالم',ar:'طبقة معالم',en:'Feature layer'},
+  {pattern:'خدمة معالم',ar:'خدمة معالم',en:'Feature service'},
+  {pattern:'معالم',ar:'معالم',en:'Features'},
+  {pattern:'طبقات',ar:'طبقات',en:'Layers'},
+  {pattern:'طبقة',ar:'طبقة',en:'Layer'},
+  {pattern:'بيانات نقطية',ar:'بيانات نقطية',en:'Raster data'},
+  {pattern:'بيانات متجهة',ar:'بيانات متجهة',en:'Vector data'},
+  {pattern:'شيب فايل',ar:'ملف Shapefile',en:'Shapefile'},
+  {pattern:'قاعدة بيانات جغرافية',ar:'قاعدة بيانات جغرافية',en:'Geodatabase'},
+  {pattern:'الاستشعار عن بعد',ar:'الاستشعار عن بعد',en:'Remote sensing'},
+  {pattern:'جدول السمات',ar:'جدول السمات',en:'Attribute table'},
+  {pattern:'نموذج الارتفاع الرقمي',ar:'نموذج الارتفاع الرقمي (DEM)',en:'Digital elevation model'}
+];
 let translationCache = {};
 let translationQueue = Promise.resolve();
 try { translationCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch {}
@@ -73,12 +151,41 @@ function splitForTranslation(value, maxBytes = 420) {
   return chunks;
 }
 const cacheId = (target, text) => target + ':' + text;
+function protectGisTerms(value,target) {
+  const source=sourceLanguage(value),restore=[];
+  let protectedText=value;
+  [...GIS_GLOSSARY].sort((a,b)=>b.pattern.length-a.pattern.length).forEach((term,index)=>{
+    const sourcePattern=source==='en'?term.pattern:term.ar;
+    const replacement=target==='ar'?term.ar:term.en;
+    if(!sourcePattern||!replacement)return;
+    protectedText=protectedText.replace(new RegExp(sourcePattern,'gi'),()=>{
+      const marker='ZXGEO'+String(index).padStart(3,'0')+'XZ';
+      restore.push([marker,replacement]);return marker;
+    });
+  });
+  return {text:protectedText,restore};
+}
+function correctKnownGisTranslation(source,translated,target) {
+  let value=String(translated||'');
+  if(target==='ar'){
+    if(/\\bQGIS\\b/i.test(source))value=value.replace(/نظم\\s+المعلومات\\s+(?:القطرية|القطريه)/g,'QGIS');
+    if(/\\bfeatures?\\b/i.test(source))value=value.replace(/مميزات|ميزات/g,'معالم');
+    value=value.replace(/نظم المعلومات الجغرافية القطرية/g,'نظم المعلومات الجغرافية (GIS)');
+  }else{
+    value=value.replace(/نظم المعلومات الجغرافية/g,'Geographic Information Systems')
+      .replace(/طبقة معالم/g,'Feature layer').replace(/معالم/g,'Features')
+      .replace(/بيانات نقطية/g,'Raster data').replace(/بيانات متجهة/g,'Vector data')
+      .replace(/الاستشعار عن بعد/g,'Remote sensing');
+  }
+  return value;
+}
 async function translateText(value, target) {
   const original = String(value ?? '').trim();
   if (!original || target === sourceLanguage(original)) return original;
   const key = cacheId(target, original);
-  if (translationCache[key]) return translationCache[key];
-  const chunks = splitForTranslation(original);
+  if (translationCache[key]) return correctKnownGisTranslation(original,translationCache[key],target);
+  const glossary=protectGisTerms(original,target);
+  const chunks = splitForTranslation(glossary.text);
   const translated = [];
   try {
     for (const chunk of chunks) {
@@ -100,8 +207,13 @@ async function translateText(value, target) {
       translated.push(clean);
       await new Promise(resolve => setTimeout(resolve, 120));
     }
-    const result = translated.join(' ').trim();
+    let result = translated.join(' ').trim();
     if (!result) return original;
+    for(const [marker,replacement] of glossary.restore){
+      if(!result.includes(marker))throw new Error('Translation changed a protected GIS term placeholder.');
+      result=result.replaceAll(marker,replacement);
+    }
+    result=correctKnownGisTranslation(original,result,target);
     translationCache[key] = result;
     try {
       const keys = Object.keys(translationCache);
@@ -128,9 +240,9 @@ function bilingualFields(record) {
 async function localizedField(record, field, target = lang) {
   if (!record) return '';
   const savedValue = record[field + '_' + target];
-  if (savedValue) return savedValue;
   const raw = record[field] || '';
-  return translateText(raw, target);
+  if(savedValue)return correctKnownGisTranslation(raw,savedValue,target);
+  return translateText(raw,target);
 }
 async function localizeElements(container, record) {
   const target = lang;
@@ -209,7 +321,7 @@ function matchScore(record, query) {
   return total / Math.max(1,terms.length);
 }
 function allRecords() {
-  return Object.entries(COLS).flatMap(([id]) => (store[id] || []).map(record => ({...record, _col:id})));
+  return Object.entries(COLS).flatMap(([id]) => [...pageState[id].loaded.values()].map(record => ({...record,_col:id})));
 }
 function suggestionMarkup(items) {
   if (!items.length) return '<div class="suggest-empty">' + t('noSuggestion') + '</div>';
@@ -234,28 +346,94 @@ function updateSuggestions(box, query, scope = null) {
   });
 }
 
+function updateCategoryControls() {
+  const optionList=(values,labelFn,selected,allText=null)=>(allText!==null?'<option value="">' + esc(allText) + '</option>':'')+values.map(value=>'<option value="' + esc(value) + '"' + (value===selected?' selected':'') + '>' + esc(labelFn(value)) + '</option>').join('');
+  if($('#dataCategory'))$('#dataCategory').innerHTML=optionList(DATA_CATEGORIES,v=>t('cat_'+v),'other');
+  if($('#courseCategory'))$('#courseCategory').innerHTML=optionList(COURSE_CATEGORIES,v=>t('course_'+v),'gis_fundamentals');
+  if($('#courseLanguage'))$('#courseLanguage').innerHTML=optionList(COURSE_LANGUAGES,v=>t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both')),'en');
+  const df=$('[data-filter-col="data"]'),cf=$('[data-filter-col="courses"]'),lf=$('[data-language-col="courses"]');
+  if(df)df.innerHTML=optionList(DATA_CATEGORIES,v=>t('cat_'+v),pageState.data.category,t('allCategories'));
+  if(cf)cf.innerHTML=optionList(COURSE_CATEGORIES,v=>t('course_'+v),pageState.courses.category,t('allCategories'));
+  if(lf)lf.innerHTML=optionList(COURSE_LANGUAGES,v=>t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both')),pageState.courses.courseLanguage,t('allLanguages'));
+}
+function pageButtons(section) {
+  const state=pageState[section],total=state.totalPages||1,current=state.page,start=Math.max(1,Math.min(current-2,total-4)),end=Math.min(total,start+4);
+  let numbers='';for(let n=start;n<=end;n++)numbers+='<button type="button" class="page-number'+(n===current?' active':'')+'" data-page-col="'+section+'" data-page="'+n+'"'+(state.loading?' disabled':'')+'>'+n+'</button>';
+  return '<button type="button" class="page-arrow" data-page-col="'+section+'" data-page="'+(current-1)+'"'+(current<=1||state.loading?' disabled':'')+'>'+t('previousPage')+'</button><div class="page-numbers">'+numbers+'</div><button type="button" class="page-arrow" data-page-col="'+section+'" data-page="'+(current+1)+'"'+(current>=total||state.loading?' disabled':'')+'>'+t('nextPage')+'</button><span class="page-status">'+t('pageOf')+' '+current+' '+t('of')+' '+total+'</span>';
+}
+function renderPagination(section) {
+  const nav=$('[data-pagination="'+section+'"]');if(!nav)return;const state=pageState[section];
+  nav.hidden=state.totalPages<=1&&!state.loading;nav.innerHTML=state.loading?'<span class="page-status">'+t('loading')+'</span>':pageButtons(section);
+}
+function renderGlobalPagination(totalPages) {
+  $('#globalPagination')?.remove();if(totalPages<=1)return;
+  const nav=document.createElement('nav');nav.id='globalPagination';nav.className='pagination';
+  const start=Math.max(1,Math.min(globalSearchPage-2,totalPages-4)),end=Math.min(totalPages,start+4);let nums='';
+  for(let n=start;n<=end;n++)nums+='<button type="button" class="page-number'+(n===globalSearchPage?' active':'')+'" data-global-page="'+n+'">'+n+'</button>';
+  nav.innerHTML='<button type="button" class="page-arrow" data-global-page="'+(globalSearchPage-1)+'"'+(globalSearchPage<=1?' disabled':'')+'>'+t('previousPage')+'</button><div class="page-numbers">'+nums+'</div><button type="button" class="page-arrow" data-global-page="'+(globalSearchPage+1)+'"'+(globalSearchPage>=totalPages?' disabled':'')+'>'+t('nextPage')+'</button>';
+  $('#globalResults').after(nav);
+}
+function filteredQuery(section,state) {return state.category?[where('category','==',state.category)]:[];}
+async function loadPage(section,target=1) {
+  const state=pageState[section];if(!state||state.loading)return;target=Math.max(1,target);
+  if(state.pages[target]){state.page=target;store[section]=state.pages[target];draw(section);if(location.hash==='#search')drawSearch();return;}
+  state.loading=true;renderPagination(section);
+  try{
+    if(!state.countPromise){
+      const base=collection(db,COLS[section]);
+      state.countPromise=getCountFromServer(query(base,...filteredQuery(section,state))).then(s=>{state.total=s.data().count||0;state.totalPages=Math.max(1,Math.ceil(state.total/PAGE_SIZE));}).catch(error=>console.warn('GEOData count unavailable:',section,error));
+    }
+    await state.countPromise;target=Math.min(target,state.totalPages||1);
+    for(let page=1;page<=target;page++){
+      if(state.pages[page])continue;
+      const base=collection(db,COLS[section]),cursor=page>1?state.lastDocs[page-1]:null;
+      const pageQuery=query(base,...filteredQuery(section,state),...(cursor?[startAfter(cursor)]:[]),limit(PAGE_SIZE));
+      const snapshot=await getDocs(pageQuery),records=snapshot.docs.map(item=>({id:item.id,...item.data()}));
+      state.pages[page]=records;if(snapshot.docs.length)state.lastDocs[page]=snapshot.docs[snapshot.docs.length-1];
+      records.forEach(record=>state.loaded.set(record.id,record));
+      if(snapshot.docs.length<PAGE_SIZE){state.total=Math.min(state.total,(page-1)*PAGE_SIZE+snapshot.docs.length);state.totalPages=Math.max(1,Math.ceil(state.total/PAGE_SIZE));break;}
+    }
+    state.page=target;store[section]=state.pages[target]||[];draw(section);if(location.hash==='#search')drawSearch();
+  }catch(error){console.error('GEOData page load failed:',section,error);const grid=$('.grid',$('#'+section));if(grid)grid.innerHTML='<p class="empty" role="status">'+t('loadError')+'</p>';toast(t('loadError'));}
+  finally{state.loading=false;renderPagination(section);}
+}
+function resetAndLoad(section,changes={}) {
+  const state=pageState[section];if(!state)return;
+  Object.assign(state,changes,{page:1,total:0,totalPages:1,pages:{},lastDocs:{},loaded:new Map(),countPromise:null});
+  store[section]=[];updateCategoryControls();loadPage(section,1);
+}
+document.addEventListener('click',event=>{
+  const pageButton=event.target.closest('[data-page-col]');if(pageButton&&!pageButton.disabled){loadPage(pageButton.dataset.pageCol,Number(pageButton.dataset.page));return;}
+  const globalPage=event.target.closest('[data-global-page]');if(globalPage&&!globalPage.disabled){globalSearchPage=Math.max(1,Number(globalPage.dataset.globalPage));drawSearch();}
+});
+
 /* ---------- Page templates and card rendering ---------- */
 $$('.coll').forEach(section => {
+  const filters=section.id==='data'
+    ? '<select class="category-filter" data-filter-col="data" aria-label="'+t('categoryLabel')+'"></select>'
+    : section.id==='courses'
+      ? '<select class="category-filter" data-filter-col="courses" aria-label="'+t('categoryLabel')+'"></select><select class="language-filter" data-language-col="courses" aria-label="'+t('courseLanguage')+'"></select>'
+      : '';
   section.innerHTML =
     '<div class="phead"><h2 data-i="' + section.id + '"></h2><p data-i="' + section.id + 'D"></p>' +
     '<div class="tools"><div class="search-wrap"><input class="q" type="search" data-ph="sPh" autocomplete="off" aria-label="' + t('sPh') + '">' +
-    '<div class="search-suggestions" hidden></div></div><button class="btn" data-add="' + section.id + '" data-i="add"></button></div></div><div class="grid"></div>';
+    '<div class="search-suggestions" hidden></div></div>'+filters+'<button class="btn" data-add="' + section.id + '" data-i="add"></button></div></div><div class="grid"></div><nav class="pagination" data-pagination="'+section.id+'" aria-label="Pagination"></nav>';
   const input = $('.q', section);
-  input.addEventListener('input', () => {
-    draw(section.id);
-    updateSuggestions($('.search-suggestions',section),input.value,section.id);
-  });
+  input.addEventListener('input', () => {draw(section.id);updateSuggestions($('.search-suggestions',section),input.value,section.id);});
   input.addEventListener('focus', () => updateSuggestions($('.search-suggestions',section),input.value,section.id));
+  $('.category-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{category:event.target.value}));
+  $('.language-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{courseLanguage:event.target.value}));
 });
 function card(record, col, showCategory = false) {
-  const categoryTag = showCategory ? '<span class="tag category-tag">' + t(col) + '</span>' : '';
+  const categoryTag = record.category ? '<span class="tag category-tag">' + esc(categoryLabel(col,record.category)) + '</span>' : (showCategory ? '<span class="tag category-tag">' + t(col) + '</span>' : '');
+  const languageTag = col==='courses'&&record.courseLanguage ? '<span class="tag language-tag">'+t('language'+(record.courseLanguage==='ar'?'Ar':record.courseLanguage==='en'?'En':'Both'))+'</span>' : '';
   const formatTag = record.format ? '<span class="tag" data-local-field="format">' + esc(record.format) + '</span>' : '';
   const themeTag = record.theme ? '<span class="tag theme-tag" data-local-field="theme">' + esc(record.theme) + '</span>' : '';
   const del = admin() ? '<button class="del" data-del="' + esc(col) + '|' + esc(record.id) + '" aria-label="Delete">✕</button>' : '';
   const detailButton = record.link && /^https?:\/\//i.test(record.link) ?
     '<button type="button" class="btn sm" data-detail-col="' + esc(col) + '" data-detail-id="' + esc(record.id) + '">' + t('open') + '</button>' : '';
   return '<article class="card resource-card" data-col="' + esc(col) + '" data-id="' + esc(record.id) + '">' +
-    del + categoryTag + formatTag + themeTag + '<h3 data-local-field="title">' + esc(record.title) + '</h3>' +
+    del + categoryTag + languageTag + formatTag + themeTag + '<h3 data-local-field="title">' + esc(record.title) + '</h3>' +
     (record.date ? '<small>' + esc(record.date) + '</small>' : '') +
     '<p data-local-field="details">' + esc(record.details || '') + '</p>' +
     '<div class="foot"><small>' + t('by') + ': ' + esc(record.publisherName || '—') + '</small>' + detailButton + '</div></article>';
@@ -264,11 +442,13 @@ function draw(col) {
   const container = $('.grid', $('#' + col));
   if (!container) return;
   const query = $('.q', $('#' + col))?.value.trim() || '';
-  const list = (store[col] || []).map(record => ({record,score:query ? matchScore(record,query) : 0}))
+  const state=pageState[col];
+  const list = (store[col] || []).filter(record=>!state.courseLanguage||record.courseLanguage===state.courseLanguage)
+    .map(record => ({record,score:query ? matchScore(record,query) : 0}))
     .filter(item => !query || item.score > 0)
     .sort((a,b)=>b.score-a.score).map(item=>item.record);
   container.innerHTML = list.length ? list.map(record => card(record,col)).join('') : '<p class="empty">' + t('empty') + '</p>';
-  observeCards(container);
+  observeCards(container);renderPagination(col);
 }
 function drawSearch() {
   const container = $('#globalResults');
@@ -276,8 +456,11 @@ function drawSearch() {
   const results = allRecords().map(item=>({...item,_score:matchScore(item,globalQuery)}))
     .filter(item=>item._score>0).sort((a,b)=>b._score-a._score);
   $('#searchSummary').textContent = results.length + ' ' + t('resultsCount');
-  container.innerHTML = results.length ? results.map(item=>card(item,item._col,true)).join('') : '<p class="empty">' + t('empty') + '</p>';
-  observeCards(container);
+  const pageSize=24,totalPages=Math.max(1,Math.ceil(results.length/pageSize));
+  globalSearchPage=Math.min(globalSearchPage,totalPages);
+  const visible=results.slice((globalSearchPage-1)*pageSize,globalSearchPage*pageSize);
+  container.innerHTML=visible.length?visible.map(item=>card(item,item._col,true)).join(''):'<p class="empty">'+t('empty')+'</p>';
+  observeCards(container);renderGlobalPagination(totalPages);
 }
 const drawAll = () => { Object.keys(COLS).forEach(draw); if (location.hash === '#search') drawSearch(); };
 
@@ -297,7 +480,7 @@ function applyLang() {
   document.title = 'GEOData | AM Geomatics';
   $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
   $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
-  drawAll(); renderExtra();
+  updateCategoryControls();drawAll();renderExtra();
   if (detailM?.open && currentDetail) openDetail(currentDetail.col,currentDetail.id);
 }
 $('#theme').onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme',theme); applyTheme(); };
@@ -317,7 +500,7 @@ addEventListener('hashchange',route);
 
 $('#heroSearch').addEventListener('submit',event=>{
   event.preventDefault();
-  globalQuery = event.currentTarget.q.value.trim();
+  globalQuery = event.currentTarget.q.value.trim();globalSearchPage=1;
   $('#heroSuggestions').hidden = true;
   location.hash = '#search'; drawSearch();
 });
@@ -345,9 +528,22 @@ document.addEventListener('click',event=>{
   addTo=addButton.dataset.add; addF.dataset.kind=addTo;
   $('#addT').textContent=t('add')+': '+t(addTo); addM.showModal();
 });
+$('#login').onclick=()=>{authF.dataset.mode='login';$('#authError').hidden=true;authM.showModal();};
+function authErrorText(error,isRegister) {
+  const code=error?.code||'';
+  if(code==='auth/unauthorized-domain')return t('authUnauthorized');
+  if(code==='auth/operation-not-allowed')return t('authProviderOff');
+  if(code==='auth/user-not-found')return t('authUserNotFound');
+  if(code==='auth/email-already-in-use')return t('authEmailInUse');
+  if(code==='auth/weak-password')return t('authWeakPassword');
+  if(code==='auth/too-many-requests')return t('authRateLimit');
+  if(code==='auth/network-request-failed')return t('authNetwork');
+  if(['auth/invalid-credential','auth/invalid-login-credentials','auth/wrong-password','auth/invalid-email'].includes(code))return t('authInvalid');
+  return (isRegister?t('fail'):t('authGeneric'))+' '+(error?.message||code||'');
+}
 const paintUser=()=>{
-  $('#login').hidden=!!user; $('#user').hidden=!user; $('#bell').hidden=!user||admin(); $('#adminLink').hidden=!admin();
-  if(user)$('#uname').textContent=user.displayName||user.email.split('@')[0];
+  $('#login').hidden=!!user;$('#user').hidden=!user;$('#bell').hidden=!user||admin();$('#adminLink').hidden=!admin();
+  if(user)$('#uname').textContent=user.displayName||user.email?.split('@')[0]||'User';
 };
 
 let detailToken=0;
@@ -361,6 +557,8 @@ async function openDetail(col,id) {
   $('#detailFormat').textContent=record.format||'';
   $('#detailPublisher').textContent=record.publisherName||'—';
   $('#detailDate').textContent=record.date||'';
+  $('#detailSubjectCategory').textContent=categoryLabel(col,record.category)||'—';
+  $('#detailCourseLanguage').textContent=col==='courses'&&record.courseLanguage?t('language'+(record.courseLanguage==='ar'?'Ar':record.courseLanguage==='en'?'En':'Both')):'—';
   $('#detailTitle').textContent=record.title||'';
   $('#detailDescription').textContent=record.details||'';
   $('#detailSource').textContent=record.sourceName||record.publisherName||'—';
@@ -399,7 +597,7 @@ applyTheme(); applyLang(); route();
 
 /* ---------- Firebase ---------- */
 const FirebaseURL='https://www.gstatic.com/firebasejs/10.12.0/';
-const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,serverTimestamp,query,where,updateDoc}] =
+const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}] =
   await Promise.all([import(FirebaseURL+'firebase-app.js'),import(FirebaseURL+'firebase-auth.js'),import(FirebaseURL+'firebase-firestore.js')]);
 const firebaseApp=initializeApp({
   apiKey:'AIzaSyCmGYoMqvaTDafiHb7q9Vk7vE4n1w2tWBI',authDomain:'am-a-geo.firebaseapp.com',projectId:'am-a-geo',
@@ -437,25 +635,25 @@ onAuthStateChanged(auth,currentUser=>{
   if(location.hash==='#admin')route();
 });
 $('#bell').onclick=()=>{$('#notifM').showModal();submissions.forEach(item=>item.status!=='pending'&&save(seenKey(item),1));renderExtra();};
-Object.entries(COLS).forEach(([section,collectionName])=>onSnapshot(collection(db,collectionName),snapshot=>{
-  store[section]=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  draw(section);if(location.hash==='#search')drawSearch();
-},error=>{
-  console.error('Public collection listener:',collectionName,error);
-  const grid = $('.grid', $('#' + section));
-  if (grid && !(store[section] || []).length) {
-    grid.innerHTML = '<p class="empty" role="status">' + t('loadError') + '</p>';
-  }
-}));
+updateCategoryControls();
+Object.keys(COLS).forEach(section=>loadPage(section,1));
 authF.onsubmit=async event=>{
   event.preventDefault();
   const form=new FormData(authF),register=authF.dataset.mode==='reg',name=(form.get('name')||'').trim();
-  if(register&&!name)return toast(t('needName'));
+  const errorBox=$('#authError'),submit=$('button[type="submit"]',authF);
+  errorBox.hidden=true;errorBox.textContent='';
+  if(register&&!name){errorBox.textContent=t('needName');errorBox.hidden=false;return;}
+  submit.disabled=true;submit.textContent=lang==='ar'?'جارٍ التحقق…':'Please wait…';
   try{
-    if(register){const credential=await createUserWithEmailAndPassword(auth,form.get('email'),form.get('pass'));await updateProfile(credential.user,{displayName:name});user=auth.currentUser;paintUser();toast(t('welcome')+name);}
-    else await signInWithEmailAndPassword(auth,form.get('email'),form.get('pass'));
-    authM.close();authF.reset();
-  }catch(error){toast(register?t('fail')+error.message:t('bad'));}
+    if(register){
+      const credential=await createUserWithEmailAndPassword(auth,form.get('email').trim(),form.get('pass'));
+      await updateProfile(credential.user,{displayName:name});user=auth.currentUser;paintUser();toast(t('welcome')+name);
+    }else await signInWithEmailAndPassword(auth,form.get('email').trim(),form.get('pass'));
+    authM.close();authF.reset();errorBox.hidden=true;
+  }catch(error){
+    errorBox.textContent=authErrorText(error,register);errorBox.hidden=false;
+    console.error('GEOData authentication failed:',error.code||error.message);
+  }finally{submit.disabled=false;submit.textContent=t('go');}
 };
 $('#logout').onclick=()=>signOut(auth);
 addF.onsubmit=async event=>{
@@ -465,7 +663,8 @@ addF.onsubmit=async event=>{
     title:values.title.trim(),details:values.details.trim(),link:values.link.trim(),
     publisherName:user.displayName||user.email.split('@')[0],publisherEmail:user.email,createdAt:serverTimestamp()
   };
-  if(addTo==='data'){record.format=values.format;record.date=values.date;}
+  if(addTo==='data'){record.format=values.format;record.date=values.date;record.category=values.dataCategory||'other';}
+  if(addTo==='courses'){record.category=values.courseCategory||'other';record.courseLanguage=values.courseLanguage||'en';}
   const submitButton=$('button[type="submit"]',addF)||$('button.btn',addF);
   submitButton.disabled=true;submitButton.textContent=lang==='ar'?'جارٍ الترجمة والإرسال…':'Translating and submitting…';
   try{
@@ -493,6 +692,7 @@ document.addEventListener('click',async event=>{
         title:item.title,details:item.details,link:item.link,publisherName:item.publisherName,publisherEmail:item.publisherEmail,
         title_ar:item.title_ar||'',title_en:item.title_en||'',details_ar:item.details_ar||'',details_en:item.details_en||'',
         format_ar:item.format_ar||'',format_en:item.format_en||'',translationProvider:item.translationProvider||'MyMemory',
+        category:item.category||'other',courseLanguage:item.courseLanguage||'',
         createdAt:serverTimestamp()
       };
       if(item.col==='data'){published.format=item.format;published.date=item.date;}
