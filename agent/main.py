@@ -160,7 +160,10 @@ def correct_known_gis_translation(source: str, translated: str, target: str) -> 
         if "qgis" in source.lower():
             value = re.sub(r"نظم\s+المعلومات\s+(?:القطرية|القطريه)", "QGIS", value)
         if "feature" in source.lower():
-            value = re.sub(r"مميزات|ميزات", "معالم", value)
+            value = re.sub(r"خدمة\\s+(?:ال)?(?:الميزة|ميزة|المميزات|الميزات|مميزات|ميزات)", "خدمة معالم", value)
+            value = re.sub(r"طبقة\\s+(?:ال)?(?:الميزة|ميزة|المميزات|الميزات|مميزات|ميزات)", "طبقة معالم", value)
+            value = re.sub(r"(?:المميزات|الميزات|مميزات|ميزات)", "معالم", value)
+            value = re.sub(r"(?:الميزة|ميزة)", "معلم", value)
         value = value.replace("نظم المعلومات الجغرافية القطرية", "نظم المعلومات الجغرافية (GIS)")
     else:
         value = re.sub(r"نظم المعلومات الجغرافية", "Geographic Information Systems", value)

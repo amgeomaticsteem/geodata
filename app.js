@@ -170,7 +170,13 @@ function correctKnownGisTranslation(source,translated,target) {
   let value=String(translated||'');
   if(target==='ar'){
     if(source.toLowerCase().includes('qgis'))value=value.replace(/نظم المعلومات القطرية|نظم المعلومات القطريه/g,'QGIS');
-    if(source.toLowerCase().includes('feature'))value=value.replace(/مميزات|ميزات/g,'معالم');
+    if(source.toLowerCase().includes('feature')){
+      value=value
+        .replace(/خدمة\\s+(?:ال)?(?:الميزة|ميزة|المميزات|الميزات|مميزات|ميزات)/g,'خدمة معالم')
+        .replace(/طبقة\\s+(?:ال)?(?:الميزة|ميزة|المميزات|الميزات|مميزات|ميزات)/g,'طبقة معالم')
+        .replace(/(?:المميزات|الميزات|مميزات|ميزات)/g,'معالم')
+        .replace(/(?:الميزة|ميزة)/g,'معلم');
+    }
     value=value.replace(/نظم المعلومات الجغرافية القطرية/g,'نظم المعلومات الجغرافية (GIS)');
   }else{
     value=value.replace(/نظم المعلومات الجغرافية/g,'Geographic Information Systems')
