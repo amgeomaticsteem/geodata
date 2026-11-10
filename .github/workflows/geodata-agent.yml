@@ -22,6 +22,10 @@ jobs:
   curate:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      FIREBASE_PROJECT_ID: am-a-geo
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+      GITHUB_TOKEN: ${{ github.token }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
