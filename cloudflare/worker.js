@@ -12,13 +12,23 @@ const GIS_TERMS = [
   "epsg","georeferencing","georeference","digitizing","topology","buffer","overlay","interpolation",
   "network analysis","spatial database","postgis","wms","wfs","fme","openstreetmap","osm",
   "surveying","survey","civil 3d","autocad map","bim gis","geocoding","dem","dtm","dsm",
+  "administrative boundary","administrative boundaries","country boundaries","national boundaries",
+  "state boundaries","province boundaries","district boundaries","municipal boundaries",
+  "egypt boundaries","boundaries of egypt","geo boundaries","geoboundaries","gadm","natural earth",
+  "download boundary","boundary shapefile","download shapefile","download spatial data",
   "نظم المعلومات الجغرافية","جي اي اس","جيس","جيوماتكس","استشعار عن بعد","الاستشعار عن بعد",
   "بيانات مكانية","بيانات جغرافية","تحليل مكاني","تحليل مكانى","خرائط","خريطة","خرائط رقمية",
-  "صور فضائية","مرئيات فضائية","قمر صناعي","اقمار صناعية","شيب فايل","شيب فايل","جيوتييف",
-  "راستر","فيكتور","جيوداتابيز","قاعدة بيانات جغرافية","احداثيات","اسقاط خرائط","نظام احداثيات",
+  "صور فضائية","مرئيات فضائية","قمر صناعي","اقمار صناعية","شيب فايل","shp file","shapefile",
+  "جيوتييف","راستر","فيكتور","جيوداتابيز","قاعدة بيانات جغرافية","احداثيات","اسقاط خرائط","نظام احداثيات",
   "مؤشرات طيفية","نموذج ارتفاع رقمي","نموذج ارتفاع","ليدار","سحابة نقطية","رفع مساحي","مساحة",
   "جي بي اس","اركي جي اي اس","كيو جي اي اس","جوجل ايرث انجين","تحليل شبكات","تحليل التضاريس",
-  "الغطاء الارضي","تصنيف مرئيات","الاستيفاء المكاني","جيوكودينج","جيوريفرنس"
+  "الغطاء الارضي","تصنيف مرئيات","الاستيفاء المكاني","جيوكودينج","جيوريفرنس",
+  "حدود","حدود مصر","حدود الدول","حدود الدولة","حدود المحافظات","حدود ادارية","الحدود الادارية",
+  "تقسيم اداري","التقسيم الاداري","تقسيمات ادارية","محافظات","محافظة","مراكز","مركز","مدن","مدينة",
+  "احياء","حي","قرى","قرية","نطاق جغرافي","طبقات مكانية","طبقة مكانية","طبقات جغرافية","طبقة جغرافية",
+  "بيانات حدود","ملف حدود","ملفات حدود","حدود مصر الادارية","خريطة مصر الادارية","خريطة مصر",
+  "تحميل بيانات مكانية","تنزيل بيانات مكانية","تحميل بيانات جغرافية","تنزيل بيانات جغرافية",
+  "تحميل شيب فايل","تنزيل شيب فايل"
 ];
 const GREETINGS = [
   "سلام","السلام عليكم","اهلا","اهلا بيك","مرحبا","صباح الخير","مساء الخير",
@@ -29,6 +39,13 @@ const OFF_TOPIC = [
   "football match","video game","gta","politics","election","stock price","crypto price",
   "نكتة","نكت","شعر","اكتبلي ايميل","اكتب لي ايميل","علاقاتي","وصفة","طبخة","طبخ",
   "ماتش كورة","مباراة كورة","لعبة","سياسة","انتخابات","اسهم","عملات رقمية"
+];
+const FOLLOW_UP_TERMS = [
+  "ازاي","ازاى","كيف","طريقة","الطريقة","انزلها","احملها","تحميل","تنزيل","احمل","انزل",
+  "افتحها","افتحه","اشغلها","اشغل","اعملها","اعمل كده","وضح","اشرح","اشرحلي","اشرح لي",
+  "تفاصيل","الرابط","اللينك","فين","منين","مصدرها","صيغة","امتداد","الخطوات","خطوة",
+  "طب","طيب","وبعدين","بعد كده","ممكن توضح","ممكن تشرح","how do i","how to","download it",
+  "where do i","show me","explain","what about","and then","the link","which format"
 ];
 const requestWindows = new Map();
 
@@ -173,10 +190,13 @@ export default {
     }
 
     const currentQuestion = lastUser.content.trim();
-    const recentUserText = messages.filter(item => item.role === "user").slice(-4).map(item => item.content).join(" ");
+    const priorUserMessages = messages.filter(item => item.role === "user").slice(0, -1).slice(-4);
+    const priorUserText = priorUserMessages.map(item => item.content).join(" ");
     const isGreeting = hasAny(currentQuestion, GREETINGS);
     const explicitOffTopic = hasAny(currentQuestion, OFF_TOPIC);
-    if (explicitOffTopic || (!isGreeting && !hasAny(recentUserText, GIS_TERMS))) {
+    const currentIsGIS = hasAny(currentQuestion, GIS_TERMS);
+    const isContextualFollowUp = hasAny(currentQuestion, FOLLOW_UP_TERMS) && hasAny(priorUserText, GIS_TERMS);
+    if (explicitOffTopic || (!isGreeting && !currentIsGIS && !isContextualFollowUp)) {
       const language = body.language === "en" ? "en" : "ar";
       return json({ answer: language === "en" ? REFUSAL_EN : REFUSAL_AR, refused: true }, 200, origin);
     }
