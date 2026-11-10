@@ -131,7 +131,8 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
         target = "en" if source == "ar" else "ar"
         output[f"{field}_{source}"] = value
         saved_target = existing.get(f"{field}_{target}")
-        if saved_target:
+        previous_source = existing.get(f"{field}_{source}")
+        if saved_target and previous_source == value:
             output[f"{field}_{target}"] = saved_target
             continue
         cost = len(value)
