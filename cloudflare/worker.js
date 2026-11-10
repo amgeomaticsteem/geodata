@@ -174,7 +174,8 @@ function requestedAdminLevels(value) {
   const text = normalize(value);
   if (hasAny(text, ["محافظه","محافظة","محافظات","governorate","province","state","adm1"])) return ["ADM1"];
   if (hasAny(text, ["مركز","مراكز","district","county","adm2"])) return ["ADM2"];
-  if (hasAny(text, ["مدينه","مدينة","مدن","حي","احياء","قرية","قرى","city","town","village","neighborhood","adm3"])) return ["ADM3","ADM2"];
+  if (hasAny(text, ["مدينه","مدينة","مدن","حي","احياء","قرية","قرى","city","town","village","neighborhood","adm3"]) ||
+      PLACE_SEARCH_ALIASES.some(place => place.aliases.some(alias => text.includes(normalize(alias))))) return ["ADM3","ADM2"];
   return ["ADM0","ADM1"];
 }
 function shouldDiscoverSources(messages, currentQuestion) {
@@ -246,12 +247,12 @@ async function searchGeoBoundaries(context, avoidLinks) {
 }
 async function searchArcGISOnline(context, country, avoidLinks) {
   const placeQuery = placeQueryFromText(context, country);
-  const terms = hasAny(context, ["حدود","boundary","boundaries","تقسيم","محافظه","governorate","district"])
-    ? "administrative boundaries" : "GIS geospatial data";
-  const phrase = (placeQuery || context).replace(/["']/g, " ").slice(0, 120) + " " + terms;
+  const phrase = (placeQuery || context).replace(/["']/g, " ").slice(0, 120);
+  const base = "\"" + phrase + "\"";
   const queries = [
-    "\"" + phrase + "\" AND type:\"Feature Service\"",
-    "\"" + phrase + "\" AND type:\"Shapefile\""
+    base + " AND (boundary OR boundaries OR administrative OR governorate OR district) AND type:\"Feature Service\"",
+    base + " AND type:\"Shapefile\"",
+    base + " AND type:\"File Geodatabase\""
   ];
   const batches = await Promise.all(queries.map(async query => {
     const params = new URLSearchParams({ f:"json", q:query, num:"6", sortField:"numviews", sortOrder:"desc" });
