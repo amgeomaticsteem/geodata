@@ -68,6 +68,7 @@ const LABEL = {
   course_geomatics:['الجيوماتكس','Geomatics'],
   course_databases:['قواعد البيانات المكانية','Spatial databases'],
   course_other:['أخرى','Other']
+};
 let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
 try { lang = localStorage.lang || lang; theme = localStorage.theme || theme; } catch {}
 let renderExtra = () => {};
