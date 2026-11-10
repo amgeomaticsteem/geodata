@@ -221,9 +221,10 @@ def infer_egypt_theme(text: str) -> str:
 def search_arcgis(config: dict) -> list[dict]:
     found = {}
     endpoint = "https://www.arcgis.com/sharing/rest/search"
+    # Prioritize Egypt-specific discovery so the daily write cap does not crowd it out.
     query_groups = [
-        (config.get("arcgis_queries", []), False),
         (config.get("egypt_arcgis_queries", []), True),
+        (config.get("arcgis_queries", []), False),
     ]
     for terms, egypt_only in query_groups:
         for term in terms:
@@ -357,15 +358,17 @@ def collect_catalog(config: dict, section: str) -> list[dict]:
     return records
 
 def collect_all(config: dict) -> dict[str, list[dict]]:
+    # Put curated Egypt datasets first, followed by Egypt-focused discovery and then global records.
     projects_by_url = {}
-    for record in search_arcgis(config):
-        projects_by_url[record["link"]] = record
-    for record in collect_catalog(config, "egypt_datasets"):
+    curated_egypt = collect_catalog(config, "egypt_datasets")
+    for record in curated_egypt:
         record.setdefault("coverage", "Egypt")
         record.setdefault("countryCode", "EG")
+        projects_by_url[record["link"]] = record
+    for record in search_arcgis(config):
         projects_by_url.setdefault(record["link"], record)
     projects = list(projects_by_url.values())
-    print(f"[INFO] Egypt-focused curated datasets: {len(collect_catalog(config, 'egypt_datasets'))} record(s) checked.")
+    print(f"[INFO] Egypt-focused curated datasets: {len(curated_egypt)} record(s) checked.")
     return {
         "projects": projects,
         "courses": collect_catalog(config, "courses"),
