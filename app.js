@@ -188,7 +188,8 @@ function editDistance(a, b, max = 1) {
 function recordText(record) {
   return normalizeSearch([
     record.title, record.details, record.format, record.publisherName, record.sourceName, record.license, record.theme, record.coverage,
-    record.title_ar, record.title_en, record.details_ar, record.details_en, record.format_ar, record.format_en
+    record.title_ar, record.title_en, record.details_ar, record.details_en, record.format_ar, record.format_en,
+    record.theme_ar, record.theme_en, record.coverage_ar, record.coverage_en
   ].filter(Boolean).join(' '));
 }
 function matchScore(record, query) {
