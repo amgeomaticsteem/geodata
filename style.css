@@ -693,3 +693,98 @@ dialog h3,.details-dialog h2,.details-dialog h3,
     backdrop-filter:none!important;
   }
 }
+
+
+/* Final glass refinement: reuse the navigation material itself, not a darker imitation. */
+.nav-shell{
+  position:relative;
+  top:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+  direction:ltr;
+  margin:12px clamp(12px,3vw,40px) 0;
+}
+.nav-shell>.nav{
+  position:relative;
+  top:auto;
+  width:100%;
+  flex:none;
+}
+.nav-shell>.hero-clock{
+  position:relative;
+  inset:auto;
+  top:auto;
+  left:auto;
+  transform:none;
+  align-self:flex-start;
+  margin:0;
+  min-height:36px;
+  padding:3px 14px;
+  border-radius:999px;
+  /* Exact same surface, border, shadow and blur as the nav. */
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+  backdrop-filter:blur(22px) saturate(170%)!important;
+  color:var(--tx);
+  font-family:'Cairo',sans-serif;
+  font-size:.84rem;
+  font-weight:700;
+  direction:ltr;
+  unicode-bidi:isolate;
+}
+.nav-shell>.hero-clock::before{content:none!important;display:none!important}
+.hero-greeting{font-family:'Cairo',sans-serif!important}
+
+/* Modal panes use the same light glass sheet as the nav. Let the page behind them show through. */
+dialog:not(.details-dialog),
+dialog.details-dialog{
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+  backdrop-filter:blur(22px) saturate(170%)!important;
+  color:var(--tx)!important;
+}
+dialog::backdrop{
+  background:rgba(3,10,30,.055)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+dialog::before{
+  background:radial-gradient(70% 100% at 50% 0%,color-mix(in srgb,var(--ac) 12%,transparent),transparent)!important;
+}
+dialog input,dialog select,dialog textarea{
+  background:var(--g-in)!important;
+  border-color:var(--g-bd)!important;
+}
+.details-dialog .detail-meta>div{
+  background:var(--g-in)!important;
+  border-color:var(--g-bd)!important;
+}
+[data-theme=light] dialog:not(.details-dialog),
+[data-theme=light] dialog.details-dialog{
+  background:var(--g-bg)!important;
+  border-color:var(--g-bd)!important;
+  box-shadow:var(--g-sh)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+  backdrop-filter:blur(22px) saturate(170%)!important;
+}
+[data-theme=light] dialog::backdrop{background:rgba(30,55,90,.035)!important}
+[data-theme=light] dialog input,
+[data-theme=light] dialog select,
+[data-theme=light] dialog textarea{background:var(--g-in)!important}
+@media(max-width:860px){
+  .nav-shell{gap:7px}
+  .nav-shell>.nav{width:100%;flex:none}
+  .nav-shell>.hero-clock{
+    align-self:flex-start;
+    margin:0;
+    min-height:34px;
+    padding:2px 12px;
+    font-size:.8rem;
+  }
+}
