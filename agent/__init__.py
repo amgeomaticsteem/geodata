@@ -1,0 +1,1 @@
+"""GEOData automated resource curator."""
