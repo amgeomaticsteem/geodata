@@ -289,7 +289,7 @@ function applyLang() {
   root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.body.className = 'lang-' + lang + ' ready';
   $$('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
-  $('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
+  $$('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
   const metaDescription = $('meta[name="description"]');
   if(metaDescription) metaDescription.content = lang === 'ar' ? 'GEOData: مكتبة مجانية للبيانات الجغرافية والدورات والبرامج ومصادر الاستشعار عن بعد.' : 'GEOData: free geospatial data, GIS courses, software and remote-sensing resources.';
   document.title = 'GEOData | AM Geomatics';
@@ -381,7 +381,7 @@ document.addEventListener('click',event=>{
   const button=event.target.closest('[data-detail-col]');
   if(button)openDetail(button.dataset.detailCol,button.dataset.detailId);
   const suggestion=event.target.closest('[data-suggest-col]');
-  if(suggestion){ $('.search-suggestions').forEach(box=>box.hidden=true); openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId); }
+  if(suggestion){ $$('.search-suggestions').forEach(box=>box.hidden=true); openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId); }
 });
 
 /* Translate a submission before it is saved; original text is always retained. */
