@@ -811,20 +811,42 @@ function geoAssistantAppend(role,message){
   return node;
 }
 function geoAssistantAppendResources(records){
+  const seen=new Set();
   const usable=(records||[]).filter(item=>{
-    try{return item.link&&new URL(item.link).protocol==='https:';}catch{return false;}
+    try{
+      const url=new URL(item.link);
+      if(url.protocol!=='https:'||seen.has(url.href))return false;
+      seen.add(url.href);return true;
+    }catch{return false;}
   });
   if(!usable.length)return;
   const box=document.createElement('div');box.className='geo-ai-resources';
   const heading=document.createElement('div');heading.className='geo-ai-resources-title';
-  heading.textContent=lang==='ar'?'موارد ذات صلة من GEOData':'Related resources from GEOData';
+  heading.textContent=lang==='ar'?'مصادر وبدائل مقترحة':'Suggested sources and alternatives';
   box.append(heading);
-  usable.slice(0,5).forEach(item=>{
+  usable.slice(0,8).forEach(item=>{
+    const group=document.createElement('div');group.className='geo-ai-source';
     const link=document.createElement('a');link.className='geo-ai-resource';link.href=item.link;
     link.target='_blank';link.rel='noopener noreferrer';
     const title=document.createElement('strong');title.textContent=item.title||item.link;
-    const meta=document.createElement('span');meta.textContent=[item.sectionLabel,item.source].filter(Boolean).join(' · ');
-    link.append(title,meta);box.append(link);
+    const meta=document.createElement('span');meta.textContent=[item.sectionLabel,item.source,item.format].filter(Boolean).join(' · ');
+    link.append(title,meta);group.append(link);
+    if(item.details){
+      const details=document.createElement('p');details.className='geo-ai-resource-details';
+      details.textContent=String(item.details).slice(0,360);group.append(details);
+    }
+    const extra=(Array.isArray(item.extraLinks)?item.extraLinks:[]).filter(entry=>{
+      try{return new URL(entry.url).protocol==='https:';}catch{return false;}
+    }).slice(0,3);
+    if(extra.length){
+      const links=document.createElement('div');links.className='geo-ai-resource-extra';
+      extra.forEach(entry=>{
+        const a=document.createElement('a');a.href=entry.url;a.target='_blank';a.rel='noopener noreferrer';
+        a.textContent=entry.label||(lang==='ar'?'رابط إضافي':'Additional link');links.append(a);
+      });
+      group.append(links);
+    }
+    box.append(group);
   });
   geoAssistantRefs.messages.append(box);
   geoAssistantRefs.messages.scrollTop=geoAssistantRefs.messages.scrollHeight;
@@ -895,7 +917,7 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
     pending.remove();
     const answer=String(payload.answer||'').trim()||(lang==='ar'?'معنديش إجابة واضحة للسؤال ده.':'I could not produce a clear answer.');
     geoAssistantAppend('assistant',answer);
-    geoAssistantAppendResources(resources);
+    geoAssistantAppendResources([...resources,...(Array.isArray(payload.sources)?payload.sources:[])]);
     geoAssistantHistory.push({role:'assistant',content:answer});
     if(geoAssistantHistory.length>12)geoAssistantHistory.splice(0,geoAssistantHistory.length-12);
   }catch(error){
