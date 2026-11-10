@@ -31,6 +31,17 @@ The service account must belong to the `am-a-geo` Firebase project. The workflow
 
 After the secret is configured, the workflow runs every day at 05:17 UTC (07:17 Cairo time during UTC+2). You can also start it manually.
 
+
+## Arabic / English localization
+
+- Published agent resources are stored with paired fields such as `title_ar`, `title_en`, `details_ar`, `details_en`, `format_ar` and `format_en`.
+- The agent translates new and existing public collection records in batches, with a conservative limit of 20,000 source characters per workflow run.
+- User submissions are translated when submitted; the original title, description and format remain stored as well.
+- The website can translate older records on demand and caches successful translations in the visitor's browser.
+- Machine translation is provided by the public MyMemory translation API. It may be imperfect and can be rate-limited; the source URL remains available so readers can verify technical details.
+- The agent preserves publisher/person names rather than attempting to translate proper names.
+- Translation requests send only public resource text (title, description, format and license), not a user's email address or password. MyMemory's daily free quota depends on the contact-email parameter and its current service limits; the site falls back to the original text when translation is unavailable.
+
 ## What it does
 
 - Finds public ArcGIS Online items and labels them as public items, not as guaranteed open-licensed downloads.
