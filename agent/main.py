@@ -98,7 +98,7 @@ def translation_chunks(value: str, limit: int = 420) -> list[str]:
         chunks.append(current.strip())
     return chunks
 
-GIS_GLOSSARY_VERSION = 1
+GIS_GLOSSARY_VERSION = 2
 GIS_TERMS = [
     (r"\bfeature layers?\b", "طبقة معالم", "Feature layer"),
     (r"\bfeature services?\b", "خدمة معالم", "Feature service"),
