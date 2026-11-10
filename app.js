@@ -689,6 +689,7 @@ async function prepareBilingual(record) {
   return {...record,...bilingual,translationProvider:'MyMemory'};
 }
 applyTheme(); applyLang(); route();
+setInterval(updateHeroGreeting,60000);
 
 /* ---------- Firebase ---------- */
 const FirebaseURL='https://www.gstatic.com/firebasejs/10.12.0/';
