@@ -213,15 +213,45 @@ export default {
     try {
       const result = await env.AI.run(MODEL, {
         messages: messagesForModel,
-        max_completion_tokens: 700,
-        temperature: 0.25
+        max_completion_tokens: 900,
+        temperature: 0.25,
+        // GLM-4.7-Flash reasons by default. Disable its thinking mode so
+        // short chat requests do not spend the output budget before answering.
+        chat_template_kwargs: { enable_thinking: false, clear_thinking: true }
       });
-      let answer = typeof result === "string"
-        ? result
-        : (result?.response ?? result?.choices?.[0]?.message?.content ?? result?.result?.response ?? "");
-      if (Array.isArray(answer)) answer = answer.map(part => typeof part === "string" ? part : part?.text || "").join("");
-      answer = String(answer || "").trim();
-      if (!answer) return json({ error: "The model returned an empty answer. Please try again." }, 502, origin);
+
+      const textFrom = value => {
+        if (typeof value === "string") return value;
+        if (!Array.isArray(value)) return "";
+        return value.map(part => {
+          if (typeof part === "string") return part;
+          if (typeof part?.text === "string") return part.text;
+          if (typeof part?.content === "string") return part.content;
+          return "";
+        }).join("");
+      };
+      const choices = result?.choices || result?.result?.choices || [];
+      const message = choices[0]?.message || choices[0]?.delta || {};
+      const candidates = [
+        typeof result === "string" ? result : "",
+        result?.response,
+        result?.output_text,
+        message?.content,
+        result?.result?.response,
+        result?.result?.output_text
+      ];
+      let answer = candidates.map(textFrom).find(value => value.trim()) || "";
+      answer = answer.trim();
+      if (!answer) {
+        // Keep diagnostics useful without logging user messages or model reasoning.
+        console.error("Workers AI returned no visible answer:", JSON.stringify({
+          topLevelKeys: result && typeof result === "object" ? Object.keys(result) : [],
+          choiceKeys: choices[0] && typeof choices[0] === "object" ? Object.keys(choices[0]) : [],
+          finishReason: choices[0]?.finish_reason || null,
+          usage: result?.usage || null
+        }));
+        return json({ error: "The model did not return a visible text answer. Please try again." }, 502, origin);
+      }
       return json({ answer, refused: false, model: MODEL }, 200, origin);
     } catch (error) {
       console.error("Workers AI request failed:", error?.message || "unknown error");
