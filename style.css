@@ -788,3 +788,88 @@ dialog input,dialog select,dialog textarea{
     font-size:.8rem;
   }
 }
+
+
+/* ---------- Final fixes: independent sticky nav, language-aware clock, calm dialogs ---------- */
+/* The header is back in normal document flow as its own sticky element. */
+.nav{
+  position:sticky!important;
+  top:12px!important;
+  z-index:50!important;
+}
+
+/* Clock sits below the bar; English is left-aligned and Arabic is right-aligned. */
+#heroClock{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  min-height:36px;
+  margin:8px clamp(12px,3vw,40px) 0;
+  padding:3px 14px;
+  border-radius:999px;
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(115%)!important;
+  backdrop-filter:blur(8px) saturate(115%)!important;
+  color:var(--tx);
+  font-family:'Cairo',sans-serif;
+  font-size:.84rem;
+  font-weight:700;
+  direction:ltr;
+  unicode-bidi:isolate;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+body.lang-en #heroClock{
+  margin-left:clamp(12px,3vw,40px);
+  margin-right:auto;
+}
+body.lang-ar #heroClock{
+  margin-left:auto;
+  margin-right:clamp(12px,3vw,40px);
+}
+#heroClock::before{content:none!important;display:none!important}
+
+/* Remove the excessive blue glow and layered blur from every modal window. */
+dialog:not(.details-dialog),
+dialog.details-dialog{
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(115%)!important;
+  backdrop-filter:blur(8px) saturate(115%)!important;
+  color:var(--tx)!important;
+}
+dialog::backdrop{
+  background:rgba(3,10,24,.12)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+dialog::before{
+  content:none!important;
+  display:none!important;
+}
+dialog.details-dialog .detail-meta>div,
+.details-dialog .detail-meta>div{
+  background:var(--g-in)!important;
+  border-color:var(--g-bd)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+dialog .x,.details-dialog .x{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+[data-theme=light] dialog::backdrop{
+  background:rgba(30,55,90,.07)!important;
+}
+@media(max-width:640px){
+  #heroClock{
+    min-height:34px;
+    padding:2px 12px;
+    font-size:.8rem;
+  }
+}
