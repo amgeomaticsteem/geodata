@@ -100,29 +100,29 @@ def translation_chunks(value: str, limit: int = 420) -> list[str]:
 
 GIS_GLOSSARY_VERSION = 1
 GIS_TERMS = [
-    (r"\\bfeature layers?\\b", "طبقة معالم", "Feature layer"),
-    (r"\\bfeature services?\\b", "خدمة معالم", "Feature service"),
-    (r"\\bArcGIS Pro\\b", "ArcGIS Pro", "ArcGIS Pro"),
-    (r"\\bArcGIS Online\\b", "ArcGIS Online", "ArcGIS Online"),
-    (r"\\bQGIS\\b", "QGIS", "QGIS"),
-    (r"\\bArcGIS\\b", "ArcGIS", "ArcGIS"),
-    (r"\\bGIS\\b", "نظم المعلومات الجغرافية (GIS)", "GIS"),
-    (r"\\bfeatures\\b", "معالم", "Features"),
-    (r"\\bfeature\\b", "معلم", "Feature"),
-    (r"\\blayers\\b", "طبقات", "Layers"),
-    (r"\\blayer\\b", "طبقة", "Layer"),
-    (r"\\braster data\\b", "بيانات نقطية", "Raster data"),
-    (r"\\braster\\b", "بيانات نقطية", "Raster"),
-    (r"\\bvector data\\b", "بيانات متجهة", "Vector data"),
-    (r"\\bvector\\b", "بيانات متجهة", "Vector"),
-    (r"\\bshapefiles?\\b", "ملف Shapefile", "Shapefile"),
-    (r"\\bgeodatabases?\\b", "قاعدة بيانات جغرافية", "Geodatabase"),
-    (r"\\bremote sensing\\b", "الاستشعار عن بعد", "Remote sensing"),
-    (r"\\battribute tables?\\b", "جدول السمات", "Attribute table"),
-    (r"\\bdigital elevation model\\b", "نموذج الارتفاع الرقمي (DEM)", "Digital elevation model"),
-    (r"\\bDEM\\b", "DEM", "DEM"),
-    (r"\\bNDVI\\b", "NDVI", "NDVI"),
-    (r"\\bMNDWI\\b", "MNDWI", "MNDWI"),
+    (r"\bfeature layers?\b", "طبقة معالم", "Feature layer"),
+    (r"\bfeature services?\b", "خدمة معالم", "Feature service"),
+    (r"\bArcGIS Pro\b", "ArcGIS Pro", "ArcGIS Pro"),
+    (r"\bArcGIS Online\b", "ArcGIS Online", "ArcGIS Online"),
+    (r"\bQGIS\b", "QGIS", "QGIS"),
+    (r"\bArcGIS\b", "ArcGIS", "ArcGIS"),
+    (r"\bGIS\b", "نظم المعلومات الجغرافية (GIS)", "GIS"),
+    (r"\bfeatures\b", "معالم", "Features"),
+    (r"\bfeature\b", "معلم", "Feature"),
+    (r"\blayers\b", "طبقات", "Layers"),
+    (r"\blayer\b", "طبقة", "Layer"),
+    (r"\braster data\b", "بيانات نقطية", "Raster data"),
+    (r"\braster\b", "بيانات نقطية", "Raster"),
+    (r"\bvector data\b", "بيانات متجهة", "Vector data"),
+    (r"\bvector\b", "بيانات متجهة", "Vector"),
+    (r"\bshapefiles?\b", "ملف Shapefile", "Shapefile"),
+    (r"\bgeodatabases?\b", "قاعدة بيانات جغرافية", "Geodatabase"),
+    (r"\bremote sensing\b", "الاستشعار عن بعد", "Remote sensing"),
+    (r"\battribute tables?\b", "جدول السمات", "Attribute table"),
+    (r"\bdigital elevation model\b", "نموذج الارتفاع الرقمي (DEM)", "Digital elevation model"),
+    (r"\bDEM\b", "DEM", "DEM"),
+    (r"\bNDVI\b", "NDVI", "NDVI"),
+    (r"\bMNDWI\b", "MNDWI", "MNDWI"),
     (r"نظم المعلومات الجغرافية", "نظم المعلومات الجغرافية (GIS)", "Geographic Information Systems (GIS)"),
     (r"طبقة معالم", "طبقة معالم", "Feature layer"),
     (r"خدمة معالم", "خدمة معالم", "Feature service"),
@@ -158,7 +158,7 @@ def correct_known_gis_translation(source: str, translated: str, target: str) -> 
     value = translated or ""
     if target == "ar":
         if "qgis" in source.lower():
-            value = re.sub(r"نظم\\s+المعلومات\\s+(?:القطرية|القطريه)", "QGIS", value)
+            value = re.sub(r"نظم\s+المعلومات\s+(?:القطرية|القطريه)", "QGIS", value)
         if "feature" in source.lower():
             value = re.sub(r"مميزات|ميزات", "معالم", value)
         value = value.replace("نظم المعلومات الجغرافية القطرية", "نظم المعلومات الجغرافية (GIS)")
@@ -286,7 +286,7 @@ def classify_record(record: dict, collection_name: str) -> dict:
             output["courseLanguage"] = record["courseLanguage"]
         else:
             text = " ".join(str(record.get(key, "")) for key in ("title", "details"))
-            has_ar = bool(re.search(r"[\\u0600-\\u06ff]", text))
+            has_ar = bool(re.search(r"[\u0600-\u06ff]", text))
             has_en = bool(re.search(r"[A-Za-z]", text))
             output["courseLanguage"] = "both" if has_ar and has_en else ("ar" if has_ar else "en")
     return output
