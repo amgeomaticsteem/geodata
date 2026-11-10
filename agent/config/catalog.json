@@ -68,11 +68,11 @@
       "publisherName": "QGIS Project"
     },
     {
-      "title": "ARSET – Fundamentals of Remote Sensing",
-      "details": "A free self-paced introductory remote-sensing training covering satellite observations, sensor characteristics, data products and basic visualization. The page notes that a free account may be required.",
-      "link": "https://www.ccacoalition.org/resources/arset-fundamentals-remote-sensing",
-      "format": "Free remote sensing training",
-      "publisherName": "NASA ARSET / Climate and Clean Air Coalition"
+      "title": "NASA ARSET — Remote Sensing Training",
+      "details": "NASA's Applied Remote Sensing Training program provides free online and in-person training in satellite observations, sensors, remote-sensing methods and applications for disasters, land, water, health and climate. Current training listings and access requirements are on the Earthdata program page.",
+      "link": "https://www.earthdata.nasa.gov/data/projects/arset",
+      "format": "Free remote sensing training catalog",
+      "publisherName": "NASA Earthdata / ARSET"
     },
     {
       "title": "Esri MOOCs",
@@ -87,18 +87,18 @@
       "link": "https://cbu.nwrc.gov.eg/course/gis-and-remote-sensing-course/",
       "format": "Online course",
       "publisherName": "National Water Research Center"
+    },
+    {
+      "title": "NARSS — GIS and Remote Sensing Courses",
+      "details": "Course catalog from Egypt's National Authority for Remote Sensing and Space Sciences. Listed topics include introductory and advanced remote sensing, GIS analysis, image processing, Geo-Python, photogrammetry, GNSS and LiDAR. The catalog marks several courses as free; check each course page for enrollment and current availability.",
+      "link": "https://narss.sci.eg/all-courses",
+      "format": "Egyptian GIS and remote-sensing course catalog",
+      "publisherName": "National Authority for Remote Sensing and Space Sciences (NARSS)",
+      "theme": "GIS and remote sensing training",
+      "coverage": "Egypt"
     }
   ],
   "sites": [
-    {
-      "title": "Egypt Open Data Portal — IDSC / OpenLab",
-      "details": "Egyptian government open-data catalog associated with the Cabinet's Information and Decision Support Center (IDSC). Use it to discover national indicators, datasets and map layers; confirm each item's download availability and reuse terms separately.",
-      "link": "https://openlab.idsc.net.eg",
-      "format": "Government open-data catalog",
-      "publisherName": "Information and Decision Support Center (IDSC)",
-      "theme": "Egypt data catalog",
-      "coverage": "Egypt"
-    },
     {
       "title": "IDSC Egypt GIS Portal",
       "details": "Arabic geospatial portal operated under Egypt's Information and Decision Support Center. Browse published data and map layers; inspect the individual item metadata, update date and license before downloading or reusing.",
@@ -184,20 +184,22 @@
     }
   ],
   "egypt_arcgis_queries": [
-    "Egypt governorates administrative boundaries",
-    "Egypt districts administrative boundaries",
-    "Egypt population census demographics",
-    "Egypt roads transport network",
-    "Egypt buildings settlements",
-    "Egypt land cover vegetation",
-    "Egypt agriculture irrigation",
-    "Egypt water Nile canals",
-    "Egypt hospitals health facilities",
-    "Egypt schools education facilities",
-    "Egypt elevation digital elevation model",
-    "Egypt railways ports airports"
+    "Egypt",
+    "Egyptian",
+    "Egypt GIS",
+    "Egypt population",
+    "Egypt governorates",
+    "Egypt administrative boundaries",
+    "Egypt roads",
+    "Egypt buildings",
+    "Egypt land cover",
+    "Egypt agriculture",
+    "Egypt water",
+    "Egypt health facilities",
+    "Egypt schools",
+    "Egypt transport"
   ],
-  "max_egypt_arcgis_items_per_query": 6,
+  "max_egypt_arcgis_items_per_query": 4,
   "egypt_datasets": [
     {
       "title": "Egypt Administrative Divisions — Governorates, Districts and Shiyakhas",
@@ -265,6 +267,18 @@
       "publisherName": "Geofabrik",
       "license": "Open Database License (ODbL); provide OpenStreetMap attribution and follow share-alike requirements.",
       "theme": "Transport and infrastructure",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt Administrative Divisions — Direct JSON API",
+      "details": "Direct JSON API for the Egypt administrative-division dataset. The project documents a complete hierarchy of governorates, districts and shiyakhas with bilingual names and coordinates; its API is described as public, CORS-enabled and usable without an API key. Use the repository for version notes and attribution, and follow the stated CC BY 4.0 license.",
+      "link": "https://openadmindata.org/api/v1/countries/eg.json",
+      "format": "JSON API",
+      "publisherName": "open-admin-data contributors",
+      "date": "2026-09-08",
+      "license": "CC BY 4.0 as stated by the source project; attribution is required.",
+      "theme": "Administrative boundaries",
       "coverage": "Egypt",
       "countryCode": "EG"
     }
