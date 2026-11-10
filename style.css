@@ -1035,3 +1035,15 @@ body.lang-en .nav-clock-shell>#heroClock{
   margin-left:auto!important;
   margin-right:0!important;
 }
+
+/* Readable, safe Markdown output inside GEOData assistant replies. */
+.geo-ai-message p{margin:0}
+.geo-ai-message p+p{margin-top:7px}
+.geo-ai-message ul,.geo-ai-message ol{margin:2px 0;padding-inline-start:1.35rem}
+.geo-ai-message li+li{margin-top:4px}
+.geo-ai-message a{color:var(--ac);font-weight:800;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere}
+.geo-ai-message a:hover{filter:brightness(1.12)}
+.geo-ai-message a:focus-visible{outline:2px solid var(--ac);outline-offset:3px;border-radius:3px}
+.geo-ai-message code{padding:1px 5px;border-radius:6px;background:var(--g-in);border:1px solid var(--g-bd);font-size:.82em}
+.geo-ai-message .geo-ai-md-heading{display:block;margin:3px 0 5px;font-size:.96rem}
+.geo-ai-message blockquote{margin:3px 0;padding-inline-start:10px;border-inline-start:3px solid var(--ac);color:var(--mu)}
