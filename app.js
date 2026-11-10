@@ -32,7 +32,7 @@ const LABEL = {
   noSuggestion:['مفيش اقتراحات مطابقة لسه. جرّب حرف أو كلمتين تانيين.','No close suggestions yet. Try another letter or two.'],
   footer:['© 2026 GEOData — جميع الحقوق محفوظة','© 2026 GEOData — All rights reserved'],
   shapefile:['شيب فايل (Shapefile)','Shapefile'], geodatabase:['قاعدة بيانات جغرافية (Geodatabase)','Geodatabase'], geotiff:['صورة جغرافية (GeoTIFF)','GeoTIFF'], geojson:['GeoJSON / KML','GeoJSON / KML'],
-  resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License']
+  resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], theme:['التصنيف','Theme'], coverage:['النطاق الجغرافي','Geographic coverage'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License']
 };
 let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '';
 try { lang = localStorage.lang || lang; theme = localStorage.theme || theme; } catch {}
@@ -187,7 +187,7 @@ function editDistance(a, b, max = 1) {
 }
 function recordText(record) {
   return normalizeSearch([
-    record.title, record.details, record.format, record.publisherName, record.sourceName, record.license,
+    record.title, record.details, record.format, record.publisherName, record.sourceName, record.license, record.theme, record.coverage,
     record.title_ar, record.title_en, record.details_ar, record.details_en, record.format_ar, record.format_en
   ].filter(Boolean).join(' '));
 }
@@ -249,11 +249,12 @@ $$('.coll').forEach(section => {
 function card(record, col, showCategory = false) {
   const categoryTag = showCategory ? '<span class="tag category-tag">' + t(col) + '</span>' : '';
   const formatTag = record.format ? '<span class="tag" data-local-field="format">' + esc(record.format) + '</span>' : '';
+  const themeTag = record.theme ? '<span class="tag theme-tag" data-local-field="theme">' + esc(record.theme) + '</span>' : '';
   const del = admin() ? '<button class="del" data-del="' + esc(col) + '|' + esc(record.id) + '" aria-label="Delete">✕</button>' : '';
   const detailButton = record.link && /^https?:\/\//i.test(record.link) ?
     '<button type="button" class="btn sm" data-detail-col="' + esc(col) + '" data-detail-id="' + esc(record.id) + '">' + t('open') + '</button>' : '';
   return '<article class="card resource-card" data-col="' + esc(col) + '" data-id="' + esc(record.id) + '">' +
-    del + categoryTag + formatTag + '<h3 data-local-field="title">' + esc(record.title) + '</h3>' +
+    del + categoryTag + formatTag + themeTag + '<h3 data-local-field="title">' + esc(record.title) + '</h3>' +
     (record.date ? '<small>' + esc(record.date) + '</small>' : '') +
     '<p data-local-field="details">' + esc(record.details || '') + '</p>' +
     '<div class="foot"><small>' + t('by') + ': ' + esc(record.publisherName || '—') + '</small>' + detailButton + '</div></article>';
@@ -362,6 +363,8 @@ async function openDetail(col,id) {
   $('#detailTitle').textContent=record.title||'';
   $('#detailDescription').textContent=record.details||'';
   $('#detailSource').textContent=record.sourceName||record.publisherName||'—';
+  $('#detailTheme').textContent=record.theme||'';
+  $('#detailCoverage').textContent=record.coverage||'';
   $('#detailLicense').textContent=record.license||'';
   const safeLink=record.link&&(record.link.startsWith('https://')||record.link.startsWith('http://'))?record.link:'#';
   $('#detailVisit').href=safeLink;
@@ -369,13 +372,15 @@ async function openDetail(col,id) {
   $('#detailMachine').textContent=t('machine');
   if(!detailM.open)detailM.showModal();
   const target=lang;
-  const fields=['title','details','format','license'];
+  const fields=['title','details','format','license','theme','coverage'];
   const values=await Promise.all(fields.map(field=>localizedField(record,field,target)));
   if(token!==detailToken||!detailM.open||target!==lang)return;
   $('#detailTitle').textContent=values[0];
   $('#detailDescription').textContent=values[1];
   if(values[2])$('#detailFormat').textContent=values[2];
   if(values[3])$('#detailLicense').textContent=values[3];
+  if(values[4])$('#detailTheme').textContent=values[4];
+  if(values[5])$('#detailCoverage').textContent=values[5];
 }
 document.addEventListener('click',event=>{
   const button=event.target.closest('[data-detail-col]');
