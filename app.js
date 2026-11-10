@@ -362,7 +362,7 @@ async function openDetail(col,id) {
   $('#detailDescription').textContent=record.details||'';
   $('#detailSource').textContent=record.sourceName||record.publisherName||'—';
   $('#detailLicense').textContent=record.license||'';
-  const safeLink=record.link&&/^https?:\/\//i.test(record.link)?record.link:'#';
+  const safeLink=record.link&&(record.link.startsWith('https://')||record.link.startsWith('http://'))?record.link:'#';
   $('#detailVisit').href=safeLink;
   $('#detailVisit').hidden=!(record.link&&/^https?:\/\//i.test(record.link));
   $('#detailMachine').textContent=t('machine');
