@@ -15,7 +15,8 @@
 <canvas id="earth" aria-hidden="true"></canvas>
 <div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="glow"></i></div>
 
-<header class="nav">
+<div class="nav-shell">
+<header id="mainNav" class="nav">
   <a class="brand" href="#home" aria-label="GEOData">
     <img class="logo-d" src="assets/logo-for-dark.png" alt="GEOData">
     <img class="logo-l" src="assets/logo-for-light.png" alt="GEOData">
@@ -38,13 +39,14 @@
     <button class="ibtn burger" id="burger" aria-label="Menu">☰</button>
   </div>
 </header>
+<time id="heroClock" class="hero-clock" aria-label="Local time"></time>
+</div>
 
 <main>
   <section id="home" class="page">
     <div class="hero">
       <div class="orbit" aria-hidden="true"></div>
       <div class="hero-topline">
-        <time id="heroClock" class="hero-clock"></time>
         <p id="heroGreeting" class="hero-greeting"></p>
       </div>
       <h1 data-i="h1"></h1>
