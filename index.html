@@ -82,7 +82,7 @@
   <section id="admin" class="page"><div class="phead"><h2 data-i="admin"></h2><p data-i="adminD"></p></div><div class="grid" id="adminList"></div></section>
 </main>
 
-<footer>© 2026 GEOData, AM Geomatics</footer>
+<footer data-i="footer"></footer>
 
 <dialog id="authM">
   <button class="x" type="button" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
@@ -104,7 +104,7 @@
     <h3 id="addT"></h3>
     <input name="title" data-ph="title" required>
     <div class="only-data row">
-      <select name="format"><option>Shapefile</option><option>Geodatabase</option><option>GeoTIFF</option><option>GeoJSON / KML</option></select>
+      <select name="format"><option data-i="shapefile">Shapefile</option><option data-i="geodatabase">Geodatabase</option><option data-i="geotiff">GeoTIFF</option><option data-i="geojson">GeoJSON / KML</option></select>
       <input type="date" name="date">
     </div>
     <textarea name="details" rows="4" data-ph="details"></textarea>
