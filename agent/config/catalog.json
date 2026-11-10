@@ -91,6 +91,42 @@
   ],
   "sites": [
     {
+      "title": "Egypt Open Data Portal — IDSC / OpenLab",
+      "details": "Egyptian government open-data catalog associated with the Cabinet's Information and Decision Support Center (IDSC). Use it to discover national indicators, datasets and map layers; confirm each item's download availability and reuse terms separately.",
+      "link": "https://openlab.idsc.net.eg",
+      "format": "Government open-data catalog",
+      "publisherName": "Information and Decision Support Center (IDSC)",
+      "theme": "Egypt data catalog",
+      "coverage": "Egypt"
+    },
+    {
+      "title": "IDSC Egypt GIS Portal",
+      "details": "Arabic geospatial portal operated under Egypt's Information and Decision Support Center. Browse published data and map layers; inspect the individual item metadata, update date and license before downloading or reusing.",
+      "link": "https://idsc-gisidscegy.hub.arcgis.com/",
+      "format": "GIS data catalog / ArcGIS Hub",
+      "publisherName": "Information and Decision Support Center (IDSC)",
+      "theme": "Egypt geospatial catalog",
+      "coverage": "Egypt"
+    },
+    {
+      "title": "Ministry of Water Resources and Irrigation — Geoportal Services",
+      "details": "ArcGIS REST services directory associated with Egypt's Ministry of Water Resources and Irrigation. It is a discovery endpoint for published map and feature services; check each service's description, layer schema, update date and reuse terms.",
+      "link": "https://geoportal.mwri.gov.eg/server/rest/services?f=pjson",
+      "format": "ArcGIS REST services directory",
+      "publisherName": "Ministry of Water Resources and Irrigation",
+      "theme": "Water and hydrology",
+      "coverage": "Egypt"
+    },
+    {
+      "title": "Arab Development Portal — Egypt Geospatial Layers",
+      "details": "A geospatial discovery page for Egypt that organizes map layers across population and settlements, transport and infrastructure, coastlines, landscape, climate and biodiversity. Each layer links to its own service or metadata; check its original publisher and date.",
+      "link": "https://data.arabdevelopmentportal.org/country/egy/geospatial",
+      "format": "Geospatial data catalog",
+      "publisherName": "Arab Development Portal",
+      "theme": "Egypt geospatial catalog",
+      "coverage": "Egypt"
+    },
+    {
       "title": "USGS EarthExplorer",
       "details": "Search and access USGS and partner Earth observation datasets. Availability, access rules and reuse terms vary by dataset.",
       "link": "https://earthexplorer.usgs.gov/",
@@ -145,6 +181,92 @@
       "link": "https://www.worldpop.org/",
       "format": "Population data portal",
       "publisherName": "WorldPop"
+    }
+  ],
+  "egypt_arcgis_queries": [
+    "Egypt governorates administrative boundaries",
+    "Egypt districts administrative boundaries",
+    "Egypt population census demographics",
+    "Egypt roads transport network",
+    "Egypt buildings settlements",
+    "Egypt land cover vegetation",
+    "Egypt agriculture irrigation",
+    "Egypt water Nile canals",
+    "Egypt hospitals health facilities",
+    "Egypt schools education facilities",
+    "Egypt elevation digital elevation model",
+    "Egypt railways ports airports"
+  ],
+  "max_egypt_arcgis_items_per_query": 6,
+  "egypt_datasets": [
+    {
+      "title": "Egypt Administrative Divisions — Governorates, Districts and Shiyakhas",
+      "details": "Bilingual Arabic-English administrative reference for Egypt. The repository lists 27 governorates, 365 districts and 5,716 shiyakhas, with names, hierarchy and coordinates. Files are provided as JSON, NDJSON and CSV. The project identifies OCHA COD-AB / HDX as its upstream source; compare the included version and administrative definitions with official current records before legal or operational use.",
+      "link": "https://github.com/open-admin-data/egypt-administrative-divisions",
+      "format": "JSON / NDJSON / CSV",
+      "publisherName": "open-admin-data contributors",
+      "date": "2026-09-08",
+      "license": "CC BY 4.0 as stated by the repository; attribution is required. Review the repository citation and upstream source terms.",
+      "theme": "Administrative boundaries",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt Administrative Boundaries (ADM1–ADM3) — ArcGIS Feature Service",
+      "details": "A public ArcGIS feature service describing three administrative boundary polygon layers named egy_Admin_BND_1, egy_Admin_BND_2 and egy_Admin_BND_3, plus governorate and district point layers. The service reports spatial reference EPSG:32636 (WGS 84 / UTM zone 36N). Inspect individual layer counts, dates and attributes before using it as a current official boundary source.",
+      "link": "https://services3.arcgis.com/t6lYS2Pmd8iVx1fy/ArcGIS/rest/services/Administrative_Boundaries/FeatureServer",
+      "format": "ArcGIS Feature Service (JSON)",
+      "publisherName": "ArcGIS Online publisher",
+      "license": "No clear reuse license was stated in the service record; verify permission with the publisher before redistribution.",
+      "theme": "Administrative boundaries",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt Governorate Boundaries — Natural Earth-based ArcGIS Layer",
+      "details": "A polygon feature-service item describing Egyptian governorate boundaries. Its ArcGIS service currently lists 20 features, so do not assume it represents the latest 27-governorate administrative configuration. Check its attribute table and extent before cartographic or analytical use. The item metadata was updated on 20 April 2026.",
+      "link": "https://www.arcgis.com/home/item.html?id=d7d8a9cfa6c548e990aa827c1118ab66",
+      "format": "ArcGIS Feature Service",
+      "publisherName": "ArcGIS Online item publisher",
+      "date": "2026-04-20",
+      "license": "No explicit reuse license is provided in the item summary; verify with the publisher.",
+      "theme": "Administrative boundaries",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt Main Road Network — OpenStreetMap Snapshot",
+      "details": "A main-road network dataset for Egypt based on OpenStreetMap. The data page lists a zipped Shapefile and KML download. It is useful for introductory transport mapping and network workflows, but the snapshot is historical; inspect its publication date and completeness before treating it as a current national road inventory.",
+      "link": "https://data.amerigeoss.org/dataset/egypt-road-network-main-roads",
+      "format": "Shapefile ZIP / KML",
+      "publisherName": "AmeriGEOSS Community Platform DataHub",
+      "license": "Open Database License (ODbL) / OpenStreetMap attribution and share-alike conditions as stated on the dataset page.",
+      "theme": "Transport and infrastructure",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt CAPMAS Census 2017 — Demographic Indicators",
+      "details": "A research-catalog record for demographic indicators derived from Egypt's 2017 census by CAPMAS. The record describes indicators including sex, marital status and age, with Arabic source labels retained in field aliases. Check the record for the exact administrative level, data files, access conditions and redistribution rights before use; these are 2017 census figures, not a current population estimate.",
+      "link": "https://geo.nyu.edu/catalog/nyu-2451-63562",
+      "format": "GIS polygon dataset / research catalog record",
+      "publisherName": "NYU Spatial Data Repository",
+      "date": "2017",
+      "license": "Access and reuse terms must be checked on the repository record; do not assume unrestricted redistribution.",
+      "theme": "Population and demographics",
+      "coverage": "Egypt",
+      "countryCode": "EG"
+    },
+    {
+      "title": "Egypt OpenStreetMap Country Extract — Geofabrik",
+      "details": "Download portal for the Egypt-wide OpenStreetMap extract. Depending on the available file, it can contain mapped roads, buildings, places, land use, waterways and other volunteered geographic features. Coverage and completeness vary by contributor activity; check the current extract timestamp and file format before analysis.",
+      "link": "https://download.geofabrik.de/africa/egypt.html",
+      "format": "PBF / Shapefile and related extracts",
+      "publisherName": "Geofabrik",
+      "license": "Open Database License (ODbL); provide OpenStreetMap attribution and follow share-alike requirements.",
+      "theme": "Transport and infrastructure",
+      "coverage": "Egypt",
+      "countryCode": "EG"
     }
   ]
 }
