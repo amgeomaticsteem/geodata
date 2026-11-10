@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=geoai-clock-fix-20261110">
 </head>
 <body class="lang-ar" data-theme="dark">
 <canvas id="earth" aria-hidden="true"></canvas>
@@ -161,6 +161,30 @@
     <button class="btn ghost" type="button" onclick="this.closest('dialog').close()" data-i="close"></button>
   </div>
 </dialog>
+
+
+<div class="geo-ai-widget" id="geoAiWidget">
+  <section class="geo-ai-panel" id="geoAiPanel" hidden aria-label="GEOData assistant">
+    <header class="geo-ai-header">
+      <div class="geo-ai-brand">
+        <img id="geoAiHeaderIcon" src="assets/bot dark.png" alt="">
+        <div><strong id="geoAiTitle">مساعد GEOData</strong><small id="geoAiSubtitle">متخصص في GIS والجيوماتكس</small></div>
+      </div>
+      <button type="button" class="geo-ai-close" id="geoAiClose" aria-label="إغلاق">×</button>
+    </header>
+    <div class="geo-ai-messages" id="geoAiMessages" aria-live="polite">
+      <div class="geo-ai-message assistant" data-welcome="true">أهلًا بيك في GEOData 👋 أقدر أساعدك إزاي؟</div>
+    </div>
+    <form class="geo-ai-form" id="geoAiForm">
+      <input id="geoAiInput" type="text" maxlength="1200" autocomplete="off" placeholder="اسأل عن GIS أو البيانات الجغرافية..." required>
+      <button id="geoAiSend" type="submit" aria-label="إرسال">➤</button>
+    </form>
+    <div class="geo-ai-footnote" id="geoAiFootnote">إجابات متخصصة في نظم المعلومات الجغرافية فقط</div>
+  </section>
+  <button class="geo-ai-launcher" id="geoAiLauncher" type="button" aria-label="افتح مساعد GEOData" aria-expanded="false">
+    <img id="geoAiIcon" src="assets/bot dark.png" alt="">
+  </button>
+</div>
 
 <div id="toast" role="status"></div>
 <script type="module" src="globe.js"></script>
