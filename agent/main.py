@@ -201,7 +201,6 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
     existing = existing or {}
     budget = budget if budget is not None else [MAX_TRANSLATION_CHARS_PER_RUN]
     output = dict(record)
-    glossary_current = int(existing.get("glossaryVersion", 0) or 0) >= GIS_GLOSSARY_VERSION
     for field in ("title", "details", "format", "license", "theme", "coverage"):
         value = clean_text(output.get(field, ""), 10000)
         if not value:
@@ -211,14 +210,14 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
         output[f"{field}_{source}"] = value
         saved_target = existing.get(f"{field}_{target}")
         previous_source = existing.get(f"{field}_{source}")
-        if saved_target and previous_source == value and glossary_current:
+        # Reuse stored text and deterministically repair known GIS terminology.
+        # Call the external translation service only when this target field is missing or stale.
+        if saved_target and previous_source == value:
             output[f"{field}_{target}"] = correct_known_gis_translation(value, saved_target, target)
             continue
         cost = len(value)
         if budget[0] < cost:
             print(f"[WARN] Translation budget reached; leaving {field!r} in its original language.")
-            if saved_target and previous_source == value:
-                output[f"{field}_{target}"] = correct_known_gis_translation(value, saved_target, target)
             continue
         try:
             translated = translate_mymemory(value, source, target)
