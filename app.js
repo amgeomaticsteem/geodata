@@ -562,6 +562,7 @@ let currentDetail = null;
 function applyLang() {
   const root = document.documentElement;
   root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  $('#mainNav')?.setAttribute('dir',root.dir);
   document.body.className = 'lang-' + lang + ' ready';
   $$('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
   $$('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
