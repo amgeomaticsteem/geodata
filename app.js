@@ -266,6 +266,7 @@ const SVG = path => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"
 const SUN = SVG('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 const MOON = SVG('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>');
 function applyTheme() { document.body.dataset.theme = theme; $('#theme').innerHTML = theme === 'dark' ? SUN : MOON; }
+let currentDetail = null;
 function applyLang() {
   const root = document.documentElement;
   root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -275,6 +276,7 @@ function applyLang() {
   $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
   $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
   drawAll(); renderExtra();
+  if (detailM?.open && currentDetail) openDetail(currentDetail.col,currentDetail.id);
 }
 $('#theme').onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme',theme); applyTheme(); };
 $('#lang').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; save('lang',lang); applyLang(); };
@@ -328,6 +330,7 @@ const paintUser=()=>{
 
 let detailToken=0;
 async function openDetail(col,id) {
+  currentDetail = {col,id};
   const record=(store[col]||[]).find(item=>item.id===id);
   if(!record)return;
   detailToken++;
@@ -340,7 +343,7 @@ async function openDetail(col,id) {
   $('#detailDescription').textContent=record.details||'';
   $('#detailSource').textContent=record.sourceName||record.publisherName||'—';
   $('#detailLicense').textContent=record.license||'';
-  $('#detailVisit').href=record.link||'#';
+  $('#detailVisit').href=(record.link&&/^https?:\\/\\//i.test(record.link))?record.link:'#';
   $('#detailVisit').hidden=!(record.link&&/^https?:\/\//i.test(record.link));
   $('#detailMachine').textContent=t('machine');
   detailM.showModal();
@@ -357,7 +360,7 @@ document.addEventListener('click',event=>{
   const button=event.target.closest('[data-detail-col]');
   if(button)openDetail(button.dataset.detailCol,button.dataset.detailId);
   const suggestion=event.target.closest('[data-suggest-col]');
-  if(suggestion)openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId);
+  if(suggestion){ $('.search-suggestions').forEach(box=>box.hidden=true); openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId); }
 });
 
 /* Translate a submission before it is saved; original text is always retained. */
