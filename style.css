@@ -910,10 +910,10 @@ dialog .x,.details-dialog .x{
   margin:0;
 }
 body.lang-en .nav-clock-shell>#heroClock{
-  align-self:flex-start;
+  align-self:flex-end;
 }
 body.lang-ar .nav-clock-shell>#heroClock{
-  align-self:flex-end;
+  align-self:flex-start;
 }
 
 /* Reduce unnecessary glow on page controls and icons, explicitly excluding the navigation. */
