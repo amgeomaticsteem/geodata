@@ -916,11 +916,11 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
     if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));
     pending.remove();
     const answer=String(payload.answer||'').trim()||(lang==='ar'?'معنديش إجابة واضحة للسؤال ده.':'I could not produce a clear answer.');
+    const externalSources=Array.isArray(payload.sources)?payload.sources:[];
     const allowedSourceUrls=[...resources,...externalSources].flatMap(item=>[
       item.link,...(Array.isArray(item.extraLinks)?item.extraLinks.map(link=>link.url):[])
     ]).filter(Boolean);
     geoAssistantAppend('assistant',answer,allowedSourceUrls);
-    const externalSources=Array.isArray(payload.sources)?payload.sources:[];
     geoAssistantAppendResources([...resources,...externalSources]);
     const sourceContext=externalSources.slice(0,6).map(item=>[
       item.title,item.link,...(Array.isArray(item.extraLinks)?item.extraLinks.map(link=>link.url):[])
