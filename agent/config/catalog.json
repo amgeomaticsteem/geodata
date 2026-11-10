@@ -1,0 +1,150 @@
+{
+  "arcgis_queries": [
+    "Egypt GIS",
+    "administrative boundaries",
+    "population",
+    "land cover",
+    "digital elevation model",
+    "roads buildings"
+  ],
+  "max_arcgis_items_per_query": 8,
+  "max_new_or_updated_items_per_run": 80,
+  "program_repositories": [
+    {
+      "repo": "qgis/QGIS",
+      "title": "QGIS",
+      "format": "Desktop GIS",
+      "details": "Open-source desktop GIS for mapping, editing, geoprocessing and spatial analysis."
+    },
+    {
+      "repo": "OSGeo/gdal",
+      "title": "GDAL",
+      "format": "Geospatial library",
+      "details": "Open-source translator library for raster and vector geospatial data formats."
+    },
+    {
+      "repo": "OSGeo/grass",
+      "title": "GRASS GIS",
+      "format": "Desktop GIS",
+      "details": "Open-source GIS for raster, vector, image processing and spatial modelling."
+    },
+    {
+      "repo": "senbox-org/snap-engine",
+      "title": "ESA SNAP",
+      "format": "Remote sensing software",
+      "details": "ESA Sentinel Application Platform engine for Earth observation data processing."
+    },
+    {
+      "repo": "geoserver/geoserver",
+      "title": "GeoServer",
+      "format": "GIS server",
+      "details": "Open-source server for sharing geospatial data using OGC standards."
+    },
+    {
+      "repo": "whitebox-tools/whitebox-tools",
+      "title": "WhiteboxTools",
+      "format": "Geospatial analysis",
+      "details": "Open-source geospatial analysis tools for GIS and remote sensing workflows."
+    },
+    {
+      "repo": "OSGeo/PROJ",
+      "title": "PROJ",
+      "format": "Coordinate systems",
+      "details": "Cartographic projections and coordinate reference system transformation software."
+    },
+    {
+      "repo": "qfield/qfield",
+      "title": "QField",
+      "format": "Mobile GIS",
+      "details": "Field data collection and mobile GIS application built around QGIS projects."
+    }
+  ],
+  "courses": [
+    {
+      "title": "QGIS Training Manual",
+      "details": "Free official, structured lessons and practical exercises covering mapping, vector data, layouts and spatial analysis.",
+      "link": "https://docs.qgis.org/latest/en/docs/training_manual/",
+      "format": "Free training manual",
+      "publisherName": "QGIS Project"
+    },
+    {
+      "title": "NASA ARSET Training",
+      "details": "Free online and in-person training resources on Earth observations, remote sensing and satellite data applications. Check each training page for current enrollment.",
+      "link": "https://www.earthdata.nasa.gov/data/projects/arset",
+      "format": "Free remote sensing training",
+      "publisherName": "NASA Earthdata"
+    },
+    {
+      "title": "Esri MOOCs",
+      "details": "Esri's catalog of massive open online GIS courses. Offerings and registration windows vary; check the current catalog.",
+      "link": "https://www.esri.com/training/mooc/",
+      "format": "MOOC catalog",
+      "publisherName": "Esri Academy"
+    },
+    {
+      "title": "GIS Using QGIS — Level 1",
+      "details": "A GIS and QGIS training course listed by Egypt's National Water Research Center learning platform. Check the course page for current availability and enrollment.",
+      "link": "https://cbu.nwrc.gov.eg/course/gis-and-remote-sensing-course/",
+      "format": "Online course",
+      "publisherName": "National Water Research Center"
+    }
+  ],
+  "sites": [
+    {
+      "title": "USGS EarthExplorer",
+      "details": "Search and access USGS and partner Earth observation datasets. Availability, access rules and reuse terms vary by dataset.",
+      "link": "https://earthexplorer.usgs.gov/",
+      "format": "Satellite data portal",
+      "publisherName": "USGS"
+    },
+    {
+      "title": "Copernicus Data Space Browser",
+      "details": "Browse and explore Copernicus Sentinel imagery and related Earth observation products.",
+      "link": "https://browser.dataspace.copernicus.eu/",
+      "format": "Satellite data portal",
+      "publisherName": "European Union Copernicus"
+    },
+    {
+      "title": "NASA Earthdata Search",
+      "details": "Discover and access NASA Earth science data across atmosphere, land, ocean and cryosphere disciplines.",
+      "link": "https://search.earthdata.nasa.gov/",
+      "format": "Earth observation portal",
+      "publisherName": "NASA"
+    },
+    {
+      "title": "Natural Earth",
+      "details": "Public-domain vector and raster map datasets at 1:10m, 1:50m and 1:110m scales.",
+      "link": "https://www.naturalearthdata.com/downloads/",
+      "format": "Open geospatial data",
+      "publisherName": "Natural Earth"
+    },
+    {
+      "title": "Humanitarian Data Exchange",
+      "details": "Humanitarian and development datasets from organizations around the world. Review each dataset's license and metadata.",
+      "link": "https://data.humdata.org/",
+      "format": "Open data portal",
+      "publisherName": "OCHA"
+    },
+    {
+      "title": "OpenStreetMap",
+      "details": "Collaborative global geographic database. Data is available under the Open Database License (ODbL); attribution and share-alike requirements apply.",
+      "link": "https://www.openstreetmap.org/",
+      "format": "Geographic database",
+      "publisherName": "OpenStreetMap"
+    },
+    {
+      "title": "OpenTopography",
+      "details": "Access tools and datasets for topography, lidar and elevation research. Some services or data may require registration or have usage conditions.",
+      "link": "https://opentopography.org/",
+      "format": "Elevation and lidar portal",
+      "publisherName": "OpenTopography"
+    },
+    {
+      "title": "WorldPop",
+      "details": "Research datasets and gridded population products for population distribution and demographic analysis. Check the license of each dataset.",
+      "link": "https://www.worldpop.org/",
+      "format": "Population data portal",
+      "publisherName": "WorldPop"
+    }
+  ]
+}
