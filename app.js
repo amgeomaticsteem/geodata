@@ -546,7 +546,7 @@ const drawAll = () => { Object.keys(COLS).forEach(draw); if (location.hash === '
 const SVG = path => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
 const SUN = SVG('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 const MOON = SVG('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>');
-function applyTheme() { document.body.dataset.theme = theme; $('#theme').innerHTML = theme === 'dark' ? SUN : MOON; }
+function applyTheme() { document.body.dataset.theme = theme; $('#theme').innerHTML = theme === 'dark' ? SUN : MOON; updateGeoAssistantTheme(); }
 function updateHeroGreeting() {
   const greeting=$('#heroGreeting'),clock=$('#heroClock');
   if(!greeting||!clock)return;
@@ -571,7 +571,8 @@ function applyLang() {
   document.title = 'GEOData | AM Geomatics';
   $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
   $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
-  updateCategoryControls();updateHeroGreeting();drawAll();renderExtra();
+  updateCategoryControls();updateHeroGreeting();drawAll();renderExtra();updateGeoAssistantLanguage();
+  const clock=$('#heroClock');if(clock){clock.style.marginLeft=lang==='ar'?'0':'auto';clock.style.marginRight=lang==='ar'?'auto':'0';}
   if (detailM?.open && currentDetail) openDetail(currentDetail.col,currentDetail.id);
 }
 $('#theme').onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme',theme); applyTheme(); };
@@ -701,6 +702,142 @@ const firebaseApp=initializeApp({
   storageBucket:'am-a-geo.firebasestorage.app',messagingSenderId:'724200458201',appId:'1:724200458201:web:14f851dbaf89d49170bbc8'
 });
 const auth=getAuth(firebaseApp),db=getFirestore(firebaseApp);
+
+const GEO_ASSISTANT_ENDPOINT = ''; // Set this after the Cloudflare Worker is deployed.
+const geoAssistantHistory=[];
+let geoAssistantBusy=false;
+const geoAssistantRefs={widget:$('#geoAiWidget'),panel:$('#geoAiPanel'),launcher:$('#geoAiLauncher'),messages:$('#geoAiMessages'),form:$('#geoAiForm'),input:$('#geoAiInput'),send:$('#geoAiSend')};
+function updateGeoAssistantTheme(){
+  const icon=theme==='dark'?'assets/bot dark.png':'assets/bot light.png';
+  if($('#geoAiIcon'))$('#geoAiIcon').src=icon;
+  if($('#geoAiHeaderIcon'))$('#geoAiHeaderIcon').src=icon;
+}
+function updateGeoAssistantLanguage(){
+  const copy=lang==='ar'?{
+    title:'مساعد GEOData',subtitle:'متخصص في GIS والجيوماتكس',placeholder:'اسأل عن GIS أو البيانات الجغرافية...',
+    foot:'إجابات متخصصة في نظم المعلومات الجغرافية فقط',open:'افتح مساعد GEOData',close:'إغلاق',
+    welcome:'أهلًا بيك في GEOData 👋 أقدر أساعدك إزاي؟'
+  }:{
+    title:'GEOData Assistant',subtitle:'GIS & Geomatics specialist',placeholder:'Ask about GIS or geospatial data...',
+    foot:'Specialized in GIS and geomatics only',open:'Open GEOData assistant',close:'Close',
+    welcome:'Welcome to GEOData 👋 How can I help you?'
+  };
+  if($('#geoAiTitle'))$('#geoAiTitle').textContent=copy.title;
+  if($('#geoAiSubtitle'))$('#geoAiSubtitle').textContent=copy.subtitle;
+  if(geoAssistantRefs.input)geoAssistantRefs.input.placeholder=copy.placeholder;
+  if($('#geoAiFootnote'))$('#geoAiFootnote').textContent=copy.foot;
+  if(geoAssistantRefs.launcher)geoAssistantRefs.launcher.setAttribute('aria-label',copy.open);
+  if($('#geoAiClose'))$('#geoAiClose').setAttribute('aria-label',copy.close);
+  if(geoAssistantRefs.panel)geoAssistantRefs.panel.dir=lang==='ar'?'rtl':'ltr';
+  const welcome=geoAssistantRefs.messages?.querySelector('[data-welcome]');
+  if(welcome)welcome.textContent=copy.welcome;
+}
+function geoAssistantAppend(role,message){
+  const node=document.createElement('div');
+  node.className='geo-ai-message '+role;
+  node.textContent=message;
+  geoAssistantRefs.messages.append(node);
+  geoAssistantRefs.messages.scrollTop=geoAssistantRefs.messages.scrollHeight;
+  return node;
+}
+function geoAssistantAppendResources(records){
+  const usable=(records||[]).filter(item=>{
+    try{return item.link&&new URL(item.link).protocol==='https:';}catch{return false;}
+  });
+  if(!usable.length)return;
+  const box=document.createElement('div');box.className='geo-ai-resources';
+  const heading=document.createElement('div');heading.className='geo-ai-resources-title';
+  heading.textContent=lang==='ar'?'موارد ذات صلة من GEOData':'Related resources from GEOData';
+  box.append(heading);
+  usable.slice(0,5).forEach(item=>{
+    const link=document.createElement('a');link.className='geo-ai-resource';link.href=item.link;
+    link.target='_blank';link.rel='noopener noreferrer';
+    const title=document.createElement('strong');title.textContent=item.title||item.link;
+    const meta=document.createElement('span');meta.textContent=[item.sectionLabel,item.source].filter(Boolean).join(' · ');
+    link.append(title,meta);box.append(link);
+  });
+  geoAssistantRefs.messages.append(box);
+  geoAssistantRefs.messages.scrollTop=geoAssistantRefs.messages.scrollHeight;
+}
+async function geoAssistantFindResources(){
+  const queries=geoAssistantHistory.filter(item=>item.role==='user').slice(-3).map(item=>item.content).filter(Boolean);
+  try{
+    await ensureGlobalSearchIndex();
+    const found=[];
+    Object.keys(COLS).forEach(section=>{
+      (searchIndexBySection[section]||[]).forEach(record=>{
+        const score=Math.max(0,...queries.map(query=>matchScore(record,query)));
+        if(score>0)found.push({section,score,record});
+      });
+    });
+    found.sort((a,b)=>b.score-a.score);
+    return found.slice(0,5).map(({section,record})=>{
+      const title=record['title_'+lang]||record.title||record['title_'+(lang==='ar'?'en':'ar')]||'';
+      const details=record['details_'+lang]||record.details||record['details_'+(lang==='ar'?'en':'ar')]||'';
+      return {
+        section,sectionLabel:t(section),title:String(title).slice(0,220),details:String(details).slice(0,850),
+        link:String(record.link||'').slice(0,500),source:String(record.sourceName||record.publisherName||'').slice(0,160),
+        format:String(record.format||'').slice(0,80),license:String(record.license||'').slice(0,180),
+        coverage:String(record.coverage||'').slice(0,180)
+      };
+    });
+  }catch(error){
+    console.warn('GEOData assistant resource lookup failed:',error);
+    return [];
+  }
+}
+function openGeoAssistant(){
+  geoAssistantRefs.panel.hidden=false;
+  geoAssistantRefs.launcher.setAttribute('aria-expanded','true');
+  geoAssistantRefs.input?.focus();
+}
+function closeGeoAssistant(){
+  geoAssistantRefs.panel.hidden=true;
+  geoAssistantRefs.launcher.setAttribute('aria-expanded','false');
+}
+geoAssistantRefs.launcher?.addEventListener('click',()=>{
+  if(geoAssistantRefs.panel.hidden)openGeoAssistant();else closeGeoAssistant();
+});
+$('#geoAiClose')?.addEventListener('click',closeGeoAssistant);
+geoAssistantRefs.form?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const question=geoAssistantRefs.input.value.trim();
+  if(!question||geoAssistantBusy)return;
+  geoAssistantRefs.input.value='';
+  geoAssistantAppend('user',question);
+  geoAssistantHistory.push({role:'user',content:question});
+  if(!GEO_ASSISTANT_ENDPOINT){
+    geoAssistantAppend('assistant',lang==='ar'
+      ?'واجهة المساعد جاهزة، لكن لسه محتاجين ننشر Cloudflare Worker ونوصل رابط الخدمة بالموقع. الخطوة دي هنعملها بعد إعداد حساب Cloudflare.'
+      :'The assistant interface is ready. We still need to deploy the Cloudflare Worker and connect its URL to this website.');
+    return;
+  }
+  geoAssistantBusy=true;geoAssistantRefs.send.disabled=true;
+  const pending=geoAssistantAppend('assistant pending',lang==='ar'?'براجع سؤالك وبدور في مكتبة GEOData…':'Checking your question and searching GEOData…');
+  try{
+    const resources=await geoAssistantFindResources();
+    const response=await fetch(GEO_ASSISTANT_ENDPOINT,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:geoAssistantHistory.slice(-10),resources,language:lang})
+    });
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));
+    pending.remove();
+    const answer=String(payload.answer||'').trim()||(lang==='ar'?'معنديش إجابة واضحة للسؤال ده.':'I could not produce a clear answer.');
+    geoAssistantAppend('assistant',answer);
+    geoAssistantAppendResources(resources);
+    geoAssistantHistory.push({role:'assistant',content:answer});
+    if(geoAssistantHistory.length>12)geoAssistantHistory.splice(0,geoAssistantHistory.length-12);
+  }catch(error){
+    pending.remove();
+    geoAssistantAppend('assistant',lang==='ar'
+      ?'حصلت مشكلة في الاتصال بالمساعد: '+error.message
+      :'The assistant could not be reached: '+error.message);
+  }finally{
+    geoAssistantBusy=false;geoAssistantRefs.send.disabled=false;geoAssistantRefs.input?.focus();
+  }
+});
+
 let submissions=[],unsubscribers=[];
 const seenKey=item=>'seen_'+item.id+'_'+item.status;
 const readLocal=key=>{try{return localStorage[key];}catch{}};
