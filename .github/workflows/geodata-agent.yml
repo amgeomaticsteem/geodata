@@ -43,15 +43,14 @@ jobs:
       - name: Select execution mode
         shell: bash
         run: |
-          if [[ "\${{ github.event_name }}" == "workflow_dispatch" && "\${{ inputs.dry_run }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
             echo "DRY_RUN=true" >> "$GITHUB_ENV"
+          elif [[ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]]; then
+            echo "DRY_RUN=true" >> "$GITHUB_ENV"
+            echo "No Firebase secret configured yet: running safely in dry-run mode."
           else
             echo "DRY_RUN=false" >> "$GITHUB_ENV"
           fi
 
       - name: Run GEOData curator
-        env:
-          FIREBASE_PROJECT_ID: am-a-geo
-          FIREBASE_SERVICE_ACCOUNT_JSON: \${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-          GITHUB_TOKEN: \${{ github.token }}
         run: python -m agent.main
