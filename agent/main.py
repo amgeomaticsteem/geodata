@@ -157,9 +157,9 @@ def protect_gis_terms(value: str, source: str, target: str) -> tuple[str, dict[s
 def correct_known_gis_translation(source: str, translated: str, target: str) -> str:
     value = translated or ""
     if target == "ar":
-        if re.search(r"\\bQGIS\\b", source, flags=re.I):
+        if "qgis" in source.lower():
             value = re.sub(r"نظم\\s+المعلومات\\s+(?:القطرية|القطريه)", "QGIS", value)
-        if re.search(r"\\bfeatures?\\b", source, flags=re.I):
+        if "feature" in source.lower():
             value = re.sub(r"مميزات|ميزات", "معالم", value)
         value = value.replace("نظم المعلومات الجغرافية القطرية", "نظم المعلومات الجغرافية (GIS)")
     else:

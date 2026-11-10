@@ -153,7 +153,7 @@ function splitForTranslation(value, maxBytes = 420) {
 }
 const cacheId = (target, text) => target + ':' + text;
 function protectGisTerms(value,target) {
-  const source=sourceLanguage(value),restore=[];
+  const source=sourceLanguage(value),restore=new Map();
   let protectedText=value;
   [...GIS_GLOSSARY].sort((a,b)=>b.pattern.length-a.pattern.length).forEach((term,index)=>{
     const sourcePattern=source==='en'?term.pattern:term.ar;
@@ -161,7 +161,7 @@ function protectGisTerms(value,target) {
     if(!sourcePattern||!replacement)return;
     protectedText=protectedText.replace(new RegExp(sourcePattern,'gi'),()=>{
       const marker='ZXGEO'+String(index).padStart(3,'0')+'XZ';
-      restore.push([marker,replacement]);return marker;
+      restore.set(marker,replacement);return marker;
     });
   });
   return {text:protectedText,restore};
@@ -169,8 +169,8 @@ function protectGisTerms(value,target) {
 function correctKnownGisTranslation(source,translated,target) {
   let value=String(translated||'');
   if(target==='ar'){
-    if(/\\bQGIS\\b/i.test(source))value=value.replace(/نظم\\s+المعلومات\\s+(?:القطرية|القطريه)/g,'QGIS');
-    if(/\\bfeatures?\\b/i.test(source))value=value.replace(/مميزات|ميزات/g,'معالم');
+    if(source.toLowerCase().includes('qgis'))value=value.replace(/نظم المعلومات القطرية|نظم المعلومات القطريه/g,'QGIS');
+    if(source.toLowerCase().includes('feature'))value=value.replace(/مميزات|ميزات/g,'معالم');
     value=value.replace(/نظم المعلومات الجغرافية القطرية/g,'نظم المعلومات الجغرافية (GIS)');
   }else{
     value=value.replace(/نظم المعلومات الجغرافية/g,'Geographic Information Systems')
@@ -302,7 +302,8 @@ function recordText(record) {
   return normalizeSearch([
     record.title, record.details, record.format, record.publisherName, record.sourceName, record.license, record.theme, record.coverage,
     record.title_ar, record.title_en, record.details_ar, record.details_en, record.format_ar, record.format_en,
-    record.theme_ar, record.theme_en, record.coverage_ar, record.coverage_en
+    record.theme_ar, record.theme_en, record.coverage_ar, record.coverage_en,
+    record.category, record.courseLanguage
   ].filter(Boolean).join(' '));
 }
 function matchScore(record, query) {
