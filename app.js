@@ -733,10 +733,79 @@ function updateGeoAssistantLanguage(){
   const welcome=messages?.querySelector('[data-welcome]');
   if(welcome)welcome.textContent=copy.welcome;
 }
+function geoAssistantSafeLink(url){
+  try{
+    const parsed=new URL(url);
+    return parsed.protocol==='https:'?parsed.href:null;
+  }catch{return null;}
+}
+function geoAssistantAppendInline(parent,text){
+  const pattern=/\\[([^\\]]+)\\]\\((https:\\/\\/[^\\s)]+)\\)|\\*\\*([^*]+)\\*\\*|__([^_]+)__|\\*([^*\\n]+)\\*|`([^`]+)`|(https:\\/\\/[^\\s<]+)/g;
+  let cursor=0,match;
+  while((match=pattern.exec(text))){
+    if(match.index>cursor)parent.append(document.createTextNode(text.slice(cursor,match.index)));
+    if(match[1]!==undefined){
+      const href=geoAssistantSafeLink(match[2]);
+      if(href){
+        const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';
+        geoAssistantAppendInline(link,match[1]);parent.append(link);
+      }else parent.append(document.createTextNode(match[1]));
+    }else if(match[3]!==undefined){
+      const strong=document.createElement('strong');strong.textContent=match[3];parent.append(strong);
+    }else if(match[4]!==undefined){
+      const strong=document.createElement('strong');strong.textContent=match[4];parent.append(strong);
+    }else if(match[5]!==undefined){
+      const em=document.createElement('em');em.textContent=match[5];parent.append(em);
+    }else if(match[6]!==undefined){
+      const code=document.createElement('code');code.textContent=match[6];parent.append(code);
+    }else if(match[7]!==undefined){
+      let raw=match[7],url=raw;
+      while(/[.,،؛!?]$/.test(url))url=url.slice(0,-1);
+      const href=geoAssistantSafeLink(url);
+      if(href){
+        const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';
+        link.textContent=lang==='ar'?'فتح رابط المصدر':'Open source link';parent.append(link);
+        if(raw.length>url.length)parent.append(document.createTextNode(raw.slice(url.length)));
+      }else parent.append(document.createTextNode(raw));
+    }
+    cursor=pattern.lastIndex;
+  }
+  if(cursor<text.length)parent.append(document.createTextNode(text.slice(cursor)));
+}
+function geoAssistantRenderMarkdown(node,markdown){
+  node.replaceChildren();
+  const lines=String(markdown||'').replace(/\\r/g,'').split('\\n');
+  let list=null,listType='';
+  lines.forEach(line=>{
+    if(!line.trim()){list=null;listType='';return;}
+    const heading=line.match(/^#{1,3}\\s+(.+)$/);
+    const bullet=line.match(/^\\s*[-*]\\s+(.+)$/);
+    const numbered=line.match(/^\\s*\\d+[.)]\\s+(.+)$/);
+    const quote=line.match(/^>\\s?(.*)$/);
+    if(heading){
+      list=null;listType='';
+      const h=document.createElement('strong');h.className='geo-ai-md-heading';
+      geoAssistantAppendInline(h,heading[1]);node.append(h);
+    }else if(bullet||numbered){
+      const type=bullet?'ul':'ol';
+      if(!list||listType!==type){list=document.createElement(type);listType=type;node.append(list);}
+      const item=document.createElement('li');
+      geoAssistantAppendInline(item,(bullet||numbered)[1]);list.append(item);
+    }else if(quote){
+      list=null;listType='';
+      const block=document.createElement('blockquote');geoAssistantAppendInline(block,quote[1]);node.append(block);
+    }else{
+      list=null;listType='';
+      const paragraph=document.createElement('p');geoAssistantAppendInline(paragraph,line);node.append(paragraph);
+    }
+  });
+}
 function geoAssistantAppend(role,message){
   const node=document.createElement('div');
   node.className='geo-ai-message '+role;
-  node.textContent=message;
+  if(role.split(/\\s+/).includes('assistant')&&!role.split(/\\s+/).includes('pending')){
+    geoAssistantRenderMarkdown(node,message);
+  }else node.textContent=message;
   geoAssistantRefs.messages.append(node);
   geoAssistantRefs.messages.scrollTop=geoAssistantRefs.messages.scrollHeight;
   return node;
