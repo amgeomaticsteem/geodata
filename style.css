@@ -489,3 +489,207 @@ dialog.details-dialog .detail-meta>div{
     backdrop-filter:none!important;
   }
 }
+
+
+/* ---------- Unified iOS-style glass system ---------- */
+/* Cards and controls share the navigation bar's translucent material. */
+.nav-shell{
+  position:sticky;
+  top:12px;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  direction:rtl;
+  margin:12px clamp(12px,3vw,40px) 0;
+}
+.nav-shell>.nav{
+  position:relative;
+  top:auto;
+  z-index:auto;
+  flex:1 1 auto;
+  min-width:0;
+  margin:0;
+}
+.nav-shell>.hero-clock{
+  position:relative;
+  inset:auto;
+  top:auto;
+  left:auto;
+  transform:none;
+  flex:none;
+  align-self:center;
+  min-height:44px;
+  padding:4px 15px;
+  border-radius:999px;
+  background:var(--g-in)!important;
+  border:1px solid var(--g-bd);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 8px 24px rgba(0,8,32,.18);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  backdrop-filter:blur(22px) saturate(170%);
+  color:var(--tx);
+  font-family:'Cairo',sans-serif;
+  font-size:.9rem;
+  font-weight:700;
+  letter-spacing:.02em;
+  direction:ltr;
+  unicode-bidi:isolate;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.nav-shell>.hero-clock::before{
+  content:"◷";
+  color:var(--ac);
+  margin-inline-end:7px;
+  font-size:1.05rem;
+}
+.hero-topline{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:0;
+  margin:0 0 10px;
+}
+.hero-greeting{
+  margin:0;
+  font-family:'Cairo',sans-serif!important;
+  font-weight:800;
+  line-height:1.45;
+  color:var(--tx);
+}
+
+/* The extra opaque layer used by the old card rule is removed here. */
+.nav,.card,.hsearch,.cats a,.about,.tools input,.tools select,
+.search-suggestions,#toast{
+  background:var(--g-bg)!important;
+  border-color:var(--g-bd);
+  box-shadow:var(--g-sh);
+  -webkit-backdrop-filter:blur(22px) saturate(175%);
+  backdrop-filter:blur(22px) saturate(175%);
+}
+.card{
+  color:var(--tx);
+  border-radius:22px;
+  box-shadow:var(--g-sh),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.card h3,.about h2,.phead h2{color:var(--tx)}
+.card p,.card small,.about p{color:var(--mu)}
+.tools .category-filter,.tools .language-filter{
+  background:var(--g-bg)!important;
+  border-color:var(--g-bd);
+  box-shadow:var(--g-sh);
+  -webkit-backdrop-filter:blur(22px) saturate(175%);
+  backdrop-filter:blur(22px) saturate(175%);
+}
+.search-suggestions{
+  background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.045)),rgba(5,13,31,.20)!important;
+  border:1px solid var(--g-bd);
+  box-shadow:var(--g-sh),0 24px 65px rgba(0,8,30,.28);
+  -webkit-backdrop-filter:blur(30px) saturate(185%);
+  backdrop-filter:blur(30px) saturate(185%);
+}
+
+/* All modal windows use the same translucent material, with enough contrast for text. */
+dialog:not(.details-dialog){
+  color:var(--tx);
+  background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.045)),rgba(5,13,31,.22)!important;
+  border:1px solid rgba(225,247,255,.27);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 28px 90px rgba(0,8,32,.38);
+  -webkit-backdrop-filter:blur(34px) saturate(185%) brightness(1.08);
+  backdrop-filter:blur(34px) saturate(185%) brightness(1.08);
+}
+dialog.details-dialog{
+  background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.045)),rgba(5,13,31,.22)!important;
+  border:1px solid rgba(225,247,255,.27)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 28px 90px rgba(0,8,32,.38)!important;
+  -webkit-backdrop-filter:blur(36px) saturate(190%) brightness(1.08)!important;
+  backdrop-filter:blur(36px) saturate(190%) brightness(1.08)!important;
+  color:var(--tx);
+}
+dialog::backdrop{
+  background:rgba(2,8,24,.14)!important;
+  -webkit-backdrop-filter:blur(9px) saturate(135%);
+  backdrop-filter:blur(9px) saturate(135%);
+}
+dialog::before{
+  background:radial-gradient(75% 65% at 6% 0%,rgba(92,225,230,.13),transparent 72%)!important;
+}
+dialog input,dialog select,dialog textarea{
+  color:var(--tx);
+  background:rgba(255,255,255,.075)!important;
+  border:1px solid rgba(225,247,255,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13);
+}
+dialog input::placeholder,dialog textarea::placeholder{color:var(--mu)}
+dialog h3,.details-dialog h2,.details-dialog h3,
+.details-dialog .detail-meta b,#detailDescription{color:var(--tx)}
+.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.055)!important;
+  border-color:rgba(225,247,255,.20)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
+}
+.details-dialog .detail-meta small,.machine-note{color:var(--mu)}
+.details-dialog .x,.x{
+  -webkit-backdrop-filter:blur(18px) saturate(170%);
+  backdrop-filter:blur(18px) saturate(170%);
+}
+.tabs{background:rgba(255,255,255,.055);border-color:rgba(225,247,255,.20)}
+.tabs button{color:var(--mu)}
+.tabs button.on{color:var(--tx);background:rgba(255,255,255,.14);border-color:rgba(225,247,255,.22)}
+
+/* Light appearance keeps the same glass depth without washing out the text. */
+[data-theme=light] dialog:not(.details-dialog){
+  background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.40)),rgba(230,240,255,.24)!important;
+  border-color:rgba(255,255,255,.82);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 28px 85px rgba(31,58,105,.20);
+  -webkit-backdrop-filter:blur(34px) saturate(175%);
+  backdrop-filter:blur(34px) saturate(175%);
+}
+[data-theme=light] dialog.details-dialog{
+  background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.40)),rgba(230,240,255,.24)!important;
+  border-color:rgba(255,255,255,.84)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 28px 85px rgba(31,58,105,.20)!important;
+  -webkit-backdrop-filter:blur(36px) saturate(175%)!important;
+  backdrop-filter:blur(36px) saturate(175%)!important;
+}
+[data-theme=light] dialog::backdrop{background:rgba(30,55,90,.10)!important}
+[data-theme=light] dialog input,
+[data-theme=light] dialog select,
+[data-theme=light] dialog textarea{
+  background:rgba(255,255,255,.50)!important;
+  border-color:rgba(255,255,255,.8);
+  color:var(--tx);
+}
+[data-theme=light] .details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.32)!important;
+  border-color:rgba(255,255,255,.76)!important;
+}
+[data-theme=light] .nav-shell>.hero-clock{
+  background:rgba(255,255,255,.50)!important;
+  border-color:rgba(255,255,255,.9);
+  box-shadow:inset 0 1px 0 #fff,0 8px 22px rgba(30,64,140,.13);
+}
+[data-theme=light] .search-suggestions{
+  background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.54)),rgba(230,240,255,.25)!important;
+}
+
+/* Keep the separate clock aligned beside the main bar on desktop, below it on mobile. */
+@media(max-width:860px){
+  .nav-shell{flex-wrap:wrap;gap:7px}
+  .nav-shell>.nav{flex:1 1 100%;width:100%}
+  .nav-shell>.hero-clock{
+    order:2;
+    align-self:flex-start;
+    margin-inline-start:auto;
+    min-height:38px;
+    padding:3px 12px;
+    font-size:.82rem;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  dialog:not(.details-dialog),dialog.details-dialog{
+    background:rgba(8,20,42,.94)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
