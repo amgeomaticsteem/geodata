@@ -261,8 +261,10 @@ COURSE_CATEGORY_RULES = [
 def classify_record(record: dict, collection_name: str) -> dict:
     output = {}
     if collection_name == "projects":
-        if record.get("category"):
-            return {"category": record["category"]}
+        if record.get("categorySource") == "user":
+            return {"category": record.get("category", "other"), "categorySource": "user"}
+        if record.get("category") and record.get("category") != "other":
+            return {"category": record["category"], "categorySource": record.get("categorySource", "auto")}
         text = " ".join(str(record.get(key, "")) for key in
                         ("title", "details", "format", "theme", "sourceName", "publisherName")).lower()
         for category, terms in DATA_CATEGORY_RULES:
@@ -270,9 +272,14 @@ def classify_record(record: dict, collection_name: str) -> dict:
                 output["category"] = category
                 break
         output.setdefault("category", "other")
+        output["categorySource"] = "auto"
     elif collection_name == "courses":
-        if record.get("category"):
+        if record.get("categorySource") == "user":
+            output["category"] = record.get("category", "other")
+            output["categorySource"] = "user"
+        elif record.get("category") and record.get("category") != "other":
             output["category"] = record["category"]
+            output["categorySource"] = record.get("categorySource", "auto")
         else:
             text = " ".join(str(record.get(key, "")) for key in
                             ("title", "details", "format", "publisherName")).lower()
@@ -281,14 +288,34 @@ def classify_record(record: dict, collection_name: str) -> dict:
                     output["category"] = category
                     break
             output.setdefault("category", "other")
+            output["categorySource"] = "auto"
         if record.get("courseLanguage") in {"ar", "en", "both"}:
             output["courseLanguage"] = record["courseLanguage"]
         else:
             text = " ".join(str(record.get(key, "")) for key in ("title", "details"))
-            has_ar = bool(re.search(r"[\u0600-\u06ff]", text))
+            has_ar = bool(re.search(r"[\\u0600-\\u06ff]", text))
             has_en = bool(re.search(r"[A-Za-z]", text))
             output["courseLanguage"] = "both" if has_ar and has_en else ("ar" if has_ar else "en")
     return output
+
+
+def backfill_classifications(db) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for collection_name in ("projects", "courses"):
+        changed = 0
+        try:
+            for snapshot in db.collection(collection_name).stream():
+                data = snapshot.to_dict() or {}
+                inferred = classify_record(data, collection_name)
+                patch = {key:value for key,value in inferred.items() if value is not None and value != data.get(key)}
+                if patch:
+                    snapshot.reference.set(patch, merge=True)
+                    changed += 1
+        except Exception as exc:
+            print(f"[WARN] Classification backfill skipped for {collection_name}: {exc}")
+        counts[collection_name] = changed
+        print(f"[INFO] Classification backfill {collection_name}: {changed} record(s) updated.")
+    return counts
 
 
 def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
@@ -300,14 +327,10 @@ def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
             for snapshot in snapshots:
                 data = snapshot.to_dict() or {}
                 localized = apply_bilingual_fields(data, data, budget)
-                classification = classify_record(data, collection_name)
-                for key, value in classification.items():
-                    if not data.get(key):
-                        localized[key] = value
                 patch = {
                     key: value for key, value in localized.items()
                     if (key.endswith("_ar") or key.endswith("_en") or key in
-                        {"translationProvider", "glossaryVersion", "category", "courseLanguage"})
+                        {"translationProvider", "glossaryVersion"})
                     and value is not None and value != data.get(key)
                 }
                 if patch:
@@ -626,6 +649,8 @@ def main() -> int:
         used = added + updated
         remaining -= used
         results[collection_name] = {"added": added, "updated": updated}
+    classification_results = backfill_classifications(db)
+    print("[DONE] Classification backfill: " + json.dumps(classification_results, ensure_ascii=False))
     print("[INFO] Remaining translation character budget: " + str(translation_budget[0]))
     backfill_results = backfill_public_translations(db, translation_budget)
     print("[DONE] Translation backfill: " + json.dumps(backfill_results, ensure_ascii=False))

@@ -530,7 +530,11 @@ document.addEventListener('click',event=>{
   addTo=addButton.dataset.add; addF.dataset.kind=addTo;
   $('#addT').textContent=t('add')+': '+t(addTo); addM.showModal();
 });
-$('#login').onclick=()=>{authF.dataset.mode='login';$('#authError').hidden=true;authM.showModal();};
+$('#login').onclick=()=>{
+  authF.dataset.mode='login';$('#authError').hidden=true;
+  $$('.tabs button').forEach(button=>button.classList.toggle('on',button.dataset.mode==='login'));
+  authM.showModal();
+};
 function authErrorText(error,isRegister) {
   const code=error?.code||'';
   if(code==='auth/unauthorized-domain')return t('authUnauthorized');
@@ -665,8 +669,8 @@ addF.onsubmit=async event=>{
     title:values.title.trim(),details:values.details.trim(),link:values.link.trim(),
     publisherName:user.displayName||user.email.split('@')[0],publisherEmail:user.email,createdAt:serverTimestamp()
   };
-  if(addTo==='data'){record.format=values.format;record.date=values.date;record.category=values.dataCategory||'other';}
-  if(addTo==='courses'){record.category=values.courseCategory||'other';record.courseLanguage=values.courseLanguage||'en';}
+  if(addTo==='data'){record.format=values.format;record.date=values.date;record.category=values.dataCategory||'other';record.categorySource='user';}
+  if(addTo==='courses'){record.category=values.courseCategory||'other';record.categorySource='user';record.courseLanguage=values.courseLanguage||'en';}
   const submitButton=$('button[type="submit"]',addF)||$('button.btn',addF);
   submitButton.disabled=true;submitButton.textContent=lang==='ar'?'جارٍ الترجمة والإرسال…':'Translating and submitting…';
   try{
@@ -694,7 +698,7 @@ document.addEventListener('click',async event=>{
         title:item.title,details:item.details,link:item.link,publisherName:item.publisherName,publisherEmail:item.publisherEmail,
         title_ar:item.title_ar||'',title_en:item.title_en||'',details_ar:item.details_ar||'',details_en:item.details_en||'',
         format_ar:item.format_ar||'',format_en:item.format_en||'',translationProvider:item.translationProvider||'MyMemory',
-        category:item.category||'other',courseLanguage:item.courseLanguage||'',
+        category:item.category||'other',categorySource:item.categorySource||'user',courseLanguage:item.courseLanguage||'',
         createdAt:serverTimestamp()
       };
       if(item.col==='data'){published.format=item.format;published.date=item.date;}
