@@ -316,7 +316,7 @@ async function searchHDX(context, country, avoidLinks) {
     .trim().slice(0,140);
   const data = await fetchJson("https://data.humdata.org/api/3/action/package_search?q=" + encodeURIComponent(query) + "&rows=5");
   if (!data?.success || !Array.isArray(data.result?.results)) return [];
-  return data.result.results.slice(0,4).map(dataset => {
+  const records = await Promise.all(data.result.results.slice(0,4).map(async dataset => {
     const page = safeHttps("https://data.humdata.org/dataset/" + (dataset.name || dataset.id));
     const resources = Array.isArray(dataset.resources) ? dataset.resources : [];
     const candidate = resources.find(item => safeHttps(item.url) && !/api_show|resource_show/i.test(item.url));
@@ -332,7 +332,8 @@ async function searchHDX(context, country, avoidLinks) {
       extraLinks:direct ? [{ label:"Download " + String(candidate?.format || "resource"), url:direct }] : []
     };
     return isNewAlternative(source, avoidLinks) ? source : null;
-  }).filter(Boolean);
+  }));
+  return records.filter(Boolean);
 }
 async function discoverExternalSources(messages, currentQuestion) {
   if (!shouldDiscoverSources(messages, currentQuestion)) return [];
