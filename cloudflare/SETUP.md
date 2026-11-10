@@ -51,6 +51,8 @@ Do not send or publish your Cloudflare password, API token, Account ID, or secre
 
 - The Worker is restricted to GIS, geomatics, surveying, cartography, spatial data, GIS software, and remote sensing. Obvious unrelated requests are refused by a server-side topic gate and the model's system instructions.
 - GEOData's browser-side public Firestore search sends only the most relevant public records with each question. It does not send the entire database.
+- For data-download requests, the Worker can search geoBoundaries, public ArcGIS Online items, and HDX. It returns source cards with provider names, file types, metadata, and validated HTTPS download links where available.
+- When a user reports a broken link, recent assistant source links are kept in the conversation context so the Worker can avoid repeating the same options and search for alternatives.
 - The Worker allows the GEOData GitHub Pages origin for browser requests.
 - A lightweight per-isolate request limiter is included. It is not a substitute for account-level Cloudflare rate limiting against a determined attacker.
 - The Workers AI Free allocation is limited, not unlimited. Monitor usage in the Cloudflare dashboard.
