@@ -20,6 +20,7 @@ const LABEL = {
   by:['بواسطة','By'], open:['فتح','Open'], visit:['زيارة المصدر','Visit source'], close:['إغلاق','Close'],
   machine:['ترجمة آلية للمساعدة. قد لا تكون دقيقة 100%؛ راجع المصدر الأصلي.','Machine translation for convenience. It may not be perfect; check the original source.'],
   original:['النص الأصلي','Original text'], empty:['مفيش نتائج مطابقة. جرّب كتابة مختلفة أو راجع الاقتراحات.','No matching results. Try a different spelling or check the suggestions.'],
+  loadError:['تعذر تحميل البيانات من قاعدة البيانات. جرّب تحديث الصفحة بعد قليل.','Could not load resources from the database. Please refresh in a moment.'],
   needLogin:['سجّل الدخول الأول عشان تنشر.','Please log in before submitting.'], done:['تم النشر','Published'], welcome:['أهلًا ','Welcome '],
   bad:['البريد الإلكتروني أو كلمة المرور غير صحيحين.','Incorrect email or password.'], needName:['اكتب اسمك الأول.','Please enter your name.'],
   del:['متأكد إنك عايز تمسح؟','Are you sure you want to delete this item?'], fail:['حصلت مشكلة: ','Something went wrong: '],
@@ -288,7 +289,7 @@ function applyLang() {
   root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.body.className = 'lang-' + lang + ' ready';
   $$('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
-  $('[data-ph]').forEach(el => el.placeholder = t(el.dataset.ph));
+  $('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
   const metaDescription = $('meta[name="description"]');
   if(metaDescription) metaDescription.content = lang === 'ar' ? 'GEOData: مكتبة مجانية للبيانات الجغرافية والدورات والبرامج ومصادر الاستشعار عن بعد.' : 'GEOData: free geospatial data, GIS courses, software and remote-sensing resources.';
   document.title = 'GEOData | AM Geomatics';
@@ -433,7 +434,13 @@ $('#bell').onclick=()=>{$('#notifM').showModal();submissions.forEach(item=>item.
 Object.entries(COLS).forEach(([section,collectionName])=>onSnapshot(collection(db,collectionName),snapshot=>{
   store[section]=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   draw(section);if(location.hash==='#search')drawSearch();
-},error=>console.error('Public collection listener:',collectionName,error)));
+},error=>{
+  console.error('Public collection listener:',collectionName,error);
+  const grid = $('.grid', $('#' + section));
+  if (grid && !(store[section] || []).length) {
+    grid.innerHTML = '<p class="empty" role="status">' + t('loadError') + '</p>';
+  }
+}));
 authF.onsubmit=async event=>{
   event.preventDefault();
   const form=new FormData(authF),register=authF.dataset.mode==='reg',name=(form.get('name')||'').trim();
