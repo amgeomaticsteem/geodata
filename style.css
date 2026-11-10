@@ -336,3 +336,59 @@ dialog.details-dialog::before{
 .page-arrow:hover:not(:disabled),.page-number:hover:not(:disabled){transform:translateY(-2px);border-color:var(--ac)}.page-number.active{background:var(--ac);color:var(--ink);border-color:transparent;box-shadow:0 5px 20px color-mix(in srgb,var(--ac) 30%,transparent)}.page-arrow:disabled,.page-number:disabled{opacity:.38;cursor:not-allowed}.page-status{font-size:.78rem;color:var(--mu);padding-inline:6px}
 .tag.language-tag{border-color:rgba(168,139,250,.65);color:color-mix(in srgb,var(--ac) 45%,#a78bfa)}
 @media(max-width:760px){.tools{flex-wrap:wrap}.tools .search-wrap{flex-basis:100%}.tools .category-filter,.tools .language-filter{flex:1 1 130px;width:100%}.pagination{gap:5px}.page-arrow{padding-inline:9px}}
+
+
+/* GEOData true transparent glass resource viewer — overrides the earlier opaque tint. */
+dialog.details-dialog{
+  background:
+    linear-gradient(132deg,
+      rgba(255,255,255,.19) 0%,
+      rgba(255,255,255,.055) 42%,
+      rgba(92,225,230,.09) 100%),
+    rgba(5,15,34,.13) !important;
+  border:1px solid rgba(226,249,255,.42);
+  -webkit-backdrop-filter:blur(54px) saturate(220%) brightness(1.16);
+  backdrop-filter:blur(54px) saturate(220%) brightness(1.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.48),
+    inset 0 -1px 0 rgba(255,255,255,.08),
+    0 32px 100px rgba(0,8,32,.34),
+    0 0 56px rgba(92,225,230,.12);
+}
+dialog.details-dialog::backdrop{
+  background:rgba(2,8,24,.055) !important;
+  -webkit-backdrop-filter:blur(2px) saturate(115%);
+  backdrop-filter:blur(2px) saturate(115%);
+}
+dialog.details-dialog::before{
+  background:
+    radial-gradient(80% 52% at 5% 0%,rgba(92,225,230,.18),transparent 70%),
+    radial-gradient(65% 48% at 100% 5%,rgba(37,99,235,.13),transparent 72%),
+    linear-gradient(180deg,rgba(255,255,255,.06),transparent 48%);
+}
+dialog.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.055);
+  border-color:rgba(225,250,255,.22);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  backdrop-filter:blur(24px) saturate(180%);
+}
+[data-theme=light] dialog.details-dialog{
+  background:
+    linear-gradient(132deg,rgba(255,255,255,.62),rgba(255,255,255,.20) 48%,rgba(156,226,245,.18)),
+    rgba(238,247,255,.14) !important;
+  border-color:rgba(255,255,255,.82);
+  -webkit-backdrop-filter:blur(54px) saturate(200%) brightness(1.06);
+  backdrop-filter:blur(54px) saturate(200%) brightness(1.06);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 30px 90px rgba(40,76,130,.18),0 0 45px rgba(10,127,139,.09);
+}
+[data-theme=light] dialog.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.22);
+  border-color:rgba(255,255,255,.68);
+}
+@media(prefers-reduced-transparency:reduce){
+  dialog.details-dialog{
+    background:rgba(8,20,42,.92) !important;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+}
