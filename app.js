@@ -740,7 +740,7 @@ function geoAssistantSafeLink(url){
   }catch{return null;}
 }
 function geoAssistantAppendInline(parent,text){
-  const pattern=/\\[([^\\]]+)\\]\\((https:\\/\\/[^\\s)]+)\\)|\\*\\*([^*]+)\\*\\*|__([^_]+)__|\\*([^*\\n]+)\\*|`([^`]+)`|(https:\\/\\/[^\\s<]+)/g;
+  const pattern=/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*\n]+)\*|(\x60[^\x60]+\x60)|(https:\/\/[^\s<]+)/g;
   let cursor=0,match;
   while((match=pattern.exec(text))){
     if(match.index>cursor)parent.append(document.createTextNode(text.slice(cursor,match.index)));
@@ -757,7 +757,7 @@ function geoAssistantAppendInline(parent,text){
     }else if(match[5]!==undefined){
       const em=document.createElement('em');em.textContent=match[5];parent.append(em);
     }else if(match[6]!==undefined){
-      const code=document.createElement('code');code.textContent=match[6];parent.append(code);
+      const code=document.createElement('code');code.textContent=match[6].slice(1,-1);parent.append(code);
     }else if(match[7]!==undefined){
       let raw=match[7],url=raw;
       while(/[.,،؛!?]$/.test(url))url=url.slice(0,-1);
@@ -774,14 +774,14 @@ function geoAssistantAppendInline(parent,text){
 }
 function geoAssistantRenderMarkdown(node,markdown){
   node.replaceChildren();
-  const lines=String(markdown||'').replace(/\\r/g,'').split('\\n');
+  const lines=String(markdown||'').replace(/\r/g,'').split('\n');
   let list=null,listType='';
   lines.forEach(line=>{
     if(!line.trim()){list=null;listType='';return;}
-    const heading=line.match(/^#{1,3}\\s+(.+)$/);
-    const bullet=line.match(/^\\s*[-*]\\s+(.+)$/);
-    const numbered=line.match(/^\\s*\\d+[.)]\\s+(.+)$/);
-    const quote=line.match(/^>\\s?(.*)$/);
+    const heading=line.match(/^#{1,3}\s+(.+)$/);
+    const bullet=line.match(/^\s*[-*]\s+(.+)$/);
+    const numbered=line.match(/^\s*\d+[.)]\s+(.+)$/);
+    const quote=line.match(/^>\s?(.*)$/);
     if(heading){
       list=null;listType='';
       const h=document.createElement('strong');h.className='geo-ai-md-heading';
@@ -803,7 +803,7 @@ function geoAssistantRenderMarkdown(node,markdown){
 function geoAssistantAppend(role,message){
   const node=document.createElement('div');
   node.className='geo-ai-message '+role;
-  if(role.split(/\\s+/).includes('assistant')&&!role.split(/\\s+/).includes('pending')){
+  if(role.split(/\s+/).includes('assistant')&&!role.split(/\s+/).includes('pending')){
     geoAssistantRenderMarkdown(node,message);
   }else node.textContent=message;
   geoAssistantRefs.messages.append(node);
