@@ -200,3 +200,7 @@ dialog h3{margin:0 40px 10px 0;font-size:1.25rem}
   .detail-actions{flex-direction:column;align-items:stretch}
   .detail-actions .btn{justify-content:center}
 }
+
+/* Search suggestions sit directly below the hero input without hiding the page. */
+.hero-suggestions{position:relative;left:auto;top:auto;translate:none;width:min(640px,100%);margin:8px auto 0}
+.details-dialog .x{position:absolute;float:none;top:14px}
