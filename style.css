@@ -1047,3 +1047,10 @@ body.lang-en .nav-clock-shell>#heroClock{
 .geo-ai-message code{padding:1px 5px;border-radius:6px;background:var(--g-in);border:1px solid var(--g-bd);font-size:.82em}
 .geo-ai-message .geo-ai-md-heading{display:block;margin:3px 0 5px;font-size:.96rem}
 .geo-ai-message blockquote{margin:3px 0;padding-inline-start:10px;border-inline-start:3px solid var(--ac);color:var(--mu)}
+
+/* Multiple-source discovery cards in the GEOData assistant. */
+.geo-ai-source{display:flex;flex-direction:column;gap:6px}
+.geo-ai-resource-details{margin:0;padding:0 3px;color:var(--mu);font-size:.72rem;line-height:1.65;overflow-wrap:anywhere}
+.geo-ai-resource-extra{display:flex;flex-wrap:wrap;gap:7px;padding:0 3px}
+.geo-ai-resource-extra a{display:inline-flex;align-items:center;padding:3px 9px;border:1px solid var(--g-bd);border-radius:999px;color:var(--ac);font-size:.7rem;font-weight:700;text-decoration:none}
+.geo-ai-resource-extra a:hover{background:var(--g-in)}
