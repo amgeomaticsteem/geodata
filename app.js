@@ -739,16 +739,16 @@ function geoAssistantSafeLink(url){
     return parsed.protocol==='https:'?parsed.href:null;
   }catch{return null;}
 }
-function geoAssistantAppendInline(parent,text){
+function geoAssistantAppendInline(parent,text,allowedLinks=new Set()){
   const pattern=/\[([^\]]+)\]\((https:\/\/[^\s)]+)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*\n]+)\*|(\x60[^\x60]+\x60)|(https:\/\/[^\s<]+)/g;
   let cursor=0,match;
   while((match=pattern.exec(text))){
     if(match.index>cursor)parent.append(document.createTextNode(text.slice(cursor,match.index)));
     if(match[1]!==undefined){
       const href=geoAssistantSafeLink(match[2]);
-      if(href){
+      if(href&&allowedLinks.has(href)){
         const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';
-        geoAssistantAppendInline(link,match[1]);parent.append(link);
+        geoAssistantAppendInline(link,match[1],allowedLinks);parent.append(link);
       }else parent.append(document.createTextNode(match[1]));
     }else if(match[3]!==undefined){
       const strong=document.createElement('strong');strong.textContent=match[3];parent.append(strong);
@@ -762,17 +762,17 @@ function geoAssistantAppendInline(parent,text){
       let raw=match[7],url=raw;
       while(/[.,،؛!?]$/.test(url))url=url.slice(0,-1);
       const href=geoAssistantSafeLink(url);
-      if(href){
+      if(href&&allowedLinks.has(href)){
         const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='noopener noreferrer';
         link.textContent=lang==='ar'?'فتح رابط المصدر':'Open source link';parent.append(link);
-        if(raw.length>url.length)parent.append(document.createTextNode(raw.slice(url.length)));
-      }else parent.append(document.createTextNode(raw));
+      }else parent.append(document.createTextNode(lang==='ar'?'[رابط غير متحقق]':'[unverified link]'));
+      if(raw.length>url.length)parent.append(document.createTextNode(raw.slice(url.length)));
     }
     cursor=pattern.lastIndex;
   }
   if(cursor<text.length)parent.append(document.createTextNode(text.slice(cursor)));
 }
-function geoAssistantRenderMarkdown(node,markdown){
+function geoAssistantRenderMarkdown(node,markdown,allowedLinks=new Set()){
   node.replaceChildren();
   const lines=String(markdown||'').replace(/\r/g,'').split('\n');
   let list=null,listType='';
@@ -785,26 +785,26 @@ function geoAssistantRenderMarkdown(node,markdown){
     if(heading){
       list=null;listType='';
       const h=document.createElement('strong');h.className='geo-ai-md-heading';
-      geoAssistantAppendInline(h,heading[1]);node.append(h);
+      geoAssistantAppendInline(h,heading[1],allowedLinks);node.append(h);
     }else if(bullet||numbered){
       const type=bullet?'ul':'ol';
       if(!list||listType!==type){list=document.createElement(type);listType=type;node.append(list);}
       const item=document.createElement('li');
-      geoAssistantAppendInline(item,(bullet||numbered)[1]);list.append(item);
+      geoAssistantAppendInline(item,(bullet||numbered)[1],allowedLinks);list.append(item);
     }else if(quote){
       list=null;listType='';
-      const block=document.createElement('blockquote');geoAssistantAppendInline(block,quote[1]);node.append(block);
+      const block=document.createElement('blockquote');geoAssistantAppendInline(block,quote[1],allowedLinks);node.append(block);
     }else{
       list=null;listType='';
-      const paragraph=document.createElement('p');geoAssistantAppendInline(paragraph,line);node.append(paragraph);
+      const paragraph=document.createElement('p');geoAssistantAppendInline(paragraph,line,allowedLinks);node.append(paragraph);
     }
   });
 }
-function geoAssistantAppend(role,message){
+function geoAssistantAppend(role,message,allowedUrls=[]){
   const node=document.createElement('div');
   node.className='geo-ai-message '+role;
   if(role.split(/\s+/).includes('assistant')&&!role.split(/\s+/).includes('pending')){
-    geoAssistantRenderMarkdown(node,message);
+    geoAssistantRenderMarkdown(node,message,new Set(allowedUrls.map(geoAssistantSafeLink).filter(Boolean)));
   }else node.textContent=message;
   geoAssistantRefs.messages.append(node);
   geoAssistantRefs.messages.scrollTop=geoAssistantRefs.messages.scrollHeight;
@@ -916,7 +916,10 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
     if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));
     pending.remove();
     const answer=String(payload.answer||'').trim()||(lang==='ar'?'معنديش إجابة واضحة للسؤال ده.':'I could not produce a clear answer.');
-    geoAssistantAppend('assistant',answer);
+    const allowedSourceUrls=[...resources,...externalSources].flatMap(item=>[
+      item.link,...(Array.isArray(item.extraLinks)?item.extraLinks.map(link=>link.url):[])
+    ]).filter(Boolean);
+    geoAssistantAppend('assistant',answer,allowedSourceUrls);
     const externalSources=Array.isArray(payload.sources)?payload.sources:[];
     geoAssistantAppendResources([...resources,...externalSources]);
     const sourceContext=externalSources.slice(0,6).map(item=>[
