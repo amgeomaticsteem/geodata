@@ -365,7 +365,7 @@ async function openDetail(col,id) {
   $('#detailVisit').href=(record.link&&/^https?:\\/\\//i.test(record.link))?record.link:'#';
   $('#detailVisit').hidden=!(record.link&&/^https?:\/\//i.test(record.link));
   $('#detailMachine').textContent=t('machine');
-  detailM.showModal();
+  if(!detailM.open)detailM.showModal();
   const target=lang;
   const fields=['title','details','format','license'];
   const values=await Promise.all(fields.map(field=>localizedField(record,field,target)));
