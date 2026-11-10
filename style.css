@@ -1021,3 +1021,17 @@ dialog .x{
   .geo-ai-launcher{width:64px;height:64px}
   .geo-ai-panel{right:0;bottom:76px;width:calc(100vw - 24px);height:min(76dvh,620px);min-height:360px;border-radius:22px}
 }
+
+/* Physical alignment is explicit so RTL cannot reverse the clock's screen edge. */
+body.lang-ar .nav-clock-shell>#heroClock{
+  align-self:auto!important;
+  width:max-content!important;
+  margin-left:0!important;
+  margin-right:auto!important;
+}
+body.lang-en .nav-clock-shell>#heroClock{
+  align-self:auto!important;
+  width:max-content!important;
+  margin-left:auto!important;
+  margin-right:0!important;
+}
