@@ -724,12 +724,13 @@ function updateGeoAssistantLanguage(){
   };
   if($('#geoAiTitle'))$('#geoAiTitle').textContent=copy.title;
   if($('#geoAiSubtitle'))$('#geoAiSubtitle').textContent=copy.subtitle;
-  if(geoAssistantRefs.input)geoAssistantRefs.input.placeholder=copy.placeholder;
+  const input=$('#geoAiInput'),launcher=$('#geoAiLauncher'),panel=$('#geoAiPanel'),messages=$('#geoAiMessages');
+  if(input)input.placeholder=copy.placeholder;
   if($('#geoAiFootnote'))$('#geoAiFootnote').textContent=copy.foot;
-  if(geoAssistantRefs.launcher)geoAssistantRefs.launcher.setAttribute('aria-label',copy.open);
+  if(launcher)launcher.setAttribute('aria-label',copy.open);
   if($('#geoAiClose'))$('#geoAiClose').setAttribute('aria-label',copy.close);
-  if(geoAssistantRefs.panel)geoAssistantRefs.panel.dir=lang==='ar'?'rtl':'ltr';
-  const welcome=geoAssistantRefs.messages?.querySelector('[data-welcome]');
+  if(panel)panel.dir=lang==='ar'?'rtl':'ltr';
+  const welcome=messages?.querySelector('[data-welcome]');
   if(welcome)welcome.textContent=copy.welcome;
 }
 function geoAssistantAppend(role,message){
