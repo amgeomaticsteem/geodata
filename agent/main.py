@@ -157,7 +157,7 @@ def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
             snapshots = db.collection(collection_name).stream()
             for snapshot in snapshots:
                 data = snapshot.to_dict() or {}
-                localized = apply_bilingual_fields({}, data, budget)
+                localized = apply_bilingual_fields(data, data, budget)
                 patch = {
                     key: value for key, value in localized.items()
                     if (key.endswith("_ar") or key.endswith("_en") or key == "translationProvider")
