@@ -392,3 +392,100 @@ dialog.details-dialog .detail-meta>div{
     backdrop-filter:none;
   }
 }
+
+
+/* Hero welcome line: greeting centered, local clock docked to the left. */
+.hero-topline{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:48px;
+  margin:0 0 13px;
+}
+.hero-greeting{
+  margin:0;
+  color:var(--tx);
+  font-family:'Cairo',sans-serif;
+  font-size:clamp(1.25rem,2.5vw,1.8rem);
+  font-weight:800;
+  line-height:1.4;
+}
+.hero-clock{
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+  padding:6px 15px;
+  border:1px solid var(--g-bd);
+  border-radius:999px;
+  background:var(--g-bg);
+  box-shadow:var(--g-sh);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);
+  backdrop-filter:blur(22px) saturate(170%);
+  color:var(--tx);
+  direction:ltr;
+  unicode-bidi:isolate;
+  font-family:'Cairo',sans-serif;
+  font-size:.9rem;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.hero-clock::before{
+  content:"◷";
+  color:var(--ac);
+  font-size:1.05rem;
+  line-height:1;
+}
+
+/* The details viewer now uses the same see-through glass recipe as the top navigation. */
+dialog.details-dialog{
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh),inset 0 1px 0 rgba(255,255,255,.28)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(175%)!important;
+  backdrop-filter:blur(26px) saturate(175%)!important;
+}
+dialog.details-dialog::backdrop{
+  background:rgba(2,8,24,.045)!important;
+  -webkit-backdrop-filter:blur(.5px) saturate(105%);
+  backdrop-filter:blur(.5px) saturate(105%);
+}
+dialog.details-dialog::before{
+  background:linear-gradient(125deg,rgba(255,255,255,.055),transparent 48%)!important;
+}
+dialog.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.035)!important;
+  border-color:rgba(225,250,255,.19)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(170%);
+  backdrop-filter:blur(20px) saturate(170%);
+}
+[data-theme=light] dialog.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.16)!important;
+  border-color:rgba(255,255,255,.56)!important;
+}
+@media(max-width:640px){
+  .hero-topline{
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .hero-greeting{order:1}
+  .hero-clock{
+    position:static;
+    transform:none;
+    order:2;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  dialog.details-dialog{
+    background:rgba(8,20,42,.92)!important;
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+}
