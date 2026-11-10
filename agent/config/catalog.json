@@ -41,7 +41,7 @@
       "details": "Open-source server for sharing geospatial data using OGC standards."
     },
     {
-      "repo": "whitebox-tools/whitebox-tools",
+      "repo": "jblindsay/whitebox-tools",
       "title": "WhiteboxTools",
       "format": "Geospatial analysis",
       "details": "Open-source geospatial analysis tools for GIS and remote sensing workflows."
@@ -53,7 +53,7 @@
       "details": "Cartographic projections and coordinate reference system transformation software."
     },
     {
-      "repo": "qfield/qfield",
+      "repo": "opengisch/QField",
       "title": "QField",
       "format": "Mobile GIS",
       "details": "Field data collection and mobile GIS application built around QGIS projects."
@@ -68,11 +68,11 @@
       "publisherName": "QGIS Project"
     },
     {
-      "title": "NASA ARSET Training",
-      "details": "Free online and in-person training resources on Earth observations, remote sensing and satellite data applications. Check each training page for current enrollment.",
-      "link": "https://www.earthdata.nasa.gov/data/projects/arset",
+      "title": "ARSET – Fundamentals of Remote Sensing",
+      "details": "A free self-paced introductory remote-sensing training covering satellite observations, sensor characteristics, data products and basic visualization. The page notes that a free account may be required.",
+      "link": "https://www.ccacoalition.org/resources/arset-fundamentals-remote-sensing",
       "format": "Free remote sensing training",
-      "publisherName": "NASA Earthdata"
+      "publisherName": "NASA ARSET / Climate and Clean Air Coalition"
     },
     {
       "title": "Esri MOOCs",
