@@ -884,3 +884,85 @@ dialog .x,.details-dialog .x{
   -webkit-backdrop-filter:blur(8px) saturate(115%)!important;
   backdrop-filter:blur(8px) saturate(115%)!important;
 }
+
+
+/* ---------- Clock follows the navigation as one sticky unit; nav appearance is unchanged. ---------- */
+.nav-clock-shell{
+  position:sticky;
+  top:12px;
+  z-index:55;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
+  direction:ltr;
+  margin:12px clamp(12px,3vw,40px) 0;
+}
+.nav-clock-shell>#mainNav{
+  margin:0;
+}
+.nav-clock-shell>#heroClock{
+  position:relative;
+  top:auto;
+  left:auto;
+  transform:none;
+  align-self:flex-start;
+  margin:0;
+}
+body.lang-en .nav-clock-shell>#heroClock{
+  align-self:flex-start;
+}
+body.lang-ar .nav-clock-shell>#heroClock{
+  align-self:flex-end;
+}
+
+/* Reduce unnecessary glow on page controls and icons, explicitly excluding the navigation. */
+.page .btn,
+.page .ibtn,
+.page .del,
+.page .pagination .page-arrow,
+.page .pagination .page-number,
+dialog .btn,
+dialog .x{
+  box-shadow:0 2px 8px rgba(0,0,0,.09)!important;
+}
+.page .btn:hover,
+.page .ibtn:hover{
+  filter:none;
+}
+.page .hsearch,
+.page .cats a,
+.page .tools input,
+.page .tools select,
+.page .tools .category-filter,
+.page .tools .language-filter,
+.page .search-suggestions,
+.page .card,
+.page .about,
+.page .pagination .page-arrow,
+.page .pagination .page-number{
+  box-shadow:0 2px 9px rgba(0,0,0,.075)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(112%)!important;
+  backdrop-filter:blur(8px) saturate(112%)!important;
+}
+.page .btn:not(.ghost){
+  box-shadow:0 2px 7px rgba(0,0,0,.08)!important;
+}
+.page .pagination .page-number.active{
+  box-shadow:0 2px 7px rgba(0,0,0,.09)!important;
+}
+.page .cats a .ico{
+  filter:drop-shadow(0 0 0 transparent);
+}
+
+/* The Add dialog must blur and dim the entire page behind it for readable form content. */
+#addM::backdrop{
+  background:rgba(3,10,24,.48)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(108%)!important;
+  backdrop-filter:blur(8px) saturate(108%)!important;
+}
+[data-theme=light] #addM::backdrop{
+  background:rgba(30,45,70,.38)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(108%)!important;
+  backdrop-filter:blur(8px) saturate(108%)!important;
+}
