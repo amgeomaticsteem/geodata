@@ -123,7 +123,7 @@ def apply_bilingual_fields(record: dict, existing: dict | None = None,
     existing = existing or {}
     budget = budget if budget is not None else [MAX_TRANSLATION_CHARS_PER_RUN]
     output = dict(record)
-    for field in ("title", "details", "format", "license"):
+    for field in ("title", "details", "format", "license", "theme", "coverage"):
         value = clean_text(output.get(field, ""), 10000)
         if not value:
             continue
@@ -200,53 +200,94 @@ def make_record(title: str, details: str, link: str, publisher: str,
         record["date"] = date
     return record
 
+def infer_egypt_theme(text: str) -> str:
+    value = (text or "").lower()
+    rules = [
+        (("boundary", "governorate", "administrative", "district", "shiyakha"), "Administrative boundaries"),
+        (("population", "demographic", "census", "settlement"), "Population and settlements"),
+        (("road", "railway", "transport", "airport", "port"), "Transport and infrastructure"),
+        (("land cover", "landuse", "land use", "vegetation", "forest"), "Land cover and environment"),
+        (("water", "river", "canal", "coast", "hydrology"), "Water and hydrology"),
+        (("soil", "agriculture", "crop", "irrigation"), "Agriculture and soils"),
+        (("building", "school", "hospital", "health facility"), "Buildings and public facilities"),
+        (("elevation", "dem", "terrain", "contour"), "Elevation and terrain"),
+    ]
+    for terms, label in rules:
+        if any(term in value for term in terms):
+            return label
+    return "Egypt geospatial data"
+
+
 def search_arcgis(config: dict) -> list[dict]:
     found = {}
     endpoint = "https://www.arcgis.com/sharing/rest/search"
-    for term in config.get("arcgis_queries", []):
-        try:
-            data = request_json(endpoint, {
-                "f": "json",
-                "q": f'access:public AND "{term}"',
-                "num": 50,
-                "start": 1,
-                "sortField": "modified",
-                "sortOrder": "desc",
-            })
-        except Exception as exc:
-            print(f"[WARN] ArcGIS search failed for {term!r}: {exc}")
-            continue
-        accepted = 0
-        for item in data.get("results", []):
-            if item.get("access") != "public" or item.get("type") not in ALLOWED_ARCGIS_TYPES:
+    query_groups = [
+        (config.get("arcgis_queries", []), False),
+        (config.get("egypt_arcgis_queries", []), True),
+    ]
+    for terms, egypt_only in query_groups:
+        for term in terms:
+            try:
+                data = request_json(endpoint, {
+                    "f": "json",
+                    "q": f'access:public AND "{term}"',
+                    "num": 50,
+                    "start": 1,
+                    "sortField": "modified",
+                    "sortOrder": "desc",
+                })
+            except Exception as exc:
+                print(f"[WARN] ArcGIS search failed for {term!r}: {exc}")
                 continue
-            title = clean_text(item.get("title"), 180)
-            if len(title) < 5:
-                continue
-            item_id = item.get("id")
-            if not item_id:
-                continue
-            fmt = item.get("type", "ArcGIS item")
-            snippet = clean_text(item.get("snippet") or item.get("description"), 420)
-            owner = clean_text(item.get("owner"), 80) or "ArcGIS Online publisher"
-            notes = snippet or "Publicly accessible ArcGIS Online item."
-            notes += f" Item type: {fmt}. Owner: {owner}. Check the item page for download/service options and reuse terms."
-            license_info = clean_text(item.get("licenseInfo"), 300)
-            reuse = license_info or "Public access; reuse license not independently confirmed."
-            modified = item.get("modified")
-            date = ""
-            if isinstance(modified, (int, float)) and modified > 0:
-                date = datetime.fromtimestamp(modified / 1000, tz=timezone.utc).date().isoformat()
-            link = f"https://www.arcgis.com/home/item.html?id={item_id}"
-            record = make_record(title, notes, link, owner, fmt, date,
-                                 "ArcGIS Online", reuse)
-            if record:
-                found[record["link"]] = record
-                accepted += 1
-            if accepted >= int(config.get("max_arcgis_items_per_query", 8)):
-                break
-        print(f"[INFO] ArcGIS query {term!r}: {accepted} candidate(s)")
-        time.sleep(0.25)
+            accepted = 0
+            for item in data.get("results", []):
+                if item.get("access") != "public" or item.get("type") not in ALLOWED_ARCGIS_TYPES:
+                    continue
+                title = clean_text(item.get("title"), 180)
+                if len(title) < 5:
+                    continue
+                item_id = item.get("id")
+                if not item_id:
+                    continue
+                tags = item.get("tags") or []
+                if not isinstance(tags, list):
+                    tags = [str(tags)]
+                description = clean_text(item.get("description"), 700)
+                snippet = clean_text(item.get("snippet") or description, 420)
+                searchable_metadata = " ".join([title, snippet, description, " ".join(map(str, tags))])
+                if egypt_only and not re.search(r"\b(egypt|egyptian|egy)\b", searchable_metadata, flags=re.I):
+                    continue
+                fmt = item.get("type", "ArcGIS item")
+                owner = clean_text(item.get("owner"), 80) or "ArcGIS Online publisher"
+                notes = snippet or "Publicly accessible ArcGIS Online item."
+                notes += f" Item type: {fmt}. Owner: {owner}. Check the item page for download/service options and reuse terms."
+                license_info = clean_text(item.get("licenseInfo"), 300)
+                reuse = license_info or "Public access; reuse license not independently confirmed."
+                modified = item.get("modified")
+                date = ""
+                if isinstance(modified, (int, float)) and modified > 0:
+                    date = datetime.fromtimestamp(modified / 1000, tz=timezone.utc).date().isoformat()
+                link = f"https://www.arcgis.com/home/item.html?id={item_id}"
+                record = make_record(title, notes, link, owner, fmt, date, "ArcGIS Online", reuse)
+                if record:
+                    if egypt_only:
+                        theme = infer_egypt_theme(f"{term} {searchable_metadata}")
+                        record["theme"] = theme
+                        record["coverage"] = "Egypt"
+                        record["countryCode"] = "EG"
+                        record["details"] = clean_text(
+                            record["details"] + f" Geographic coverage: Egypt. Theme: {theme}.", 700
+                        )
+                    found[record["link"]] = record
+                    accepted += 1
+                max_items = int(config.get(
+                    "max_egypt_arcgis_items_per_query" if egypt_only else "max_arcgis_items_per_query", 8
+                ))
+                if accepted >= max_items:
+                    break
+            print(f"[INFO] ArcGIS query {term!r}: {accepted} candidate(s)"
+                  + (" [Egypt-filtered]" if egypt_only else ""))
+            time.sleep(0.25)
     return list(found.values())
 
 def get_github_headers() -> dict:
@@ -309,12 +350,24 @@ def collect_catalog(config: dict, section: str) -> list[dict]:
             entry.get("license", "")
         )
         if record:
+            for field in ("theme", "coverage", "countryCode"):
+                if entry.get(field):
+                    record[field] = clean_text(entry[field], 100)
             records.append(record)
     return records
 
 def collect_all(config: dict) -> dict[str, list[dict]]:
+    projects_by_url = {}
+    for record in search_arcgis(config):
+        projects_by_url[record["link"]] = record
+    for record in collect_catalog(config, "egypt_datasets"):
+        record.setdefault("coverage", "Egypt")
+        record.setdefault("countryCode", "EG")
+        projects_by_url.setdefault(record["link"], record)
+    projects = list(projects_by_url.values())
+    print(f"[INFO] Egypt-focused curated datasets: {len(collect_catalog(config, 'egypt_datasets'))} record(s) checked.")
     return {
-        "projects": search_arcgis(config),
+        "projects": projects,
         "courses": collect_catalog(config, "courses"),
         "programs": collect_programs(config),
         "sites": collect_catalog(config, "sites"),
