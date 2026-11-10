@@ -204,3 +204,124 @@ dialog h3{margin:0 40px 10px 0;font-size:1.25rem}
 /* Search suggestions sit directly below the hero input without hiding the page. */
 .hero-suggestions{position:relative;left:auto;top:auto;translate:none;width:min(640px,100%);margin:8px auto 0}
 .details-dialog .x{position:absolute;float:none;top:14px}
+
+
+/* ---------- GEOData premium glass: resource dialog + elegant scrollbars ---------- */
+:root{
+  scrollbar-width:thin;
+  scrollbar-color:color-mix(in srgb,var(--ac) 72%,#64748b) transparent;
+}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ac) 72%,#64748b) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(92,225,230,.9),rgba(37,99,235,.68));
+  border:3px solid transparent;
+  background-clip:padding-box;
+  border-radius:999px;
+  min-height:34px;
+}
+*::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,rgba(92,225,230,1),rgba(79,70,229,.9));
+  border:2px solid transparent;
+  background-clip:padding-box;
+}
+*::-webkit-scrollbar-corner{background:transparent}
+
+/* The page stays visible through the modal; the panel itself carries the glass effect. */
+dialog.details-dialog{
+  position:fixed;
+  width:min(1080px,calc(100vw - 56px));
+  max-width:1080px;
+  max-height:min(88vh,960px);
+  padding:clamp(26px,4vw,48px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  isolation:isolate;
+  border-radius:32px;
+  background:
+    linear-gradient(132deg,rgba(255,255,255,.19) 0%,rgba(255,255,255,.075) 42%,rgba(92,225,230,.085) 100%),
+    rgba(7,18,39,.42);
+  border:1px solid rgba(220,249,255,.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -1px 0 rgba(255,255,255,.07),
+    0 34px 100px rgba(0,7,28,.48),
+    0 0 48px rgba(92,225,230,.09);
+  -webkit-backdrop-filter:blur(42px) saturate(190%) brightness(1.12);
+  backdrop-filter:blur(42px) saturate(190%) brightness(1.12);
+  scrollbar-gutter:stable;
+}
+[data-theme=light] dialog.details-dialog{
+  background:
+    linear-gradient(132deg,rgba(255,255,255,.72),rgba(255,255,255,.34) 48%,rgba(156,226,245,.28)),
+    rgba(234,245,255,.28);
+  border-color:rgba(255,255,255,.78);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 34px 100px rgba(40,76,130,.22),0 0 46px rgba(10,127,139,.08);
+  -webkit-backdrop-filter:blur(42px) saturate(175%) brightness(1.04);
+  backdrop-filter:blur(42px) saturate(175%) brightness(1.04);
+}
+dialog.details-dialog::backdrop{
+  background:rgba(2,9,25,.13);
+  -webkit-backdrop-filter:blur(1.5px) saturate(105%);
+  backdrop-filter:blur(1.5px) saturate(105%);
+}
+dialog.details-dialog::before{
+  z-index:-1;
+  inset:0;
+  height:auto;
+  border-radius:inherit;
+  background:
+    radial-gradient(75% 50% at 8% 0%,rgba(92,225,230,.2),transparent 68%),
+    radial-gradient(68% 48% at 100% 8%,rgba(37,99,235,.17),transparent 70%),
+    linear-gradient(180deg,rgba(255,255,255,.055),transparent 40%);
+  pointer-events:none;
+}
+.detail-heading{padding-inline-end:48px}
+.details-dialog .x{
+  position:absolute;
+  top:18px;
+  inset-inline-end:18px;
+  width:40px;
+  height:40px;
+  border-radius:14px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.28);
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 20px rgba(0,0,0,.12);
+}
+.details-dialog .x:hover{transform:rotate(90deg);background:rgba(92,225,230,.18)}
+.details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.075);
+  border-color:rgba(220,249,255,.22);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+}
+[data-theme=light] .details-dialog .detail-meta>div{
+  background:rgba(255,255,255,.34);
+  border-color:rgba(255,255,255,.7);
+}
+.details-dialog::-webkit-scrollbar{width:11px}
+.details-dialog::-webkit-scrollbar-track{margin-block:18px;background:rgba(255,255,255,.035);border-radius:999px}
+.details-dialog::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(92,225,230,.95),rgba(37,99,235,.75));
+  border:3px solid transparent;background-clip:padding-box;border-radius:999px;
+}
+.search-suggestions,#notifL{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(92,225,230,.7) transparent;
+}
+.search-suggestions::-webkit-scrollbar,#notifL::-webkit-scrollbar{width:8px}
+.search-suggestions::-webkit-scrollbar-thumb,#notifL::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(92,225,230,.85),rgba(37,99,235,.68));
+  border:2px solid transparent;background-clip:padding-box;border-radius:999px;
+}
+.theme-tag{border-color:color-mix(in srgb,var(--ac) 65%,#fff);color:var(--ac)}
+@media(max-width:640px){
+  dialog.details-dialog{width:94vw;max-height:90vh;padding:24px 18px;border-radius:25px}
+}
+@media(prefers-reduced-motion:reduce){
+  .details-dialog .x{transition:none}
+}
