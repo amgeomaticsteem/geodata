@@ -523,6 +523,7 @@ document.addEventListener('click',event=>{
 });
 $$('.tabs button').forEach(button=>button.onclick=()=>{
   authF.dataset.mode=button.dataset.mode;
+  $('#authError').hidden=true;$('#authError').textContent='';
   $$('.tabs button').forEach(item=>item.classList.toggle('on',item===button));
 });
 [authM,addM,$('#notifM'),detailM].filter(Boolean).forEach(dialog=>dialog.addEventListener('click',event=>{
