@@ -47,6 +47,7 @@ const authM = $('#authM'), authF = $('#authF'), addM = $('#addM'), addF = $('#ad
 const TRANSLATE_ENDPOINT = 'https://api.mymemory.translated.net/get';
 const CACHE_KEY = 'geodata_translation_cache_v2';
 let translationCache = {};
+let translationQueue = Promise.resolve();
 try { translationCache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch {}
 const isArabic = value => /[\u0600-\u06ff]/.test(String(value || ''));
 const sourceLanguage = value => isArabic(value) ? 'ar' : 'en';
@@ -79,9 +80,18 @@ async function translateText(value, target) {
   try {
     for (const chunk of chunks) {
       const params = new URLSearchParams({q:chunk, langpair:sourceLanguage(chunk) + '|' + target, de:ADMIN});
-      const response = await fetch(TRANSLATE_ENDPOINT + '?' + params.toString(), {method:'GET', mode:'cors'});
-      if (!response.ok) throw new Error('Translation service returned ' + response.status);
-      const body = await response.json();
+      const request = async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        try {
+          const response = await fetch(TRANSLATE_ENDPOINT + '?' + params.toString(), {method:'GET', mode:'cors', signal:controller.signal});
+          if (!response.ok) throw new Error('Translation service returned ' + response.status);
+          return await response.json();
+        } finally { clearTimeout(timeout); }
+      };
+      const pending = translationQueue.then(request,request);
+      translationQueue = pending.then(()=>undefined,()=>undefined);
+      const body = await pending;
       if (Number(body.responseStatus) !== 200 || !body.responseData?.translatedText) throw new Error(body.responseDetails || 'No translation returned');
       const clean = body.responseData.translatedText.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
       translated.push(clean);
@@ -90,7 +100,11 @@ async function translateText(value, target) {
     const result = translated.join(' ').trim();
     if (!result) return original;
     translationCache[key] = result;
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify(translationCache)); } catch {}
+    try {
+      const keys = Object.keys(translationCache);
+      if (keys.length > 350) keys.slice(0,100).forEach(oldKey=>delete translationCache[oldKey]);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(translationCache));
+    } catch {}
     return result;
   } catch (error) {
     console.warn('GEOData translation fallback:', error.message);
