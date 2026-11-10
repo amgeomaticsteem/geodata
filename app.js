@@ -30,6 +30,9 @@ const LABEL = {
   approve:['قبول','Approve'], reject:['رفض','Reject'], reason:['سبب الرفض (اختياري):','Reason for rejection (optional):'],
   sent:['طلبك اتبعت للمراجعة.','Your submission has been sent for review.'],
   noSuggestion:['مفيش اقتراحات مطابقة لسه. جرّب حرف أو كلمتين تانيين.','No close suggestions yet. Try another letter or two.'],
+  searchLoading:['جارٍ البحث في كل سجلات القسم…','Searching every record in this section…'],
+  searchError:['تعذر إكمال البحث. حدّث الصفحة وحاول مرة تانية.','The search could not be completed. Refresh and try again.'],
+  goodMorning:['صباح الخير','Good morning'], goodAfternoon:['مساء الخير','Good afternoon'], goodEvening:['مساء الخير','Good evening'],
   footer:['© 2026 GEOData — جميع الحقوق محفوظة','© 2026 GEOData — All rights reserved'],
   shapefile:['شيب فايل (Shapefile)','Shapefile'], geodatabase:['قاعدة بيانات جغرافية (Geodatabase)','Geodatabase'], geotiff:['صورة جغرافية (GeoTIFF)','GeoTIFF'], geojson:['GeoJSON / KML','GeoJSON / KML'],
   resultsCount:['نتيجة','results'], format:['نوع المورد','Resource type'], theme:['التصنيف','Theme'], coverage:['النطاق الجغرافي','Geographic coverage'], publisher:['الناشر','Publisher'], date:['التاريخ','Date'], source:['المصدر','Source'], license:['الترخيص','License'],
@@ -73,6 +76,10 @@ let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '', 
 try { lang = localStorage.lang || lang; theme = localStorage.theme || theme; } catch {}
 let renderExtra = () => {};
 const store = {};
+// Full-text indexes are fetched only when a search is made, then reused for the session.
+const searchIndexBySection = Object.create(null);
+const searchIndexPromises = Object.create(null);
+let globalSearchLoading = false;
 const PAGE_SIZE = 12;
 const DATA_CATEGORIES = ['admin_boundaries','demographics','transport','land_cover','elevation','hydrography','agriculture','buildings','imagery','climate','geology','utilities','other'];
 const COURSE_CATEGORIES = ['gis_fundamentals','remote_sensing','spatial_analysis','programming','cartography','surveying','geomatics','databases','other'];
@@ -328,8 +335,32 @@ function matchScore(record, query) {
   }
   return total / Math.max(1,terms.length);
 }
+function ensureSectionSearchIndex(section) {
+  if (searchIndexBySection[section]) return Promise.resolve(searchIndexBySection[section]);
+  if (searchIndexPromises[section]) return searchIndexPromises[section];
+  if (!COLS[section]) return Promise.reject(new Error('Unknown GEOData section: ' + section));
+  searchIndexPromises[section] = getDocs(collection(db,COLS[section])).then(snapshot => {
+    const records = snapshot.docs.map(item => ({id:item.id,...item.data()}));
+    searchIndexBySection[section] = records;
+    return records;
+  }).catch(error => {
+    delete searchIndexPromises[section];
+    throw error;
+  });
+  return searchIndexPromises[section];
+}
+async function ensureGlobalSearchIndex() {
+  await Promise.all(Object.keys(COLS).map(ensureSectionSearchIndex));
+}
+function invalidateSearchIndex() {
+  Object.keys(searchIndexBySection).forEach(key => delete searchIndexBySection[key]);
+  Object.keys(searchIndexPromises).forEach(key => delete searchIndexPromises[key]);
+  globalSearchLoading = false;
+}
 function allRecords() {
-  return Object.entries(COLS).flatMap(([id]) => [...pageState[id].loaded.values()].map(record => ({...record,_col:id})));
+  return Object.entries(COLS).flatMap(([id]) =>
+    (searchIndexBySection[id] || [...pageState[id].loaded.values()]).map(record => ({...record,_col:id}))
+  );
 }
 function suggestionMarkup(items) {
   if (!items.length) return '<div class="suggest-empty">' + t('noSuggestion') + '</div>';
@@ -343,7 +374,7 @@ function suggestionMarkup(items) {
 function updateSuggestions(box, query, scope = null) {
   if (!box) return;
   if (!normalizeSearch(query)) { box.hidden = true; box.innerHTML = ''; return; }
-  const source = scope ? (store[scope] || []).map(item => ({...item, _col:scope})) : allRecords();
+  const source = scope ? (searchIndexBySection[scope] || store[scope] || []).map(item => ({...item, _col:scope})) : allRecords();
   const matches = source.map(item => ({...item, _score:matchScore(item,query)}))
     .filter(item => item._score > 0).sort((a,b)=>b._score-a._score).slice(0,6);
   box.innerHTML = suggestionMarkup(matches);
@@ -371,6 +402,7 @@ function pageButtons(section) {
 }
 function renderPagination(section) {
   const nav=$('[data-pagination="'+section+'"]');if(!nav)return;const state=pageState[section];
+  if($('.q',$('#'+section))?.value.trim()){nav.hidden=true;return;}
   nav.hidden=state.totalPages<=1&&!state.loading;nav.innerHTML=state.loading?'<span class="page-status">'+t('loading')+'</span>':pageButtons(section);
 }
 function renderGlobalPagination(totalPages) {
@@ -427,7 +459,24 @@ $$('.coll').forEach(section => {
     '<div class="tools"><div class="search-wrap"><input class="q" type="search" data-ph="sPh" autocomplete="off" aria-label="' + t('sPh') + '">' +
     '<div class="search-suggestions" hidden></div></div>'+filters+'<button class="btn" data-add="' + section.id + '" data-i="add"></button></div></div><div class="grid"></div><nav class="pagination" data-pagination="'+section.id+'" aria-label="Pagination"></nav>';
   const input = $('.q', section);
-  input.addEventListener('input', () => {draw(section.id);updateSuggestions($('.search-suggestions',section),input.value,section.id);});
+  let sectionSearchRequest = 0;
+  input.addEventListener('input', () => {
+    const queryText=input.value.trim(),request=++sectionSearchRequest;
+    updateSuggestions($('.search-suggestions',section),input.value,section.id);
+    if(!queryText){draw(section.id);return;}
+    if(searchIndexBySection[section.id]){draw(section.id);return;}
+    const grid=$('.grid',section);
+    grid.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';
+    renderPagination(section.id);
+    ensureSectionSearchIndex(section.id).then(()=>{
+      if(request!==sectionSearchRequest)return;
+      updateSuggestions($('.search-suggestions',section),input.value,section.id);
+      draw(section.id);
+    }).catch(error=>{
+      console.error('GEOData section search failed:',section.id,error);
+      if(request===sectionSearchRequest)grid.innerHTML='<p class="empty" role="status">'+t('searchError')+'</p>';
+    });
+  });
   input.addEventListener('focus', () => updateSuggestions($('.search-suggestions',section),input.value,section.id));
   $('.category-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{category:event.target.value}));
   $('.language-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{courseLanguage:event.target.value}));
@@ -451,7 +500,12 @@ function draw(col) {
   if (!container) return;
   const query = $('.q', $('#' + col))?.value.trim() || '';
   const state=pageState[col];
-  const list = (store[col] || []).filter(record=>!state.courseLanguage||record.courseLanguage===state.courseLanguage)
+  if(query&&!searchIndexBySection[col]){
+    container.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';
+    renderPagination(col);return;
+  }
+  const source=query?(searchIndexBySection[col]||[]):(store[col]||[]);
+  const list = source.filter(record=>(!state.category||record.category===state.category)&&(!state.courseLanguage||record.courseLanguage===state.courseLanguage))
     .map(record => ({record,score:query ? matchScore(record,query) : 0}))
     .filter(item => !query || item.score > 0)
     .sort((a,b)=>b.score-a.score).map(item=>item.record);
@@ -461,6 +515,23 @@ function draw(col) {
 function drawSearch() {
   const container = $('#globalResults');
   if (!container) return;
+  if(normalizeSearch(globalQuery)&&!Object.keys(COLS).every(section=>searchIndexBySection[section])){
+    $('#searchSummary').textContent=t('searchLoading');
+    container.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';
+    if(!globalSearchLoading){
+      globalSearchLoading=true;
+      ensureGlobalSearchIndex().then(()=>{
+        globalSearchLoading=false;
+        if(location.hash==='#search')drawSearch();
+      }).catch(error=>{
+        globalSearchLoading=false;
+        console.error('GEOData global search failed:',error);
+        $('#searchSummary').textContent=t('searchError');
+        container.innerHTML='<p class="empty" role="status">'+t('searchError')+'</p>';
+      });
+    }
+    return;
+  }
   const results = allRecords().map(item=>({...item,_score:matchScore(item,globalQuery)}))
     .filter(item=>item._score>0).sort((a,b)=>b._score-a._score);
   $('#searchSummary').textContent = results.length + ' ' + t('resultsCount');
@@ -476,6 +547,17 @@ const SVG = path => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"
 const SUN = SVG('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
 const MOON = SVG('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>');
 function applyTheme() { document.body.dataset.theme = theme; $('#theme').innerHTML = theme === 'dark' ? SUN : MOON; }
+function updateHeroGreeting() {
+  const greeting=$('#heroGreeting'),clock=$('#heroClock');
+  if(!greeting||!clock)return;
+  const now=new Date(),hour=now.getHours(),minute=now.getMinutes();
+  const greetingKey=hour>=5&&hour<12?'goodMorning':hour<17?'goodAfternoon':'goodEvening';
+  greeting.textContent=t(greetingKey);
+  const digits=new Intl.NumberFormat(lang==='ar'?'ar-EG':'en-US',{minimumIntegerDigits:2,useGrouping:false});
+  const hour12=hour%12||12,suffix=lang==='ar'?(hour<12?'ص':'م'):(hour<12?'AM':'PM');
+  clock.textContent=digits.format(hour12)+':'+digits.format(minute)+' '+suffix;
+  clock.dateTime=now.toISOString();
+}
 let currentDetail = null;
 function applyLang() {
   const root = document.documentElement;
@@ -488,7 +570,7 @@ function applyLang() {
   document.title = 'GEOData | AM Geomatics';
   $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
   $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
-  updateCategoryControls();drawAll();renderExtra();
+  updateCategoryControls();updateHeroGreeting();drawAll();renderExtra();
   if (detailM?.open && currentDetail) openDetail(currentDetail.col,currentDetail.id);
 }
 $('#theme').onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme',theme); applyTheme(); };
@@ -562,7 +644,7 @@ const paintUser=()=>{
 let detailToken=0;
 async function openDetail(col,id) {
   currentDetail = {col,id};
-  const record=(store[col]||[]).find(item=>item.id===id);
+  const record=(store[col]||[]).find(item=>item.id===id)||(searchIndexBySection[col]||[]).find(item=>item.id===id)||pageState[col]?.loaded.get(id);
   if(!record)return;
   detailToken++;
   const token=detailToken;
@@ -684,7 +766,7 @@ addF.onsubmit=async event=>{
     const localized=await prepareBilingual(record);
     if(admin())await addDoc(collection(db,COLS[addTo]),localized);
     else await addDoc(collection(db,'submissions'),{...localized,col:addTo,uid:user.uid,status:'pending'});
-    addM.close();addF.reset();toast(t(admin()?'done':'sent'));
+    invalidateSearchIndex();addM.close();addF.reset();toast(t(admin()?'done':'sent'));
   }catch(error){toast(t('fail')+error.message);}
   finally{submitButton.disabled=false;submitButton.textContent=t('publish');}
 };
@@ -692,7 +774,7 @@ document.addEventListener('click',async event=>{
   const button=event.target.closest('[data-del]');
   if(!button||!admin()||!confirm(t('del')))return;
   const [section,id]=button.dataset.del.split('|');
-  try{await deleteDoc(doc(db,COLS[section],id));}catch(error){toast(t('fail')+error.message);}
+  try{await deleteDoc(doc(db,COLS[section],id));invalidateSearchIndex();}catch(error){toast(t('fail')+error.message);}
 });
 document.addEventListener('click',async event=>{
   const approve=event.target.closest('[data-ok]'),reject=event.target.closest('[data-no]');
@@ -710,6 +792,7 @@ document.addEventListener('click',async event=>{
       };
       if(item.col==='data'){published.format=item.format;published.date=item.date;}
       await addDoc(collection(db,COLS[item.col]),published);
+      invalidateSearchIndex();
       await updateDoc(doc(db,'submissions',item.id),{status:'approved'});
     }else{
       const note=prompt(t('reason'));if(note===null)return;
