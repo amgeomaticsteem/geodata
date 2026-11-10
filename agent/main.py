@@ -227,7 +227,7 @@ def firestore_client():
     # Safe identifiers only: never print the private key or the full credential JSON.
     print(f"[INFO] Firebase service account: {info.get('client_email', 'MISSING client_email')}")
     key_id = str(info.get("private_key_id", ""))
-    print(f"[INFO] Firebase key ID suffix: {key_id[-8:] if key_id else 'MISSING private_key_id'}")
+    print(f"[INFO] Firebase key ID prefix: {key_id[:8] if key_id else 'MISSING private_key_id'}")
     print(f"[INFO] Firebase credential project_id: {info.get('project_id')}")
     import firebase_admin
     from firebase_admin import credentials, firestore
