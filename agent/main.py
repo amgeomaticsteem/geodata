@@ -18,6 +18,9 @@ CONFIG_PATH = ROOT / "config" / "catalog.json"
 PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "am-a-geo")
 USER_AGENT = "GEOData-Curator/1.0 (+https://amgeomaticsteem.github.io/geodata/)"
 TIMEOUT = 25
+TRANSLATION_ENDPOINT = "https://api.mymemory.translated.net/get"
+TRANSLATION_CONTACT = os.getenv("TRANSLATION_CONTACT_EMAIL", "refathany2005@gmail.com")
+MAX_TRANSLATION_CHARS_PER_RUN = 20000
 ALLOWED_ARCGIS_TYPES = {
     "Feature Service", "Feature Collection", "CSV", "Shapefile",
     "Image Service", "Raster Layer"
@@ -71,6 +74,107 @@ def url_is_live(url: str) -> bool:
             return 200 <= status < 400
         except Exception:
             return False
+
+def source_language(value: str) -> str:
+    return "ar" if re.search(r"[\u0600-\u06ff]", value or "") else "en"
+
+def translation_chunks(value: str, limit: int = 420) -> list[str]:
+    words = re.findall(r"\S+\s*", value or "") or [value]
+    chunks: list[str] = []
+    current = ""
+    for word in words:
+        if current and len((current + word).encode("utf-8")) > limit:
+            chunks.append(current.strip())
+            current = ""
+        if len(word.encode("utf-8")) > limit:
+            for char in word:
+                if current and len((current + char).encode("utf-8")) > limit:
+                    chunks.append(current)
+                    current = ""
+                current += char
+        else:
+            current += word
+    if current.strip():
+        chunks.append(current.strip())
+    return chunks
+
+def translate_mymemory(value: str, source: str, target: str) -> str:
+    if not value or source == target:
+        return value
+    translated: list[str] = []
+    for chunk in translation_chunks(value):
+        params = {
+            "q": chunk,
+            "langpair": f"{source}|{target}",
+            "de": TRANSLATION_CONTACT,
+        }
+        data = request_json(TRANSLATION_ENDPOINT, params=params)
+        if int(data.get("responseStatus", 0)) != 200:
+            raise RuntimeError(data.get("responseDetails", "Translation service returned no translation"))
+        result = data.get("responseData", {}).get("translatedText", "")
+        if not result:
+            raise RuntimeError("Translation service returned an empty result")
+        translated.append(html.unescape(result))
+        time.sleep(0.15)
+    return " ".join(translated).strip()
+
+def apply_bilingual_fields(record: dict, existing: dict | None = None,
+                           budget: list[int] | None = None) -> dict:
+    existing = existing or {}
+    budget = budget if budget is not None else [MAX_TRANSLATION_CHARS_PER_RUN]
+    output = dict(record)
+    for field in ("title", "details", "format", "license"):
+        value = clean_text(output.get(field, ""), 1200)
+        if not value:
+            continue
+        source = source_language(value)
+        target = "en" if source == "ar" else "ar"
+        output[f"{field}_{source}"] = value
+        saved_target = existing.get(f"{field}_{target}")
+        if saved_target:
+            output[f"{field}_{target}"] = saved_target
+            continue
+        cost = len(value)
+        if budget[0] < cost:
+            print(f"[WARN] Translation budget reached; leaving {field!r} in its original language.")
+            continue
+        try:
+            translated = translate_mymemory(value, source, target)
+            if translated:
+                output[f"{field}_{target}"] = translated
+                output["translationProvider"] = "MyMemory"
+                budget[0] -= cost
+        except Exception as exc:
+            print(f"[WARN] Could not translate {field!r} to {target}: {exc}")
+    # Publisher names are proper names and are intentionally preserved.
+    return output
+
+def backfill_public_translations(db, budget: list[int]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for collection_name in ("projects", "courses", "programs", "sites"):
+        changed = 0
+        try:
+            snapshots = db.collection(collection_name).stream()
+            for snapshot in snapshots:
+                data = snapshot.to_dict() or {}
+                localized = apply_bilingual_fields({}, data, budget)
+                patch = {
+                    key: value for key, value in localized.items()
+                    if (key.endswith("_ar") or key.endswith("_en") or key == "translationProvider")
+                    and value and value != data.get(key)
+                }
+                if patch:
+                    snapshot.reference.set(patch, merge=True)
+                    changed += 1
+                if budget[0] <= 0:
+                    break
+        except Exception as exc:
+            print(f"[WARN] Translation backfill skipped for {collection_name}: {exc}")
+        counts[collection_name] = changed
+        print(f"[INFO] Translation backfill {collection_name}: {changed} record(s) updated.")
+        if budget[0] <= 0:
+            break
+    return counts
 
 def make_record(title: str, details: str, link: str, publisher: str,
                 fmt: str = "", date: str = "", source: str = "",
@@ -235,7 +339,7 @@ def firestore_client():
         firebase_admin.initialize_app(credentials.Certificate(info), {"projectId": PROJECT_ID})
     return firestore.client(), firestore
 
-def upsert_records(db, firestore_module, collection_name: str, records: list[dict], limit: int) -> tuple[int, int]:
+def upsert_records(db, firestore_module, collection_name: str, records: list[dict], limit: int, translation_budget: list[int]) -> tuple[int, int]:
     collection = db.collection(collection_name)
     existing_by_url = {}
     # Reuse existing document IDs when the same link was previously added manually.
@@ -265,7 +369,7 @@ def upsert_records(db, firestore_module, collection_name: str, records: list[dic
             doc_id = hashlib.sha256(key.encode("utf-8")).hexdigest()[:40]
             ref = collection.document(doc_id)
             old = None
-        payload = dict(record)
+        payload = apply_bilingual_fields(record, old or {}, translation_budget)
         payload["agentUpdatedAt"] = firestore_module.SERVER_TIMESTAMP
         payload["createdAt"] = (old or {}).get("createdAt") or firestore_module.SERVER_TIMESTAMP
         if old:
@@ -308,15 +412,19 @@ def main() -> int:
     db, firestore_module = firestore_client()
     limit = int(config.get("max_new_or_updated_items_per_run", 80))
     remaining = limit
+    translation_budget = [MAX_TRANSLATION_CHARS_PER_RUN]
     results = {}
     for collection_name, records in data.items():
         if remaining <= 0:
             results[collection_name] = {"added": 0, "updated": 0, "skipped_by_limit": len(records)}
             continue
-        added, updated = upsert_records(db, firestore_module, collection_name, records, remaining)
+        added, updated = upsert_records(db, firestore_module, collection_name, records, remaining, translation_budget)
         used = added + updated
         remaining -= used
         results[collection_name] = {"added": added, "updated": updated}
+    print("[INFO] Remaining translation character budget: " + str(translation_budget[0]))
+    backfill_results = backfill_public_translations(db, translation_budget)
+    print("[DONE] Translation backfill: " + json.dumps(backfill_results, ensure_ascii=False))
     print("[DONE] Firestore publish results: " + json.dumps(results, ensure_ascii=False))
     print("[DONE] Existing records are never automatically deleted.")
     return 0
