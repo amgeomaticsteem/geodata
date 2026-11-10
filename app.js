@@ -917,8 +917,12 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
     pending.remove();
     const answer=String(payload.answer||'').trim()||(lang==='ar'?'معنديش إجابة واضحة للسؤال ده.':'I could not produce a clear answer.');
     geoAssistantAppend('assistant',answer);
-    geoAssistantAppendResources([...resources,...(Array.isArray(payload.sources)?payload.sources:[])]);
-    geoAssistantHistory.push({role:'assistant',content:answer});
+    const externalSources=Array.isArray(payload.sources)?payload.sources:[];
+    geoAssistantAppendResources([...resources,...externalSources]);
+    const sourceContext=externalSources.slice(0,6).map(item=>[
+      item.title,item.link,...(Array.isArray(item.extraLinks)?item.extraLinks.map(link=>link.url):[])
+    ].filter(Boolean).join(' | ')).join('\n');
+    geoAssistantHistory.push({role:'assistant',content:[answer,sourceContext].filter(Boolean).join('\n\n')});
     if(geoAssistantHistory.length>12)geoAssistantHistory.splice(0,geoAssistantHistory.length-12);
   }catch(error){
     pending.remove();
