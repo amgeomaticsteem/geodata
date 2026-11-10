@@ -905,7 +905,7 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
     return;
   }
   geoAssistantBusy=true;geoAssistantRefs.send.disabled=true;
-  const pending=geoAssistantAppend('assistant pending',lang==='ar'?'براجع سؤالك وبدور في مكتبة GEOData…':'Checking your question and searching GEOData…');
+  const pending=geoAssistantAppend('assistant pending',lang==='ar'?'بفهم سياق كلامك وبدور في GEOData ومصادر البيانات المناسبة…':'Following the conversation and searching GEOData and relevant data catalogs…');
   try{
     const resources=await geoAssistantFindResources();
     const response=await fetch(GEO_ASSISTANT_ENDPOINT,{
