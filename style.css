@@ -873,3 +873,14 @@ dialog .x,.details-dialog .x{
     font-size:.8rem;
   }
 }
+
+
+/* Light theme needs an equally gentle modal treatment; override its older high-specificity rules. */
+[data-theme=light] dialog:not(.details-dialog),
+[data-theme=light] dialog.details-dialog{
+  background:var(--g-bg)!important;
+  border:1px solid var(--g-bd)!important;
+  box-shadow:var(--g-sh),inset 0 1px 0 rgba(255,255,255,.24)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(115%)!important;
+  backdrop-filter:blur(8px) saturate(115%)!important;
+}
