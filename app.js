@@ -703,7 +703,7 @@ const firebaseApp=initializeApp({
 });
 const auth=getAuth(firebaseApp),db=getFirestore(firebaseApp);
 
-const GEO_ASSISTANT_ENDPOINT = ''; // Set this after the Cloudflare Worker is deployed.
+const GEO_ASSISTANT_ENDPOINT = 'https://ai.refathany2005.workers.dev/chat';
 const geoAssistantHistory=[];
 let geoAssistantBusy=false;
 const geoAssistantRefs={widget:$('#geoAiWidget'),panel:$('#geoAiPanel'),launcher:$('#geoAiLauncher'),messages:$('#geoAiMessages'),form:$('#geoAiForm'),input:$('#geoAiInput'),send:$('#geoAiSend')};
