@@ -224,6 +224,11 @@ def firestore_client():
         raise RuntimeError(
             f"Service account project_id must be {PROJECT_ID!r}; refusing to write to a different project."
         )
+    # Safe identifiers only: never print the private key or the full credential JSON.
+    print(f"[INFO] Firebase service account: {info.get('client_email', 'MISSING client_email')}")
+    key_id = str(info.get("private_key_id", ""))
+    print(f"[INFO] Firebase key ID suffix: {key_id[-8:] if key_id else 'MISSING private_key_id'}")
+    print(f"[INFO] Firebase credential project_id: {info.get('project_id')}")
     import firebase_admin
     from firebase_admin import credentials, firestore
     if not firebase_admin._apps:
@@ -234,11 +239,21 @@ def upsert_records(db, firestore_module, collection_name: str, records: list[dic
     collection = db.collection(collection_name)
     existing_by_url = {}
     # Reuse existing document IDs when the same link was previously added manually.
-    for snapshot in collection.stream():
-        data = snapshot.to_dict() or {}
-        key = canonical_url(data.get("link", ""))
-        if key:
-            existing_by_url.setdefault(key, snapshot.reference)
+    print(f"[INFO] Firestore: listing existing documents in '{collection_name}'.")
+    try:
+        snapshots = collection.stream()
+        for snapshot in snapshots:
+            data = snapshot.to_dict() or {}
+            key = canonical_url(data.get("link", ""))
+            if key:
+                existing_by_url.setdefault(key, snapshot.reference)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Firestore READ/LIST failed for collection '{collection_name}'. "
+            "Check that the exact service account shown above has roles/datastore.user "
+            "on project am-a-geo and that the permission change has propagated. "
+            f"Original error: {type(exc).__name__}: {exc}"
+        ) from exc
     added = updated = 0
     for record in records:
         key = canonical_url(record["link"])
@@ -257,7 +272,14 @@ def upsert_records(db, firestore_module, collection_name: str, records: list[dic
             updated += 1
         else:
             added += 1
-        ref.set(payload, merge=True)
+        try:
+            ref.set(payload, merge=True)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Firestore WRITE failed for collection '{collection_name}' "
+                f"(document {ref.id}). Check roles/datastore.user on project am-a-geo. "
+                f"Original error: {type(exc).__name__}: {exc}"
+            ) from exc
         if added + updated >= limit:
             break
     return added, updated
