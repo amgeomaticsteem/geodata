@@ -883,9 +883,31 @@ async function prepareBilingual(record) {
 applyTheme(); applyLang(); route();
 
 /* ---------- Firebase ---------- */
+function showPreviewFailure(error) {
+  const code=error?.code||error?.name||'runtime-error';
+  const message=String(error?.message||error||'').slice(0,220);
+  ['data','courses','programs','sites'].forEach(section=>{
+    const holder=section==='sites'?$('.sites-tiles',$('#sites')):$('.resource-list',$('#'+section));
+    if(!holder)return;
+    holder.innerHTML='<div class="load-diagnostic" role="alert"><strong>'+
+      (lang==='ar'?'تعذر تحميل بيانات المعاينة':'Preview data could not be loaded')+
+      '</strong><small>'+esc(code)+': '+esc(message)+'</small></div>';
+  });
+  console.error('GEOData preview runtime failure:',error);
+}
 const FirebaseURL='https://www.gstatic.com/firebasejs/10.12.0/';
-const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,setDoc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}] =
-  await Promise.all([import(FirebaseURL+'firebase-app.js'),import(FirebaseURL+'firebase-auth.js'),import(FirebaseURL+'firebase-firestore.js')]);
+let firebaseModules;
+try {
+  firebaseModules=await Promise.all([
+    import(FirebaseURL+'firebase-app.js'),
+    import(FirebaseURL+'firebase-auth.js'),
+    import(FirebaseURL+'firebase-firestore.js')
+  ]);
+} catch(error) {
+  showPreviewFailure(error);
+  throw error;
+}
+const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,setDoc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}]=firebaseModules;
 const firebaseApp=initializeApp({
   apiKey:'AIzaSyCmGYoMqvaTDafiHb7q9Vk7vE4n1w2tWBI',authDomain:'am-a-geo.firebaseapp.com',projectId:'am-a-geo',
   storageBucket:'am-a-geo.firebasestorage.app',messagingSenderId:'724200458201',appId:'1:724200458201:web:14f851dbaf89d49170bbc8'
