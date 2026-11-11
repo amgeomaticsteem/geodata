@@ -454,7 +454,14 @@ async function loadPage(section,target=1) {
       if(snapshot.docs.length<PAGE_SIZE){state.total=Math.min(state.total,(page-1)*PAGE_SIZE+snapshot.docs.length);state.totalPages=Math.max(1,Math.ceil(state.total/PAGE_SIZE));break;}
     }
     state.page=target;store[section]=state.pages[target]||[];draw(section);if(location.hash==='#search')drawSearch();
-  }catch(error){console.error('GEOData page load failed:',section,error);const grid=$('.grid',$('#'+section));if(grid)grid.innerHTML='<p class="empty" role="status">'+t('loadError')+'</p>';toast(t('loadError'));}
+  }catch(error){
+    console.error('GEOData page load failed:',section,error);
+    const container=section==='sites'?$('.sites-tiles',$('#'+section)):$('.resource-list',$('#'+section));
+    const code=error?.code||error?.name||'network-error';
+    const message=String(error?.message||'').slice(0,220);
+    if(container)container.innerHTML='<div class="load-diagnostic" role="alert"><strong>'+t('loadError')+'</strong><small>'+esc(code)+': '+esc(message)+'</small><button type="button" class="btn sm ghost" data-retry-section="'+esc(section)+'">'+(lang==='ar'?'إعادة المحاولة':'Try again')+'</button></div>';
+    toast(t('loadError'));
+  }
   finally{state.loading=false;renderPagination(section);}
 }
 function resetAndLoad(section,changes={}) {
@@ -462,6 +469,10 @@ function resetAndLoad(section,changes={}) {
   Object.assign(state,changes,{page:1,total:0,totalPages:1,pages:{},lastDocs:{},loaded:new Map(),countPromise:null});
   store[section]=[];updateCategoryControls();loadPage(section,1);
 }
+document.addEventListener('click',event=>{
+  const retry=event.target.closest('[data-retry-section]');
+  if(retry){loadPage(retry.dataset.retrySection,1);return;}
+});
 document.addEventListener('click',event=>{
   const pageButton=event.target.closest('[data-page-col]');if(pageButton&&!pageButton.disabled){loadPage(pageButton.dataset.pageCol,Number(pageButton.dataset.page));return;}
   const globalPage=event.target.closest('[data-global-page]');if(globalPage&&!globalPage.disabled){globalSearchPage=Math.max(1,Number(globalPage.dataset.globalPage));drawSearch();}
@@ -529,6 +540,10 @@ function draw(col) {
   if(!container)return;
   const queryText=$('.q',section)?.value.trim()||'',state=pageState[col];
   if(queryText&&!searchIndexBySection[col]){container.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';renderPagination(col);return;}
+  if(state.loading&&!queryText&&!(store[col]||[]).length){
+    container.innerHTML='<p class="empty" role="status">'+t('loading')+'</p>';
+    renderPagination(col);return;
+  }
   const source=queryText?(searchIndexBySection[col]||[]):(store[col]||[]);
   const list=source.filter(record=>(!state.category||record.category===state.category)&&(!state.courseLanguage||record.courseLanguage===state.courseLanguage))
     .map(record=>({record,score:queryText?matchScore(record,queryText):0})).filter(item=>!queryText||item.score>0)
