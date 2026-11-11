@@ -11,14 +11,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=geoai-globe-desktop-crisp-mobile-static-20261111-5">
 </head>
-<body class="lang-ar" data-theme="dark">
-<canvas id="earth" aria-hidden="true"></canvas>
-<div class="bg" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i><i class="glow"></i></div>
+<body class="lang-ar" data-theme="light">
+<div class="bg" aria-hidden="true"></div>
 
 <div class="nav-clock-shell">
 <header id="mainNav" class="nav">
   <a class="brand" href="#home" aria-label="GEOData">
-    <img class="logo-d" src="assets/logo-for-dark.png" alt="GEOData">
     <img class="logo-l" src="assets/logo-for-light.png" alt="GEOData">
   </a>
   <nav id="links">
@@ -31,37 +29,45 @@
     <a href="#admin" id="adminLink" hidden><span data-i="admin"></span><em id="pc"></em></a>
   </nav>
   <div class="actions">
-    <button class="ibtn" id="theme" aria-label="Theme"></button>
-    <button class="ibtn" id="lang" aria-label="Language"></button>
+    <button class="ibtn" id="lang" aria-label="Language">EN</button>
     <button class="ibtn" id="bell" hidden aria-label="Notifications"><img class="ico" src="assets/icon-bell.png" alt=""><i id="dot" hidden></i></button>
     <button class="btn ghost" id="login"><img class="ico" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
     <div id="user" hidden><img class="ico" src="assets/icon-user.png" alt=""><b id="uname"></b><button class="link" id="logout" data-i="logout"></button></div>
     <button class="ibtn burger" id="burger" aria-label="Menu">☰</button>
   </div>
 </header>
-<time id="heroClock" class="hero-clock" aria-label="Local time"></time>
 </div>
 
 <main>
   <section id="home" class="page">
-    <div class="hero">
-      <div class="orbit" aria-hidden="true"></div>
-      <div class="hero-topline">
-        <p id="heroGreeting" class="hero-greeting"></p>
+    <div class="hero-esri">
+      <div class="hero-space" aria-hidden="true">
+        <div class="space-stars"></div>
+        <canvas id="earth" aria-label="Rotating Earth globe"></canvas>
+        <div class="globe-caption">GEOdata · Explore the world</div>
       </div>
-      <h1 data-i="h1"></h1>
-      <p class="lead" data-i="lead"></p>
-      <form id="heroSearch" class="hsearch">
-        <input type="search" name="q" data-ph="heroPh" autocomplete="off" aria-label="Search GEOData">
-        <button class="btn" data-i="search"></button>
-      </form>
-      <div id="heroSuggestions" class="search-suggestions hero-suggestions" hidden></div>
-      <div class="cats">
-        <a href="#data"><img class="ico" src="assets/icon-data.png" alt=""><span data-i="data"></span></a>
-        <a href="#courses"><img class="ico" src="assets/icon-courses.png" alt=""><span data-i="courses"></span></a>
-        <a href="#programs"><img class="ico" src="assets/icon-programs.png" alt=""><span data-i="programs"></span></a>
-        <a href="#sites"><img class="ico" src="assets/icon-sites.png" alt=""><span data-i="sites"></span></a>
+      <div class="hero-copy">
+        <span class="eyebrow" data-i="heroEyebrow">OPEN GEOSPATIAL LIBRARY</span>
+        <h1 data-i="h1"></h1>
+        <p class="lead" data-i="lead"></p>
+        <div class="hero-actions">
+          <a class="btn hero-primary" href="#data" data-i="explore"></a>
+          <a class="btn hero-secondary" href="#about" data-i="aboutAction"></a>
+        </div>
+        <form id="heroSearch" class="hsearch">
+          <input type="search" name="q" data-ph="heroPh" autocomplete="off" aria-label="Search GEOData">
+          <button class="btn" data-i="search"></button>
+        </form>
+        <div id="heroSuggestions" class="search-suggestions hero-suggestions" hidden></div>
+        <div class="hero-stats">
+          <span><b>01</b><small data-i="statData"></small></span>
+          <span><b>02</b><small data-i="statLearning"></small></span>
+          <span><b>03</b><small data-i="statTools"></small></span>
+        </div>
       </div>
+    </div>
+    <div class="home-feature-strip">
+      <span data-i="featureLine"></span><a href="#data" data-i="browseData"></a>
     </div>
   </section>
 
@@ -69,6 +75,13 @@
   <section id="courses" class="page coll"></section>
   <section id="programs" class="page coll"></section>
   <section id="sites" class="page coll"></section>
+  <section id="resource" class="page">
+    <div class="resource-page-shell">
+      <aside class="detail-category-sidebar" id="detailCategorySidebar"></aside>
+      <article class="resource-detail-content" id="resourceDetailContent"></article>
+      <aside class="course-playlist-sidebar" id="coursePlaylistSidebar" hidden></aside>
+    </div>
+  </section>
 
   <section id="search" class="page">
     <div class="phead">
@@ -80,12 +93,20 @@
   </section>
 
   <section id="about" class="page">
-    <div class="about">
+    <div class="about-esri">
+      <span class="eyebrow">GEOData / ABOUT</span>
       <h2 data-i="about"></h2>
       <p data-i="aboutP"></p>
+      <a class="btn hero-primary" href="#data" data-i="explore"></a>
     </div>
   </section>
-  <section id="admin" class="page"><div class="phead"><h2 data-i="admin"></h2><p data-i="adminD"></p></div><div class="grid" id="adminList"></div></section>
+  <section id="admin" class="page">
+    <div class="phead"><h2 data-i="admin"></h2><p data-i="adminD"></p></div>
+    <h3 class="admin-subhead" data-i="submissionsHeading">طلبات النشر</h3>
+    <div class="grid" id="adminList"></div>
+    <h3 class="admin-subhead" data-i="reportsHeading">بلاغات المحتوى</h3>
+    <div class="grid" id="reportsList"></div>
+  </section>
 </main>
 
 <footer data-i="footer"></footer>
