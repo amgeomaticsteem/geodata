@@ -59,7 +59,7 @@ if (canvas) {
     schedule();
   };
 
-  addEventListener('resize', resize, { passive: true });
+  addEventListener('resize', () => { resize(); wake(); }, { passive: true });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stop(); else wake();
   });
