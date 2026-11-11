@@ -10,7 +10,8 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches || lite;
 const S = lite ? .28 : .5; // smaller canvas on mobile and low-power devices
 let W, H, mx = 0, my = 0, sx = 0, sy = 0, px = innerWidth / 2, py = innerHeight * .3, gx = px, gy = py, rot = 0;
 const resize = () => { W = innerWidth; H = innerHeight; cv.width = Math.max(1, Math.round(W * S)); cv.height = Math.max(1, Math.round(H * S)); };
-addEventListener('resize', resize); resize();
+addEventListener('resize', () => { resize(); if (still) frame(); });
+resize();
 if (!lite && !still) addEventListener('pointermove', e => { mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY; });
 
 // dots on a sphere stored flat as [longitude, cos(lat), sin(lat)]
