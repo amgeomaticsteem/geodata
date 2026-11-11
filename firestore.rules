@@ -4,17 +4,22 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && request.auth.token.email == 'refathany2005@gmail.com';
     }
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function validResource(data) {
+      return data.resourceCol in ['projects', 'courses', 'programs', 'sites']
+        && data.resourceId is string
+        && data.resourceId.size() > 0;
+    }
+    function ownerMatches(data) {
+      return data.ownerUid == ''
+        || get(/databases/$(database)/documents/$(data.resourceCol)/$(data.resourceId)).data.publisherUid == data.ownerUid;
     }
 
-    // Published GEOData catalog: public read, admin-only direct writes.
     match /{col}/{id} {
       allow read: if col in ['projects', 'courses', 'programs', 'sites'];
       allow write: if isAdmin() && col in ['projects', 'courses', 'programs', 'sites'];
     }
 
-    // User submissions are private to their owner and the admin.
     match /submissions/{id} {
       allow create: if signedIn()
         && request.resource.data.uid == request.auth.uid
@@ -23,11 +28,14 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // One editable review per signed-in user and resource.
+    // One editable review per user/resource. Resource owner is checked
+    // against the actual published catalog item, not trusted from the client.
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if signedIn()
         && request.resource.data.uid == request.auth.uid
+        && validResource(request.resource.data)
+        && ownerMatches(request.resource.data)
         && request.resource.data.resourceKey is string
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
@@ -38,6 +46,11 @@ service cloud.firestore {
         && resource.data.uid == request.auth.uid
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.resourceKey == resource.data.resourceKey
+        && request.resource.data.resourceCol == resource.data.resourceCol
+        && request.resource.data.resourceId == resource.data.resourceId
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && validResource(request.resource.data)
+        && ownerMatches(request.resource.data)
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
@@ -46,8 +59,6 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
-    // A creator can only read their own notification. Creation is tied to
-    // a persisted review document owned by the sender and its resource owner.
     match /notifications/{notificationId} {
       allow read: if signedIn() && resource.data.toUid == request.auth.uid;
       allow create: if signedIn()
@@ -55,8 +66,10 @@ service cloud.firestore {
         && request.resource.data.toUid is string
         && request.resource.data.toUid != request.auth.uid
         && request.resource.data.reviewId is string
+        && exists(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId))
         && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.uid == request.auth.uid
-        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid;
+        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid
+        && get(/databases/$(database)/documents/$(get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.resourceCol)/$(get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.resourceId)).data.publisherUid == request.resource.data.toUid;
       allow update: if signedIn()
         && resource.data.toUid == request.auth.uid
         && request.resource.data.toUid == resource.data.toUid
@@ -64,7 +77,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Reports are visible only to the admin and cannot be edited by reporters.
     match /reports/{reportId} {
       allow create: if signedIn()
         && request.resource.data.reporterUid == request.auth.uid
