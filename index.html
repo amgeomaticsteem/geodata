@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=geodata-esri-v1-20261111-15">
+<link rel="stylesheet" href="style.css?v=geodata-esri-v1-20261111-16">
 
 <style id="geodata-preview-critical">
   :root{color-scheme:dark!important;background:#091521!important}
@@ -193,6 +193,58 @@
   }
 </style>
 
+<style id="geodata-preview-polish">
+  /* Introductory area: clean white, without the blue decorative accent. */
+  #home .hero-copy{background:#fff!important;color:#17212b!important}
+  #home .hero-copy::before,#home .hero-copy::after,#home .hero-copy .eyebrow::before{content:none!important;display:none!important}
+  #home .hero-copy .eyebrow{color:#38434c!important;border:0!important;background:transparent!important}
+  #home .hero-copy h1{color:#101820!important}
+  #home .hero-copy .lead{color:#525d66!important}
+  #home .hero-copy .hero-primary,#home .hero-copy .hsearch .btn{background:#101820!important;border:1px solid #101820!important;color:#fff!important;box-shadow:none!important}
+  #home .hero-copy .hero-secondary{background:#fff!important;border:1px solid #cbd1d6!important;color:#1b252d!important}
+  #home .hero-copy .hero-stats{border-color:#e3e6e8!important}
+  #home .hero-copy .hero-stats b{color:#1a242c!important}
+  #home .hero-copy .hero-stats small{color:#646e76!important}
+  #home .hero-copy .hsearch input{background:#fff!important;border-color:#cbd1d6!important;color:#18232c!important}
+  body.lang-ar #home .hero-copy{direction:rtl!important;text-align:right!important}
+  body.lang-en #home .hero-copy{direction:ltr!important;text-align:left!important}
+
+  /* Third home section: practical reasons to use the platform. */
+  .home-benefits{width:100%;background:#fff!important;color:#1b252d!important;padding:62px clamp(20px,5vw,76px) 78px!important;border-top:1px solid #eceff1!important}
+  .benefits-inner{max-width:1260px;margin:0 auto}
+  .benefits-eyebrow{display:block;margin-bottom:12px;color:#68737c!important;font-size:.78rem;font-weight:700;letter-spacing:.04em}
+  .benefits-inner>h2{margin:0 0 13px;color:#121a20!important;font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:800;line-height:1.35}
+  .benefits-intro{max-width:850px;margin:0 0 32px;color:#58636b!important;font-size:1.02rem;line-height:2}
+  .benefits-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .benefit-card{min-height:190px;padding:23px 22px;background:#fff!important;border:1px solid #e5e8ea!important;border-radius:10px!important;box-shadow:none!important}
+  .benefit-number{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;margin-bottom:16px;border:1px solid #d8dde1;border-radius:50%;color:#303a42;font:700 .72rem/1 Arial,sans-serif}
+  .benefit-card h3{margin:0 0 9px;color:#1a242b!important;font-size:1rem;font-weight:800}
+  .benefit-card p{margin:0;color:#5e6971!important;font-size:.88rem;line-height:1.9}
+  @media(max-width:900px){.benefits-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:580px){.home-benefits{padding:42px 18px 54px!important}.benefits-grid{grid-template-columns:1fr}.benefit-card{min-height:0}}
+
+  /* Solid black sign-in dialog; the navbar login remains a text link with underline. */
+  #authM{width:min(92vw,420px)!important;padding:32px 26px 27px!important;border:1px solid #30363b!important;border-radius:13px!important;background:#050505!important;color:#f7f7f7!important;box-shadow:0 28px 90px rgba(0,0,0,.55)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  #authM::before{display:none!important}
+  #authM::backdrop{background:rgba(0,0,0,.7)!important;backdrop-filter:blur(5px)!important}
+  #authM .tabs{margin-inline-end:35px!important;padding:4px!important;background:#111!important;border:1px solid #292929!important;border-radius:8px!important}
+  #authM .tabs button{border-radius:5px!important;color:#aeb4b9!important}
+  #authM .tabs button.on{background:#292929!important;border-color:#444!important;color:#fff!important;box-shadow:none!important}
+  #authM input{min-height:47px!important;padding:11px 13px!important;background:#111!important;border:1px solid #363636!important;border-radius:7px!important;color:#fff!important}
+  #authM input::placeholder{color:#969da3!important}
+  #authM input:focus{border-color:#777!important;box-shadow:0 0 0 2px rgba(255,255,255,.1)!important}
+  #authM .auth-forgot{align-self:flex-start;margin-top:-4px;padding:2px 0;border:0!important;background:transparent!important;color:#f4f4f4!important;font:600 .83rem/1.5 inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  #authM .auth-forgot:hover{color:#fff!important}
+  #authM .auth-forgot:disabled{opacity:.55;cursor:wait}
+  #authF[data-mode=reg] .auth-forgot{display:none!important}
+  #authM .auth-error{color:#ffb5b5!important;font-size:.83rem;line-height:1.6}
+  #authM .auth-error.success{color:#a8e4b6!important}
+  #authM .btn[type=submit]{min-height:46px!important;border:1px solid #f2f2f2!important;border-radius:7px!important;background:#f2f2f2!important;color:#101010!important;font-weight:800!important}
+  #authM .x{background:#141414!important;border:1px solid #373737!important;color:#fff!important}
+
+  /* AI assistant launcher is now an opaque black circle. */
+  .geo-ai-launcher{background:#050505!important;border:1px solid #363d43!important;box-shadow:0 9px 28px rgba(0,0,0,.3)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+</style>
 </head>
 <body class="lang-ar" data-theme="dark">
 <div class="bg" aria-hidden="true"></div>
@@ -253,6 +305,21 @@
     <div class="home-feature-strip">
       <span data-i="featureLine"></span><a href="#data" data-i="browseData"></a>
     </div>
+    <section class="home-benefits" aria-labelledby="benefitsTitle">
+      <div class="benefits-inner">
+        <span class="benefits-eyebrow" data-i="whyEyebrow"></span>
+        <h2 id="benefitsTitle" data-i="whyTitle"></h2>
+        <p class="benefits-intro" data-i="whyIntro"></p>
+        <div class="benefits-grid">
+          <article class="benefit-card"><span class="benefit-number">01</span><h3 data-i="benefitDataTitle"></h3><p data-i="benefitDataText"></p></article>
+          <article class="benefit-card"><span class="benefit-number">02</span><h3 data-i="benefitCoursesTitle"></h3><p data-i="benefitCoursesText"></p></article>
+          <article class="benefit-card"><span class="benefit-number">03</span><h3 data-i="benefitToolsTitle"></h3><p data-i="benefitToolsText"></p></article>
+          <article class="benefit-card"><span class="benefit-number">04</span><h3 data-i="benefitSourcesTitle"></h3><p data-i="benefitSourcesText"></p></article>
+          <article class="benefit-card"><span class="benefit-number">05</span><h3 data-i="benefitSearchTitle"></h3><p data-i="benefitSearchText"></p></article>
+          <article class="benefit-card"><span class="benefit-number">06</span><h3 data-i="benefitCommunityTitle"></h3><p data-i="benefitCommunityText"></p></article>
+        </div>
+      </div>
+    </section>
   </section>
 
   <section id="data" class="page coll"></section>
@@ -305,6 +372,7 @@
     <input class="only-reg" name="name" data-ph="name" autocomplete="name">
     <input type="email" name="email" data-ph="email" required autocomplete="email">
     <input type="password" name="pass" data-ph="pass" required minlength="6" autocomplete="current-password">
+    <button type="button" id="forgotPassword" class="auth-forgot" data-i="forgotPassword"></button>
     <p id="authError" class="auth-error" role="alert" hidden></p>
     <button class="btn" type="submit" data-i="go"></button>
   </form>
@@ -422,7 +490,7 @@
   });
 })();
 </script>
-<script type="module" src="globe.js?v=geodata-esri-v1-20261111-15"></script>
-<script type="module" src="app.js?v=geodata-esri-v1-20261111-15"></script>
+<script type="module" src="globe.js?v=geodata-esri-v1-20261111-16"></script>
+<script type="module" src="app.js?v=geodata-esri-v1-20261111-16"></script>
 </body>
 </html>
