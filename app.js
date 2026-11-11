@@ -5,11 +5,24 @@ const ADMIN = 'refathany2005@gmail.com';
 const COLS = { data: 'projects', courses: 'courses', programs: 'programs', sites: 'sites' };
 const LABEL = {
   home:['الرئيسية','Home'], data:['البيانات','Data'], courses:['الدورات','Courses'], programs:['البرامج','Programs'], sites:['أهم المواقع','Top sites'], about:['حول','About'],
-  dataD:['شيب فايل وجيوداتابيز وبيانات مكانية لمنطقة دراستك.','Shapefiles, geodatabases and spatial data for your study area.'],
+  dataD:['ملفات Shapefile وبيانات مكانية جاهزة لمنطقتك، مع تصنيفات واضحة وتفاصيل المصدر.','Find shapefiles and geospatial data for your area, organized with clear metadata and source details.'],
   coursesD:['دورات GIS وجيوماتكس ومصادر للتعلم.','GIS and geomatics courses and learning resources.'],
   programsD:['برامج وأدوات للعمل الجغرافي والاستشعار عن بعد.','Software and tools for GIS and remote sensing.'],
   sitesD:['مواقع ومصادر موثوقة للبيانات الجغرافية.','Trusted websites and sources for geospatial data.'],
-  h1:['بتدور على بيانات جغرافية؟ ابدأ من هنا، ومجاني 100%','Looking for geospatial data? Start here, 100% free'],
+  h1:['بتدور على شيب فايل لمنطقتك؟ هنا الحل ومجاني!','Looking for a shapefile for your area? Find it here — free!'],
+  heroEyebrow:['مكتبة مفتوحة للبيانات الجغرافية','OPEN GEOSPATIAL LIBRARY'],
+  explore:['استكشف','Explore'],aboutAction:['حول GEOData','About GEOData'],
+  statData:['بيانات مكانية','Geospatial data'],statLearning:['تعلم GIS','GIS learning'],statTools:['برامج وأدوات','Software & tools'],
+  featureLine:['بيانات جغرافية مفتوحة تساعدك تبدأ مشروعك من غير تكلفة.','Open geospatial resources to help you start without a paywall.'],browseData:['تصفح البيانات','Browse data'],
+  categoriesHeading:['التصنيفات','Categories'],openDetails:['التفاصيل','Details'],report:['إبلاغ','Report'],
+  reviewsHeading:['تقييمات وتعليقات المجتمع','Community ratings & comments'],yourRating:['تقييمك','Your rating'],writeComment:['اكتب تعليقك (اختياري)','Write a comment (optional)'],submitReview:['إرسال التقييم','Submit review'],
+  noReviews:['لسه مفيش تقييمات. كن أول واحد يشارك رأيه.','No reviews yet. Be the first to share feedback.'],
+  reviewSaved:['تم حفظ تقييمك وتعليقك.','Your rating and comment were saved.'],reviewLogin:['سجّل الدخول عشان تقيّم أو تعلق.','Log in to rate or comment.'],ratingLabel:['تقييم','Rating'],
+  reportTitle:['الإبلاغ عن محتوى','Report content'],reportReasonLabel:['سبب البلاغ','Reason for report'],reportReasonPh:['اكتب سبب الإبلاغ والتفاصيل...','Explain the issue with this content...'],sendReport:['إرسال البلاغ','Send report'],reportPrivacy:['سيظهر البلاغ في مركز التحكم لمراجعته.','Your report will appear in the control center for review.'],reportSaved:['تم تسجيل البلاغ.','Your report has been recorded.'],reportLogin:['سجّل الدخول أولًا لإرسال بلاغ.','Log in to submit a report.'],
+  submissionsHeading:['طلبات النشر','Publication submissions'],reportsHeading:['بلاغات المحتوى','Content reports'],reportDone:['تمت المراجعة','Mark reviewed'],
+  sourceCredit:['المصدر الأصلي وحقوق النشر','Original source & attribution'],playlistHeading:['قائمة تشغيل الدورة','Course playlist'],noCourseVideo:['المصدر لا يحتوي على رابط YouTube قابل للتضمين. استخدم رابط الناشر الأصلي.','This resource has no embeddable YouTube link. Use the publisher’s original source.'],
+  openOriginal:['فتح المصدر الأصلي','Open original source'],backToList:['العودة للقائمة','Back to list'],dataHelp:['اختار التصنيف من القائمة الجانبية، أو ابحث باسم المنطقة أو نوع البيانات.','Choose a category from the sidebar, or search by area or data type.'],
+  reportReasonRequired:['اكتب سبب البلاغ قبل الإرسال.','Please explain why you are reporting this content.'],homeEyebrow:['GEOData / بيانات مكانية مفتوحة','GEOData / OPEN GEOSPATIAL DATA'],
   lead:['بيانات مكانية ودورات وبرامج ومصادر تحميل في مكان واحد.','Spatial data, courses, software and download sources in one place.'],
   heroPh:['ابحث عن بيانات أو دورة أو برنامج…','Search for data, courses or software…'], sPh:['ابحث داخل القسم…','Search this section…'], search:['بحث','Search'],
   searchTitle:['نتائج البحث','Search results'], searchHint:['نتائج من كل أقسام GEOData','Results from every GEOData section'],
@@ -72,8 +85,8 @@ const LABEL = {
   course_databases:['قواعد البيانات المكانية','Spatial databases'],
   course_other:['أخرى','Other']
 };
-let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
-try { lang = localStorage.lang || lang; theme = localStorage.theme || theme; } catch {}
+let lang = 'ar', theme = 'light', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
+try { lang = localStorage.lang || lang; localStorage.removeItem('theme'); } catch {}
 let renderExtra = () => {};
 const store = {};
 // Full-text indexes are fetched only when a search is made, then reused for the session.
@@ -385,15 +398,21 @@ function updateSuggestions(box, query, scope = null) {
   });
 }
 
+function categoryNavMarkup(col) {
+  const values=col==='data'?DATA_CATEGORIES:col==='courses'?COURSE_CATEGORIES:[];
+  const state=pageState[col];
+  return '<button type="button" data-filter-category="" class="'+(!state.category?'active':'')+'">'+esc(t('allCategories'))+'</button>'+
+    values.map(value=>'<button type="button" data-filter-category="'+esc(value)+'" class="'+(state.category===value?'active':'')+'">'+esc(categoryLabel(col,value))+'</button>').join('');
+}
 function updateCategoryControls() {
-  const optionList=(values,labelFn,selected,allText=null)=>(allText!==null?'<option value="">' + esc(allText) + '</option>':'')+values.map(value=>'<option value="' + esc(value) + '"' + (value===selected?' selected':'') + '>' + esc(labelFn(value)) + '</option>').join('');
-  if($('#dataCategory'))$('#dataCategory').innerHTML=optionList(DATA_CATEGORIES,v=>t('cat_'+v),'other');
-  if($('#courseCategory'))$('#courseCategory').innerHTML=optionList(COURSE_CATEGORIES,v=>t('course_'+v),'gis_fundamentals');
-  if($('#courseLanguage'))$('#courseLanguage').innerHTML=optionList(COURSE_LANGUAGES,v=>t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both')),'en');
-  const df=$('[data-filter-col="data"]'),cf=$('[data-filter-col="courses"]'),lf=$('[data-language-col="courses"]');
-  if(df)df.innerHTML=optionList(DATA_CATEGORIES,v=>t('cat_'+v),pageState.data.category,t('allCategories'));
-  if(cf)cf.innerHTML=optionList(COURSE_CATEGORIES,v=>t('course_'+v),pageState.courses.category,t('allCategories'));
-  if(lf)lf.innerHTML=optionList(COURSE_LANGUAGES,v=>t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both')),pageState.courses.courseLanguage,t('allLanguages'));
+  if($('#dataCategory'))$('#dataCategory').innerHTML=DATA_CATEGORIES.map(v=>'<option value="'+esc(v)+'">'+esc(t('cat_'+v))+'</option>').join('');
+  if($('#courseCategory'))$('#courseCategory').innerHTML=COURSE_CATEGORIES.map(v=>'<option value="'+esc(v)+'">'+esc(t('course_'+v))+'</option>').join('');
+  if($('#courseLanguage'))$('#courseLanguage').innerHTML=COURSE_LANGUAGES.map(v=>'<option value="'+esc(v)+'">'+esc(t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both'))+'</option>').join('');
+  $$('[data-category-nav]').forEach(nav=>{const col=nav.dataset.categoryNav;nav.innerHTML=categoryNavMarkup(col);});
+  $$('[data-language-nav]').forEach(nav=>{
+    nav.innerHTML='<button type="button" data-filter-language="" class="'+(!pageState.courses.courseLanguage?'active':'')+'">'+esc(t('allLanguages'))+'</button>'+
+      COURSE_LANGUAGES.map(v=>'<button type="button" data-filter-language="'+v+'" class="'+(pageState.courses.courseLanguage===v?'active':'')+'">'+esc(t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both'))+'</button>').join('');
+  });
 }
 function pageButtons(section) {
   const state=pageState[section],total=state.totalPages||1,current=state.page,start=Math.max(1,Math.min(current-2,total-4)),end=Math.min(total,start+4);
@@ -447,70 +466,74 @@ document.addEventListener('click',event=>{
   const globalPage=event.target.closest('[data-global-page]');if(globalPage&&!globalPage.disabled){globalSearchPage=Math.max(1,Number(globalPage.dataset.globalPage));drawSearch();}
 });
 
-/* ---------- Page templates and card rendering ---------- */
+/* ---------- Esri-inspired catalog templates and resource rows ---------- */
 $$('.coll').forEach(section => {
-  const filters=section.id==='data'
-    ? '<select class="category-filter" data-filter-col="data" aria-label="'+t('categoryLabel')+'"></select>'
-    : section.id==='courses'
-      ? '<select class="category-filter" data-filter-col="courses" aria-label="'+t('categoryLabel')+'"></select><select class="language-filter" data-language-col="courses" aria-label="'+t('courseLanguage')+'"></select>'
-      : '';
+  const col=section.id, hasCategories=col==='data'||col==='courses';
   section.innerHTML =
-    '<div class="phead"><h2 data-i="' + section.id + '"></h2><p data-i="' + section.id + 'D"></p>' +
-    '<div class="tools"><div class="search-wrap"><input class="q" type="search" data-ph="sPh" autocomplete="off" aria-label="' + t('sPh') + '">' +
-    '<div class="search-suggestions" hidden></div></div>'+filters+'<button class="btn" data-add="' + section.id + '" data-i="add"></button></div></div><div class="grid"></div><nav class="pagination" data-pagination="'+section.id+'" aria-label="Pagination"></nav>';
-  const input = $('.q', section);
-  let sectionSearchRequest = 0;
-  input.addEventListener('input', () => {
+    '<div class="phead"><span class="eyebrow" data-i="homeEyebrow"></span><h2 data-i="'+col+'"></h2><p data-i="'+col+'D"></p></div>'+
+    '<div class="catalog-layout">'+
+      (hasCategories?'<aside class="catalog-sidebar"><h3 data-i="categoriesHeading"></h3><nav class="category-nav" data-category-nav="'+col+'"></nav>'+
+        (col==='courses'?'<h3 data-i="courseLanguage" class="language-side-title"></h3><nav class="category-nav language-nav" data-language-nav="courses"></nav>':'')+
+      '</aside>':'')+
+      '<div class="catalog-content"><div class="tools"><div class="search-wrap"><input class="q" type="search" data-ph="sPh" autocomplete="off" aria-label="'+t('sPh')+'"><div class="search-suggestions" hidden></div></div>'+
+      '<button class="btn" data-add="'+col+'" data-i="add"></button></div>'+
+      (col==='sites'?'<div class="sites-tiles"></div>':'<div class="resource-list"></div>')+
+      '<nav class="pagination" data-pagination="'+col+'" aria-label="Pagination"></nav></div>'+
+    '</div>';
+  const input=$('.q',section);let sectionSearchRequest=0;
+  input.addEventListener('input',()=>{
     const queryText=input.value.trim(),request=++sectionSearchRequest;
-    updateSuggestions($('.search-suggestions',section),input.value,section.id);
-    if(!queryText){draw(section.id);return;}
-    if(searchIndexBySection[section.id]){draw(section.id);return;}
-    const grid=$('.grid',section);
-    grid.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';
-    renderPagination(section.id);
-    ensureSectionSearchIndex(section.id).then(()=>{
+    updateSuggestions($('.search-suggestions',section),input.value,col);
+    if(!queryText){draw(col);return;}
+    if(searchIndexBySection[col]){draw(col);return;}
+    const list=col==='sites'?$('.sites-tiles',section):$('.resource-list',section);
+    list.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';renderPagination(col);
+    ensureSectionSearchIndex(col).then(()=>{
       if(request!==sectionSearchRequest)return;
-      updateSuggestions($('.search-suggestions',section),input.value,section.id);
-      draw(section.id);
+      updateSuggestions($('.search-suggestions',section),input.value,col);draw(col);
     }).catch(error=>{
-      console.error('GEOData section search failed:',section.id,error);
-      if(request===sectionSearchRequest)grid.innerHTML='<p class="empty" role="status">'+t('searchError')+'</p>';
+      console.error('GEOData section search failed:',col,error);
+      if(request===sectionSearchRequest)list.innerHTML='<p class="empty" role="status">'+t('searchError')+'</p>';
     });
   });
-  input.addEventListener('focus', () => updateSuggestions($('.search-suggestions',section),input.value,section.id));
-  $('.category-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{category:event.target.value}));
-  $('.language-filter',section)?.addEventListener('change',event=>resetAndLoad(section.id,{courseLanguage:event.target.value}));
+  input.addEventListener('focus',()=>updateSuggestions($('.search-suggestions',section),input.value,col));
 });
-function card(record, col, showCategory = false) {
-  const categoryTag = record.category ? '<span class="tag category-tag">' + esc(categoryLabel(col,record.category)) + '</span>' : (showCategory ? '<span class="tag category-tag">' + t(col) + '</span>' : '');
-  const languageTag = col==='courses'&&record.courseLanguage ? '<span class="tag language-tag">'+t('language'+(record.courseLanguage==='ar'?'Ar':record.courseLanguage==='en'?'En':'Both'))+'</span>' : '';
-  const formatTag = record.format ? '<span class="tag" data-local-field="format">' + esc(record.format) + '</span>' : '';
-  const themeTag = record.theme ? '<span class="tag theme-tag" data-local-field="theme">' + esc(record.theme) + '</span>' : '';
-  const del = admin() ? '<button class="del" data-del="' + esc(col) + '|' + esc(record.id) + '" aria-label="Delete">✕</button>' : '';
-  const detailButton = record.link && /^https?:\/\//i.test(record.link) ?
-    '<button type="button" class="btn sm" data-detail-col="' + esc(col) + '" data-detail-id="' + esc(record.id) + '">' + t('open') + '</button>' : '';
-  return '<article class="card resource-card" data-col="' + esc(col) + '" data-id="' + esc(record.id) + '">' +
-    del + categoryTag + languageTag + formatTag + themeTag + '<h3 data-local-field="title">' + esc(record.title) + '</h3>' +
-    (record.date ? '<small>' + esc(record.date) + '</small>' : '') +
-    '<p data-local-field="details">' + esc(record.details || '') + '</p>' +
-    '<div class="foot"><small>' + t('by') + ': ' + esc(record.publisherName || '—') + '</small>' + detailButton + '</div></article>';
+function resourceDate(record) {
+  if(record.date)return String(record.date);
+  const stamp=record.createdAt?.toDate?record.createdAt.toDate():record.createdAt?.seconds?new Date(record.createdAt.seconds*1000):null;
+  return stamp?new Intl.DateTimeFormat(lang==='ar'?'ar-EG':'en-GB',{year:'numeric',month:'short',day:'numeric'}).format(stamp):'';
+}
+function card(record,col,showCategory=false) {
+  const title=esc(record.title||''),details=esc(record.details||''),safeLink=/^https:\/\//i.test(record.link||'')?record.link:'';
+  const category=record.category?categoryLabel(col,record.category):t(col),date=resourceDate(record);
+  const report='<button type="button" class="report-link row-report" data-report-col="'+esc(col)+'" data-report-id="'+esc(record.id)+'" data-report-title="'+title+'">'+t('report')+'</button>';
+  if(col==='sites'){
+    let icon=record.imageUrl||record.image||record.logoUrl||'';
+    if(!/^https:\/\//i.test(icon)){try{const host=new URL(safeLink).hostname;icon='https://www.google.com/s2/favicons?domain='+encodeURIComponent(host)+'&sz=128';}catch{icon='assets/icon-sites.png';}}
+    return '<article class="site-tile resource-card" data-col="'+esc(col)+'" data-id="'+esc(record.id)+'">'+
+      '<div class="site-tile-top"><img src="'+esc(icon)+'" alt="" loading="lazy" onerror="this.src=\'assets/icon-sites.png\'"><div><h3><a href="'+esc(safeLink||'#')+'" target="_blank" rel="noopener noreferrer">'+title+'</a></h3><small>'+esc(date)+'</small></div></div>'+
+      '<p data-local-field="details">'+details+'</p><div class="foot"><a class="lnk" href="'+esc(safeLink||'#')+'" target="_blank" rel="noopener noreferrer">'+esc(record.sourceName||record.publisherName||safeLink)+'</a><button type="button" class="btn sm ghost" data-detail-col="'+esc(col)+'" data-detail-id="'+esc(record.id)+'">'+t('openDetails')+'</button></div>'+report+'</article>';
+  }
+  const del=admin()?'<button class="del" data-del="'+esc(col)+'|'+esc(record.id)+'" aria-label="Delete">✕</button>':'';
+  return '<article class="resource-row resource-card" data-col="'+esc(col)+'" data-id="'+esc(record.id)+'">'+del+
+    '<div class="resource-row-main"><h3><button type="button" data-detail-col="'+esc(col)+'" data-detail-id="'+esc(record.id)+'" data-local-field="title">'+title+'</button></h3>'+
+    '<p data-local-field="details">'+details+'</p></div>'+
+    '<div class="resource-row-meta"><span class="meta-category">'+esc(category)+'</span>'+
+    (record.format?'<span>'+esc(record.format)+'</span>':'')+(date?'<span>'+esc(date)+'</span>':'')+
+    '<span>'+esc(record.publisherName||'GEOData')+'</span></div>'+
+    '<div class="resource-row-actions"><button type="button" class="btn sm ghost" data-detail-col="'+esc(col)+'" data-detail-id="'+esc(record.id)+'">'+t('openDetails')+'</button>'+report+'</div></article>';
 }
 function draw(col) {
-  const container = $('.grid', $('#' + col));
-  if (!container) return;
-  const query = $('.q', $('#' + col))?.value.trim() || '';
-  const state=pageState[col];
-  if(query&&!searchIndexBySection[col]){
-    container.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';
-    renderPagination(col);return;
-  }
-  const source=query?(searchIndexBySection[col]||[]):(store[col]||[]);
-  const list = source.filter(record=>(!state.category||record.category===state.category)&&(!state.courseLanguage||record.courseLanguage===state.courseLanguage))
-    .map(record => ({record,score:query ? matchScore(record,query) : 0}))
-    .filter(item => !query || item.score > 0)
+  const section=$('#'+col),container=col==='sites'?$('.sites-tiles',section):$('.resource-list',section);
+  if(!container)return;
+  const queryText=$('.q',section)?.value.trim()||'',state=pageState[col];
+  if(queryText&&!searchIndexBySection[col]){container.innerHTML='<p class="empty" role="status">'+t('searchLoading')+'</p>';renderPagination(col);return;}
+  const source=queryText?(searchIndexBySection[col]||[]):(store[col]||[]);
+  const list=source.filter(record=>(!state.category||record.category===state.category)&&(!state.courseLanguage||record.courseLanguage===state.courseLanguage))
+    .map(record=>({record,score:queryText?matchScore(record,queryText):0})).filter(item=>!queryText||item.score>0)
     .sort((a,b)=>b.score-a.score).map(item=>item.record);
-  container.innerHTML = list.length ? list.map(record => card(record,col)).join('') : '<p class="empty">' + t('empty') + '</p>';
-  observeCards(container);renderPagination(col);
+  container.innerHTML=list.length?list.map(record=>card(record,col)).join(''):'<p class="empty">'+t('empty')+'</p>';
+  observeCards(container);renderPagination(col);updateCategoryControls();
 }
 function drawSearch() {
   const container = $('#globalResults');
