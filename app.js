@@ -628,8 +628,8 @@ function route() {
   let page=resourceRoute?'resource':(document.getElementById(raw)?.classList.contains('page')?raw:'home');
   if(page==='admin'&&!admin())page='home';
   if(resourceRoute)currentDetail={col:parts[1],id:decodeURIComponent(parts.slice(2).join('/'))};
-  $('.page').forEach(section=>section.classList.toggle('on',section.id===page));
-  $('#links a').forEach(anchor=>anchor.classList.toggle('on',anchor.hash==='#'+page));
+  $$('.page').forEach(section=>section.classList.toggle('on',section.id===page));
+  $$('#links a').forEach(anchor=>anchor.classList.toggle('on',anchor.hash==='#'+page));
   $('#links').classList.remove('show');
   if(page!=='resource')scrollTo(0,0);
   if(page==='search')drawSearch();
