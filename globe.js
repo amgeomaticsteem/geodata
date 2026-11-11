@@ -9,15 +9,10 @@ if (canvas) {
   const frameInterval = mobile ? 1000 / 26 : 1000 / 48;
   let renderer, scene, camera, earth, clouds, frameId = 0, timerId = 0, lastFrame = 0, ready = false, inView = true;
 
+  const fallback = host.querySelector('.earth-fallback');
   const startFallback = () => {
-    canvas.style.background =
-      'radial-gradient(circle at 45% 42%,rgba(32,106,165,.18),transparent 56%),' +
-      'radial-gradient(circle at 50% 48%,#09233b 0%,#030914 68%)';
-    const fallback = document.createElement('div');
-    fallback.className = 'earth-fallback';
-    fallback.setAttribute('aria-hidden', 'true');
-    fallback.innerHTML = '<span></span>';
-    host.append(fallback);
+    canvas.style.background = 'transparent';
+    if (fallback) fallback.hidden = false;
   };
 
   const resize = () => {
@@ -155,6 +150,7 @@ if (canvas) {
       scene.add(stars);
 
       resize();
+      if (fallback) fallback.hidden = true;
       ready = true;
       renderer.render(scene, camera);
       wake();
