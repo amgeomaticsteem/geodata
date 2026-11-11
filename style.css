@@ -1497,3 +1497,46 @@ dialog h3{margin:0;color:#173953}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+
+/* v1 final layout corrections */
+.hero-esri{direction:ltr!important}
+.lang-ar .hero-copy{direction:rtl;text-align:start}
+.lang-en .hero-copy{direction:ltr;text-align:left}
+.resource-page-shell.no-side-category{grid-template-columns:minmax(0,1fr) 310px}
+.resource-page-shell.no-side-category.no-side-playlist{grid-template-columns:minmax(0,1fr)}
+.resource-page-shell.no-side-category .resource-detail-content{grid-column:1}
+.resource-page-shell.no-side-category .course-playlist-sidebar{grid-column:2}
+.resource-page-shell.no-side-category.no-side-playlist .resource-detail-content{grid-column:1}
+.course-player-wrap{width:100%;margin:22px 0 26px;background:#061321;border:1px solid #dae4ec}
+.course-video-frame{display:block;width:100%;aspect-ratio:16/9;min-height:220px;border:0}
+.earth-fallback{position:absolute;z-index:1;left:50%;top:50%;width:min(74%,440px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 34% 30%,#8bc5e8 0%,#286a9b 22%,#123d67 48%,#07182b 72%,#020812 100%);box-shadow:inset -35px -20px 60px rgba(0,0,0,.58),0 0 48px rgba(35,133,203,.34),0 0 130px rgba(26,103,170,.18);overflow:hidden}
+.earth-fallback::before{content:"";position:absolute;inset:-8%;border-radius:50%;background:repeating-linear-gradient(18deg,transparent 0 18px,rgba(103,169,205,.13) 20px 23px,transparent 26px 42px);filter:blur(1px);transform:rotate(-22deg)}
+.earth-fallback::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(100deg,transparent 45%,rgba(0,0,0,.44) 100%);box-shadow:inset 0 0 28px rgba(0,0,0,.35)}
+.earth-fallback span{position:absolute;inset:18% 28% 25% 18%;border-radius:48% 38% 55% 32%;background:linear-gradient(125deg,rgba(88,165,111,.8),rgba(40,111,81,.56) 53%,rgba(21,71,73,.22));filter:blur(3px);transform:rotate(-17deg)}
+#globalResults{display:block;max-width:1380px;border-top:1px solid #dfe6ed}
+#globalResults .resource-row{margin:0}
+#globalResults .site-tile{display:inline-flex;vertical-align:top;width:min(340px,100%);margin:12px}
+.report-dialog{width:min(560px,92vw);max-width:560px;padding:20px}
+.report-dialog form{padding:26px 8px 8px}
+.report-dialog h3{font-size:1.25rem}
+.report-resource-title{margin:0;color:#2879ad;font-weight:700}
+.report-dialog label{font-weight:700;color:#4b6378}
+.report-dialog small{color:#7e8e9e}
+.resource-row-actions .report-link{margin-inline-start:3px}
+.language-side-title{margin-top:22px!important;padding-top:17px;border-top:1px solid #e5ebf0}
+.language-nav button{font-size:.8rem}
+.resource-detail-heading .resource-row-meta{flex-direction:row;flex-wrap:wrap;gap:9px 19px;margin-top:7px}
+@media(max-width:920px){
+  .resource-page-shell.no-side-category{grid-template-columns:minmax(0,1fr)}
+  .resource-page-shell.no-side-category .course-playlist-sidebar{grid-column:1}
+}
+@media(max-width:680px){
+  .resource-page-shell.no-side-category{display:flex}
+  .resource-page-shell.no-side-category .course-playlist-sidebar{order:2}
+  .course-video-frame{min-height:180px}
+  .earth-fallback{width:min(82%,360px)}
+  .hero-esri{direction:ltr!important}
+  .lang-ar .hero-copy{direction:rtl}
+  .hero-space{min-height:320px}
+}
