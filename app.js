@@ -567,50 +567,48 @@ function drawSearch() {
 }
 const drawAll = () => { Object.keys(COLS).forEach(draw); if (location.hash === '#search') drawSearch(); };
 
-const SVG = path => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
-const SUN = SVG('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
-const MOON = SVG('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>');
-function applyTheme() { document.body.dataset.theme = theme; $('#theme').innerHTML = theme === 'dark' ? SUN : MOON; updateGeoAssistantTheme(); }
-function updateHeroGreeting() {
-  const greeting=$('#heroGreeting'),clock=$('#heroClock');
-  if(!greeting||!clock)return;
-  const now=new Date(),hour=now.getHours(),minute=now.getMinutes();
-  const greetingKey=hour>=5&&hour<12?'goodMorning':hour<17?'goodAfternoon':'goodEvening';
-  greeting.textContent=t(greetingKey);
-  const digits=new Intl.NumberFormat(lang==='ar'?'ar-EG':'en-US',{minimumIntegerDigits:2,useGrouping:false});
-  const hour12=hour%12||12,suffix=lang==='ar'?(hour<12?'ص':'م'):(hour<12?'AM':'PM');
-  clock.textContent=digits.format(hour12)+':'+digits.format(minute)+' '+suffix;
-  clock.dateTime=now.toISOString();
-}
+function applyTheme() { theme='light';document.body.dataset.theme='light';updateGeoAssistantTheme(); }
 let currentDetail = null;
 function applyLang() {
-  const root = document.documentElement;
-  root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  const root=document.documentElement;
+  root.lang=lang;root.dir=lang==='ar'?'rtl':'ltr';
   $('#mainNav')?.setAttribute('dir',root.dir);
-  document.body.className = 'lang-' + lang + ' ready';
-  $$('[data-i]').forEach(el => el.textContent = t(el.dataset.i));
-  $$('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
-  const metaDescription = $('meta[name="description"]');
-  if(metaDescription) metaDescription.content = lang === 'ar' ? 'GEOData: مكتبة مجانية للبيانات الجغرافية والدورات والبرامج ومصادر الاستشعار عن بعد.' : 'GEOData: free geospatial data, GIS courses, software and remote-sensing resources.';
-  document.title = 'GEOData | AM Geomatics';
-  $('#lang').textContent = lang === 'ar' ? 'EN' : 'ع';
-  $$('input[aria-label]').forEach(el=>{ if(el.classList.contains('q')) el.setAttribute('aria-label',t('sPh')); });
-  updateCategoryControls();updateHeroGreeting();drawAll();renderExtra();updateGeoAssistantLanguage();
-  const clock=$('#heroClock');if(clock){clock.style.marginLeft=lang==='ar'?'0':'auto';clock.style.marginRight=lang==='ar'?'auto':'0';}
-  if (detailM?.open && currentDetail) openDetail(currentDetail.col,currentDetail.id);
+  document.body.className='lang-'+lang+' ready';
+  document.body.dataset.theme='light';
+  $$('[data-i]').forEach(el=>el.textContent=t(el.dataset.i));
+  $$('[data-ph]').forEach(el=>{el.placeholder=t(el.dataset.ph);});
+  const metaDescription=$('meta[name="description"]');
+  if(metaDescription)metaDescription.content=lang==='ar'
+    ?'GEOData: مكتبة مجانية للـShapefile والبيانات الجغرافية والدورات والبرامج.'
+    :'GEOData: a free library for shapefiles, geospatial data, GIS courses and software.';
+  document.title='GEOData | Open Geospatial Library';
+  $('#lang').textContent=lang==='ar'?'EN':'ع';
+  $$('input[aria-label]').forEach(el=>{if(el.classList.contains('q'))el.setAttribute('aria-label',t('sPh'));});
+  const title=$('#heroTitle');
+  if(title){
+    const raw=t('h1');
+    title.textContent=raw;
+    const phrase=lang==='ar'?'شيب فايل لمنطقتك؟':'shapefile for your area?';
+    if(raw.includes(phrase))title.innerHTML=esc(raw).replace(esc(phrase),'<span class="hero-blue">'+esc(phrase)+'</span>');
+  }
+  updateCategoryControls();drawAll();renderExtra();updateGeoAssistantLanguage();
+  if(currentDetail&&location.hash.startsWith('#resource/'))renderResourceDetail();
 }
-$('#theme').onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme',theme); applyTheme(); };
 $('#lang').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; save('lang',lang); applyLang(); };
 $('#burger').onclick = () => $('#links').classList.toggle('show');
 
 function route() {
-  const id = location.hash.slice(1), el = id && document.getElementById(id);
-  let page = el && el.classList.contains('page') ? id : 'home';
-  if (page === 'admin' && !admin()) page = 'home';
-  $$('.page').forEach(section => section.classList.toggle('on',section.id === page));
-  $$('#links a').forEach(anchor => anchor.classList.toggle('on',anchor.hash === '#' + page));
-  $('#links').classList.remove('show'); scrollTo(0,0);
-  if (page === 'search') drawSearch();
+  const raw=location.hash.slice(1),parts=raw.split('/');
+  const resourceRoute=parts[0]==='resource'&&parts.length>=3;
+  let page=resourceRoute?'resource':(document.getElementById(raw)?.classList.contains('page')?raw:'home');
+  if(page==='admin'&&!admin())page='home';
+  if(resourceRoute)currentDetail={col:parts[1],id:decodeURIComponent(parts.slice(2).join('/'))};
+  $('.page').forEach(section=>section.classList.toggle('on',section.id===page));
+  $('#links a').forEach(anchor=>anchor.classList.toggle('on',anchor.hash==='#'+page));
+  $('#links').classList.remove('show');
+  if(page!=='resource')scrollTo(0,0);
+  if(page==='search')drawSearch();
+  if(page==='resource'&&currentDetail)renderResourceDetail();
 }
 addEventListener('hashchange',route);
 
