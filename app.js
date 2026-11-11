@@ -816,7 +816,7 @@ document.addEventListener('submit',async event=>{
     const reviewId=encodeURIComponent(key+'_'+user.uid);
     const comment=$('#reviewComment').value.trim();
     const review={
-      resourceKey:key,uid:user.uid,userName:user.displayName||user.email?.split('@')[0]||'GEOData user',
+      resourceKey:key,resourceCol:COLS[currentDetail.col],resourceId:currentDetail.id,uid:user.uid,userName:user.displayName||user.email?.split('@')[0]||'GEOData user',
       ownerUid:record.publisherUid||'',rating:selectedRating,comment,
       updatedAt:serverTimestamp(),createdAt:serverTimestamp()
     };
@@ -844,7 +844,7 @@ document.addEventListener('submit',async event=>{
     const submit=$('button[type="submit"]',event.target);submit.disabled=true;
     try{
       await addDoc(collection(db,'reports'),{
-        resourceKey:currentReport.col+'_'+currentReport.id,resourceCol:currentReport.col,
+        resourceKey:currentReport.col+'_'+currentReport.id,section:currentReport.col,resourceCol:COLS[currentReport.col],
         resourceId:currentReport.id,resourceTitle:currentReport.title,reason,
         reporterUid:user.uid,reporterEmail:user.email||'',status:'new',createdAt:serverTimestamp()
       });
@@ -1137,7 +1137,7 @@ renderExtra=()=>{
     '<article class="card review-card"><span class="tag">'+esc(item.resourceCol||'')+'</span>'+
     '<h3>'+esc(item.resourceTitle||'Reported content')+'</h3><p>'+esc(item.reason||'')+'</p>'+
     '<small>'+esc(item.reporterEmail||item.reporterUid||'')+' · '+esc(resourceDate(item))+'</small>'+
-    '<div class="foot">'+(item.resourceId&&item.resourceCol?'<button class="btn sm ghost" data-detail-col="'+esc(item.resourceCol)+'" data-detail-id="'+esc(item.resourceId)+'">'+t('openDetails')+'</button>':'')+
+    '<div class="foot">'+(item.resourceId&&(item.section||item.resourceCol)?'<button class="btn sm ghost" data-detail-col="'+esc(item.section||item.resourceCol)+'" data-detail-id="'+esc(item.resourceId)+'">'+t('openDetails')+'</button>':'')+
     '<button class="btn sm" data-report-done="'+esc(item.id)+'">'+t('reportDone')+'</button></div></article>'
   ).join(''):'<p class="empty">'+(lang==='ar'?'مفيش بلاغات جديدة.':'No new reports.')+'</p>';
   $$('.review-card[data-subid]').forEach(cardEl=>{const item=submissions.find(x=>x.id===cardEl.dataset.subid);if(item)localizeElements(cardEl,item);});
