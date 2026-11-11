@@ -110,6 +110,26 @@
   .hero-space{grid-column:2!important;grid-row:1!important;position:relative!important;display:block!important;min-height:560px!important;height:auto!important;overflow:hidden!important;background:#020812!important;isolation:isolate!important}
   .hero-space::before{background:radial-gradient(ellipse at 48% 48%,rgba(20,86,134,.24),transparent 57%),linear-gradient(90deg,rgba(5,17,29,.25),transparent 48%)!important}
   .hero-space #earth{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:2!important;visibility:visible!important;opacity:1!important}
+  .earth-fallback{
+    position:absolute!important;z-index:1!important;left:50%!important;top:50%!important;
+    display:block!important;width:min(74%,440px)!important;aspect-ratio:1!important;
+    transform:translate(-50%,-50%)!important;border-radius:50%!important;overflow:hidden!important;
+    background:radial-gradient(circle at 32% 27%,#a9dbf4 0%,#397eae 23%,#174c77 53%,#08233d 78%,#020812 100%)!important;
+    box-shadow:inset -42px -20px 64px rgba(0,0,0,.56),0 0 46px rgba(38,143,213,.32),0 0 115px rgba(18,101,165,.17)!important
+  }
+  .earth-fallback::before{
+    content:""!important;position:absolute!important;inset:15% 18% 20% 13%!important;
+    border-radius:52% 39% 46% 48%!important;transform:rotate(-22deg)!important;
+    background:linear-gradient(140deg,rgba(116,176,119,.95),rgba(50,124,91,.9) 45%,rgba(22,79,85,.5))!important;
+    clip-path:polygon(7% 6%,39% 0,51% 12%,77% 9%,92% 31%,81% 43%,96% 59%,70% 72%,57% 97%,37% 84%,23% 62%,4% 56%,16% 34%)!important;
+    filter:drop-shadow(0 0 3px rgba(12,45,59,.6))!important
+  }
+  .earth-fallback::after{
+    content:""!important;position:absolute!important;inset:0!important;border-radius:50%!important;
+    background:linear-gradient(100deg,transparent 36%,rgba(0,0,0,.62) 100%)!important;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.34)!important
+  }
+  .earth-fallback span{display:none!important}
   .hero-space .earth-fallback{z-index:1!important;opacity:1!important}
   .hero-space .earth-fallback[hidden]{display:none!important}
   .hero-space .globe-caption{z-index:3!important}
