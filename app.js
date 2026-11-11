@@ -661,7 +661,7 @@ function authErrorText(error,isRegister) {
   return (isRegister?t('fail'):t('authGeneric'))+' '+(error?.message||code||'');
 }
 const paintUser=()=>{
-  $('#login').hidden=!!user;$('#user').hidden=!user;$('#bell').hidden=!user||admin();$('#adminLink').hidden=!admin();
+  $('#login').hidden=!!user;$('#user').hidden=!user;$('#bell').hidden=!user;$('#adminLink').hidden=!admin();
   if(user)$('#uname').textContent=user.displayName||user.email?.split('@')[0]||'User';
 };
 
@@ -823,12 +823,18 @@ document.addEventListener('submit',async event=>{
     const submit=$('button[type="submit"]',event.target);submit.disabled=true;
     try{
       await setDoc(doc(db,'reviews',reviewId),review,{merge:true});
+      const notificationBase={
+        fromUid:user.uid,fromName:review.userName,reviewId,resourceKey:key,
+        resourceTitle:record.title||'',rating:selectedRating,createdAt:serverTimestamp(),read:false
+      };
       if(record.publisherUid&&record.publisherUid!==user.uid){
-        const notificationId='review_'+reviewId;
-        await setDoc(doc(db,'notifications',notificationId),{
-          toUid:record.publisherUid,fromUid:user.uid,fromName:review.userName,
-          reviewId,resourceKey:key,resourceTitle:record.title||'',rating:selectedRating,
-          createdAt:serverTimestamp(),read:false
+        await setDoc(doc(db,'notifications','review_'+reviewId),{
+          ...notificationBase,toUid:record.publisherUid
+        });
+      }
+      if(user.email?.toLowerCase()!=='refathany2005@gmail.com'){
+        await setDoc(doc(db,'notifications','review_admin_'+reviewId),{
+          ...notificationBase,toEmail:'refathany2005@gmail.com'
         });
       }
       toast(t('reviewSaved'));
@@ -1151,13 +1157,12 @@ onAuthStateChanged(auth,currentUser=>{
       submissions=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
       renderExtra();
     },error=>console.error('Submission listener:',error)));
-    if(!admin()){
-      const inboxQuery=query(collection(db,'notifications'),where('toUid','==',user.uid));
-      unsubscribers.push(onSnapshot(inboxQuery,snapshot=>{
-        notifications=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-        renderExtra();
-      },error=>console.error('Notification listener:',error)));
-    }else{
+    const inboxQuery=query(collection(db,'notifications'),where(admin()?'toEmail':'toUid','==',admin()?user.email:user.uid));
+    unsubscribers.push(onSnapshot(inboxQuery,snapshot=>{
+      notifications=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      renderExtra();
+    },error=>console.error('Notification listener:',error)));
+    if(admin()){
       const reportQuery=query(collection(db,'reports'),where('status','==','new'));
       unsubscribers.push(onSnapshot(reportQuery,snapshot=>{
         reports=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
