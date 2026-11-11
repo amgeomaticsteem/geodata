@@ -863,7 +863,7 @@ applyTheme(); applyLang(); route();
 
 /* ---------- Firebase ---------- */
 const FirebaseURL='https://www.gstatic.com/firebasejs/10.12.0/';
-const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}] =
+const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,setDoc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}] =
   await Promise.all([import(FirebaseURL+'firebase-app.js'),import(FirebaseURL+'firebase-auth.js'),import(FirebaseURL+'firebase-firestore.js')]);
 const firebaseApp=initializeApp({
   apiKey:'AIzaSyCmGYoMqvaTDafiHb7q9Vk7vE4n1w2tWBI',authDomain:'am-a-geo.firebaseapp.com',projectId:'am-a-geo',
@@ -1105,37 +1105,74 @@ geoAssistantRefs.form?.addEventListener('submit',async event=>{
   }
 });
 
-let submissions=[],unsubscribers=[];
+let submissions=[],notifications=[],reports=[],unsubscribers=[];
 const seenKey=item=>'seen_'+item.id+'_'+item.status;
 const readLocal=key=>{try{return localStorage[key];}catch{}};
 renderExtra=()=>{
-  $('#notifL').innerHTML=submissions.length?submissions.map(item=>
-    '<div class="nitem"><div><b>'+(lang==='ar'?esc(item.title_ar||item.title):esc(item.title_en||item.title))+'</b><small>'+t(item.col)+(item.note?' | '+esc(item.note):'')+'</small></div><span class="st '+item.status+'">'+t(item.status)+'</span></div>'
+  const notificationRows=notifications.map(item=>({
+    id:'notification_'+item.id,status:'notification',
+    title:lang==='ar'?'تعليق جديد على: '+(item.resourceTitle||'محتوى'):'New review on: '+(item.resourceTitle||'content'),
+    note:(item.fromName||'GEOData user')+' · '+(item.rating||0)+'/5'
+  }));
+  const submissionRows=submissions.map(item=>({
+    id:item.id,status:item.status,title:lang==='ar'?(item.title_ar||item.title):(item.title_en||item.title),
+    note:item.note||'',col:item.col
+  }));
+  const inbox=[...notificationRows,...submissionRows];
+  $('#notifL').innerHTML=inbox.length?inbox.map(item=>
+    '<div class="nitem"><div><b>'+esc(item.title)+'</b><small>'+esc(item.note||t(item.col||'data'))+'</small></div><span class="st '+esc(item.status)+'">'+(item.status==='notification'?t('reviewsHeading'):t(item.status))+'</span></div>'
   ).join(''):'<p class="empty">'+t('noNotifs')+'</p>';
-  $('#dot').hidden=!submissions.some(item=>item.status!=='pending'&&!readLocal(seenKey(item)));
-  $('#pc').textContent=admin()&&submissions.length?submissions.length:'';
+  const hasUnread=submissions.some(item=>item.status!=='pending'&&!readLocal(seenKey(item)))||
+    notifications.some(item=>!readLocal('seen_notification_'+item.id));
+  $('#dot').hidden=!hasUnread;
+  $('#pc').textContent=admin()?(submissions.length+reports.length||''):'';
   $('#adminList').innerHTML=submissions.length?submissions.map(item=>
-    '<article class="card review-card" data-subid="'+esc(item.id)+'"><span class="tag">'+t(item.col)+'</span>' +
-    '<h3 data-local-field="title">'+esc(item.title)+'</h3><p data-local-field="details">'+esc(item.details||'')+'</p>' +
-    '<small>'+t('by')+': '+esc(item.publisherName)+' ('+esc(item.publisherEmail)+')</small>' +
-    '<a class="lnk" href="'+esc(item.link)+'" target="_blank" rel="noopener">'+esc(item.link)+'</a>' +
+    '<article class="card review-card" data-subid="'+esc(item.id)+'"><span class="tag">'+t(item.col)+'</span>'+
+    '<h3 data-local-field="title">'+esc(item.title)+'</h3><p data-local-field="details">'+esc(item.details||'')+'</p>'+
+    '<small>'+t('by')+': '+esc(item.publisherName)+' ('+esc(item.publisherEmail)+')</small>'+
+    '<a class="lnk" href="'+esc(item.link)+'" target="_blank" rel="noopener">'+esc(item.link)+'</a>'+
     '<div class="foot"><button class="btn sm" data-ok="'+esc(item.id)+'">'+t('approve')+'</button><button class="btn sm ghost" data-no="'+esc(item.id)+'">'+t('reject')+'</button></div></article>'
   ).join(''):'<p class="empty">'+t('noPending')+'</p>';
-  $$('.review-card').forEach(cardEl=>{const item=submissions.find(x=>x.id===cardEl.dataset.subid);if(item)localizeElements(cardEl,item);});
+  $('#reportsList').innerHTML=reports.length?reports.map(item=>
+    '<article class="card review-card"><span class="tag">'+esc(item.resourceCol||'')+'</span>'+
+    '<h3>'+esc(item.resourceTitle||'Reported content')+'</h3><p>'+esc(item.reason||'')+'</p>'+
+    '<small>'+esc(item.reporterEmail||item.reporterUid||'')+' · '+esc(resourceDate(item))+'</small>'+
+    '<div class="foot">'+(item.resourceId&&item.resourceCol?'<button class="btn sm ghost" data-detail-col="'+esc(item.resourceCol)+'" data-detail-id="'+esc(item.resourceId)+'">'+t('openDetails')+'</button>':'')+
+    '<button class="btn sm" data-report-done="'+esc(item.id)+'">'+t('reportDone')+'</button></div></article>'
+  ).join(''):'<p class="empty">'+(lang==='ar'?'مفيش بلاغات جديدة.':'No new reports.')+'</p>';
+  $$('.review-card[data-subid]').forEach(cardEl=>{const item=submissions.find(x=>x.id===cardEl.dataset.subid);if(item)localizeElements(cardEl,item);});
 };
 onAuthStateChanged(auth,currentUser=>{
   user=currentUser;paintUser();drawAll();if(user&&authM.open)authM.close();
-  unsubscribers.forEach(unsubscribe=>unsubscribe());unsubscribers=[];submissions=[];renderExtra();
+  unsubscribers.forEach(unsubscribe=>unsubscribe());unsubscribers=[];submissions=[];notifications=[];reports=[];renderExtra();
   if(user){
     const request=admin()?query(collection(db,'submissions'),where('status','==','pending')):query(collection(db,'submissions'),where('uid','==',user.uid));
     unsubscribers.push(onSnapshot(request,snapshot=>{
       submissions=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
       renderExtra();
     },error=>console.error('Submission listener:',error)));
+    if(!admin()){
+      const inboxQuery=query(collection(db,'notifications'),where('toUid','==',user.uid));
+      unsubscribers.push(onSnapshot(inboxQuery,snapshot=>{
+        notifications=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        renderExtra();
+      },error=>console.error('Notification listener:',error)));
+    }else{
+      const reportQuery=query(collection(db,'reports'),where('status','==','new'));
+      unsubscribers.push(onSnapshot(reportQuery,snapshot=>{
+        reports=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+        renderExtra();
+      },error=>console.error('Report listener:',error)));
+    }
   }
   if(location.hash==='#admin')route();
 });
-$('#bell').onclick=()=>{$('#notifM').showModal();submissions.forEach(item=>item.status!=='pending'&&save(seenKey(item),1));renderExtra();};
+$('#bell').onclick=()=>{
+  $('#notifM').showModal();
+  submissions.forEach(item=>item.status!=='pending'&&save(seenKey(item),1));
+  notifications.forEach(item=>save('seen_notification_'+item.id,1));
+  renderExtra();
+};
 updateCategoryControls();
 Object.keys(COLS).forEach(section=>loadPage(section,1));
 authF.onsubmit=async event=>{
@@ -1162,7 +1199,7 @@ addF.onsubmit=async event=>{
   const values=Object.fromEntries(new FormData(addF));
   const record={
     title:values.title.trim(),details:values.details.trim(),link:values.link.trim(),
-    publisherName:user.displayName||user.email.split('@')[0],publisherEmail:user.email,createdAt:serverTimestamp()
+    publisherName:user.displayName||user.email.split('@')[0],publisherEmail:user.email,publisherUid:user.uid,createdAt:serverTimestamp()
   };
   if(addTo==='data'){record.format=values.format;record.date=values.date;record.category=values.dataCategory||'other';record.categorySource='user';}
   if(addTo==='courses'){record.category=values.courseCategory||'other';record.categorySource='user';record.courseLanguage=values.courseLanguage||'en';}
@@ -1183,6 +1220,13 @@ document.addEventListener('click',async event=>{
   try{await deleteDoc(doc(db,COLS[section],id));invalidateSearchIndex();}catch(error){toast(t('fail')+error.message);}
 });
 document.addEventListener('click',async event=>{
+  const done=event.target.closest('[data-report-done]');
+  if(!done||!admin())return;
+  done.disabled=true;
+  try{await updateDoc(doc(db,'reports',done.dataset.reportDone),{status:'reviewed',reviewedAt:serverTimestamp()});}
+  catch(error){toast(t('fail')+error.message);done.disabled=false;}
+});
+document.addEventListener('click',async event=>{
   const approve=event.target.closest('[data-ok]'),reject=event.target.closest('[data-no]');
   if(!(approve||reject)||!admin())return;
   const item=submissions.find(record=>record.id===(approve||reject).dataset[approve?'ok':'no']);
@@ -1190,7 +1234,7 @@ document.addEventListener('click',async event=>{
   try{
     if(approve){
       const published={
-        title:item.title,details:item.details,link:item.link,publisherName:item.publisherName,publisherEmail:item.publisherEmail,
+        title:item.title,details:item.details,link:item.link,publisherName:item.publisherName,publisherEmail:item.publisherEmail,publisherUid:item.publisherUid||item.uid||'',
         title_ar:item.title_ar||'',title_en:item.title_en||'',details_ar:item.details_ar||'',details_en:item.details_en||'',
         format_ar:item.format_ar||'',format_en:item.format_en||'',translationProvider:item.translationProvider||'MyMemory',
         category:item.category||'other',categorySource:item.categorySource||'user',courseLanguage:item.courseLanguage||'',
