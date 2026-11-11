@@ -1067,3 +1067,56 @@ dialog.details-dialog::backdrop{background:rgba(6,6,8,.4)!important;-webkit-back
 [data-theme=light] dialog.details-dialog::backdrop{background:rgba(255,255,255,.25)!important}
 dialog.details-dialog{background:var(--g-bg),color-mix(in srgb,var(--bg) 52%,transparent)!important;-webkit-backdrop-filter:blur(40px) saturate(170%)!important;backdrop-filter:blur(40px) saturate(170%)!important}
 @media(prefers-reduced-transparency:reduce){dialog.details-dialog{background:rgba(14,14,16,.94)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
+
+/* ===== Mobile performance mode: keep the graphite/orange look, reduce GPU work ===== */
+@media (max-width:760px), (pointer:coarse){
+  /* Keep the navigation glass untouched; simplify large decorative layers. */
+  #earth{filter:none!important;opacity:.42!important}
+  .b1,.b2,.b3,.b4{animation:none!important;transform:none!important}
+  .orbit{animation:none!important;opacity:.22!important}
+  .page.on{animation:none!important}
+  .card:hover,.cats a:hover{transform:none!important}
+
+  /* Backdrop blur is expensive on many mid-range phones. Retain translucent surfaces. */
+  .card,.hsearch,.cats a,.about,.tools input,
+  .tools .category-filter,.tools .language-filter,
+  .page-arrow,.page-number,
+  dialog:not(.details-dialog),
+  dialog.details-dialog,
+  .geo-ai-panel,.geo-ai-launcher,
+  .geo-ai-resource{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+  .card,.hsearch,.cats a,.about,.tools input,
+  .tools .category-filter,.tools .language-filter,
+  .page-arrow,.page-number,.geo-ai-panel,.geo-ai-resource{
+    box-shadow:0 3px 12px rgba(0,0,0,.08)!important;
+  }
+  dialog:not(.details-dialog),dialog.details-dialog{
+    box-shadow:0 12px 34px rgba(0,0,0,.22)!important;
+  }
+  dialog.details-dialog::backdrop,
+  dialog:not(.details-dialog)::backdrop{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:rgba(8,8,10,.62)!important;
+  }
+  [data-theme=light] dialog.details-dialog::backdrop,
+  [data-theme=light] dialog:not(.details-dialog)::backdrop{
+    background:rgba(25,24,22,.30)!important;
+  }
+  .geo-ai-launcher{box-shadow:0 3px 12px rgba(0,0,0,.12)!important}
+  .geo-ai-panel{box-shadow:0 10px 30px rgba(0,0,0,.18)!important}
+  .btn,.ibtn{transition:none!important}
+}
+@media (max-width:520px){
+  /* Compact spacing reduces long pages and excessive repaints while scrolling. */
+  main{padding-inline:12px}
+  .page{padding-block:20px}
+  .grid{gap:11px}
+  .card{padding:15px;border-radius:17px}
+  .phead{margin-bottom:18px}
+  .about{padding:22px}
+  .geo-ai-widget{bottom:12px}
+}
