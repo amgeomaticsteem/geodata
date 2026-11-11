@@ -85,7 +85,7 @@ const LABEL = {
   course_databases:['قواعد البيانات المكانية','Spatial databases'],
   course_other:['أخرى','Other']
 };
-let lang = 'ar', theme = 'light', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
+let lang = 'ar', theme = 'dark', user = null, addTo = 'data', globalQuery = '', globalSearchPage = 1;
 try { lang = localStorage.lang || lang; localStorage.removeItem('theme'); } catch {}
 let renderExtra = () => {};
 const store = {};
@@ -567,14 +567,14 @@ function drawSearch() {
 }
 const drawAll = () => { Object.keys(COLS).forEach(draw); if (location.hash === '#search') drawSearch(); };
 
-function applyTheme() { theme='light';document.body.dataset.theme='light';updateGeoAssistantTheme(); }
+function applyTheme() { theme='dark';document.body.dataset.theme='dark';updateGeoAssistantTheme(); }
 let currentDetail = null;
 function applyLang() {
   const root=document.documentElement;
   root.lang=lang;root.dir=lang==='ar'?'rtl':'ltr';
   $('#mainNav')?.setAttribute('dir',root.dir);
   document.body.className='lang-'+lang+' ready';
-  document.body.dataset.theme='light';
+  document.body.dataset.theme='dark';
   $$('[data-i]').forEach(el=>el.textContent=t(el.dataset.i));
   $$('[data-ph]').forEach(el=>{el.placeholder=t(el.dataset.ph);});
   const metaDescription=$('meta[name="description"]');
