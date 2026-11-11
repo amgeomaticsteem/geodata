@@ -23,9 +23,8 @@ const grid = (step, test = () => true) => {
 let sea = grid(lite ? 12 : 6), land = new Float32Array(0);
 
 (async () => {
-  // Phones use a lightweight static globe: no topology download, no pointer work,
-  // and no continuous animation loop.
-  if (lite) return;
+  // Low-power devices still load the compact 110m coastline once, then draw it statically.
+  // This keeps the Earth visible without a continuous animation loop.
   try {
     const [{ feature }, topo] = await Promise.all([
       import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
@@ -37,7 +36,7 @@ let sea = grid(lite ? 12 : 6), land = new Float32Array(0);
       x.beginPath(); poly.forEach(r => { r.forEach(([lo, la], i) => x[i ? 'lineTo' : 'moveTo'](lo + 180, 90 - la)); x.closePath(); }); x.fill('evenodd');
     }));
     const d = x.getImageData(0, 0, 360, 180).data;
-    land = grid(2, (lo, la) => d[((Math.min(179, Math.floor(90 - la)) * 360) + Math.min(359, Math.floor(lo + 180))) * 4 + 3] > 100);
+    land = grid(lite ? 5 : 2, (lo, la) => d[((Math.min(179, Math.floor(90 - la)) * 360) + Math.min(359, Math.floor(lo + 180))) * 4 + 3] > 100);
     if (still) frame();
   } catch (e) { console.warn('Globe land data not loaded', e); }
 })();
@@ -46,7 +45,7 @@ function frame() {
   sx += (mx - sx) * .05; sy += (my - sy) * .05; gx += (px - gx) * .09; gy += (py - gy) * .09;
   if (!still) rot += .0014 + sx * .0035; // moving the pointer left/right changes the spin
   const dark = document.body.dataset.theme !== 'light', w = W * S, h = H * S;
-  const R = Math.min(w * .55, h * .62), cx = w / 2 - sx * w * .02, cy = h * .93 - sy * h * .02, tilt = .38 + sy * .15, ct = Math.cos(tilt), st = Math.sin(tilt);
+  const R = Math.min(w * .55, h * .62), cx = w / 2 - sx * w * .02, cy = h * (lite ? .82 : .93) - sy * h * .02, tilt = .38 + sy * .15, ct = Math.cos(tilt), st = Math.sin(tilt);
   g.clearRect(0, 0, w, h);
   let gr = g.createRadialGradient(cx, cy, R * .9, cx, cy, R * 1.2);
   gr.addColorStop(0, dark ? 'rgba(92,225,230,.4)' : 'rgba(40,110,255,.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
