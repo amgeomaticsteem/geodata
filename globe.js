@@ -1,11 +1,17 @@
 /* Blurred Earth + animated mesh that reacts to the pointer. Land shapes come from a public CDN; if it can't load, a dotted globe is still drawn. */
 const cv = document.getElementById('earth'), g = cv.getContext('2d'), bg = document.querySelector('.bg');
-const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const S = .5; // render at half size: cheap, and the upscale adds to the blur
+const coarsePointer = matchMedia('(pointer: coarse)').matches;
+const smallScreen = matchMedia('(max-width: 760px)').matches;
+const lowMemory = (navigator.deviceMemory || 8) <= 4;
+const lowCpu = (navigator.hardwareConcurrency || 8) <= 4;
+const saveData = Boolean(navigator.connection?.saveData);
+const lite = coarsePointer || smallScreen || lowMemory || lowCpu || saveData;
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches || lite;
+const S = lite ? .28 : .5; // smaller canvas on mobile and low-power devices
 let W, H, mx = 0, my = 0, sx = 0, sy = 0, px = innerWidth / 2, py = innerHeight * .3, gx = px, gy = py, rot = 0;
-const resize = () => { W = innerWidth; H = innerHeight; cv.width = W * S; cv.height = H * S; };
+const resize = () => { W = innerWidth; H = innerHeight; cv.width = Math.max(1, Math.round(W * S)); cv.height = Math.max(1, Math.round(H * S)); };
 addEventListener('resize', resize); resize();
-if (!still) addEventListener('pointermove', e => { mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY; });
+if (!lite && !still) addEventListener('pointermove', e => { mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY; });
 
 // dots on a sphere stored flat as [longitude, cos(lat), sin(lat)]
 const grid = (step, test = () => true) => {
@@ -13,9 +19,12 @@ const grid = (step, test = () => true) => {
   for (let la = -88; la <= 88; la += step) for (let lo = -180; lo < 180; lo += step) if (test(lo, la)) a.push(lo * Math.PI / 180, Math.cos(la * Math.PI / 180), Math.sin(la * Math.PI / 180));
   return Float32Array.from(a);
 };
-let sea = grid(6), land = new Float32Array(0);
+let sea = grid(lite ? 12 : 6), land = new Float32Array(0);
 
 (async () => {
+  // Phones use a lightweight static globe: no topology download, no pointer work,
+  // and no continuous animation loop.
+  if (lite) return;
   try {
     const [{ feature }, topo] = await Promise.all([
       import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
