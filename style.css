@@ -1170,3 +1170,33 @@ dialog.details-dialog{background:var(--g-bg),color-mix(in srgb,var(--bg) 52%,tra
   .actions{gap:3px}
   .actions .ibtn,.actions #login{width:34px;height:34px;min-width:34px;flex-basis:34px}
 }
+
+
+/* Mobile assistant: restore a readable glass surface without affecting the navigation. */
+@media (max-width:760px), (pointer:coarse){
+  .geo-ai-panel{
+    background:rgba(16,16,19,.91)!important;
+    border:1px solid rgba(255,255,255,.20)!important;
+    -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+    backdrop-filter:blur(20px) saturate(145%)!important;
+    box-shadow:0 14px 42px rgba(0,0,0,.34)!important;
+  }
+  [data-theme=light] .geo-ai-panel{
+    background:rgba(247,245,240,.94)!important;
+    border-color:rgba(35,35,35,.16)!important;
+  }
+  .geo-ai-header,.geo-ai-form{
+    background:rgba(8,8,10,.28)!important;
+  }
+  [data-theme=light] .geo-ai-header,[data-theme=light] .geo-ai-form{
+    background:rgba(255,255,255,.46)!important;
+  }
+  .geo-ai-message.assistant,.geo-ai-resource{
+    background:rgba(255,255,255,.10)!important;
+    border-color:rgba(255,255,255,.18)!important;
+  }
+  [data-theme=light] .geo-ai-message.assistant,[data-theme=light] .geo-ai-resource{
+    background:rgba(255,255,255,.78)!important;
+    border-color:rgba(30,30,30,.14)!important;
+  }
+}
