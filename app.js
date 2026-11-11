@@ -632,7 +632,7 @@ $$('.tabs button').forEach(button=>button.onclick=()=>{
   $('#authError').hidden=true;$('#authError').textContent='';
   $$('.tabs button').forEach(item=>item.classList.toggle('on',item===button));
 });
-[authM,addM,$('#notifM'),detailM].filter(Boolean).forEach(dialog=>dialog.addEventListener('click',event=>{
+[authM,addM,$('#notifM'),$('#reportM'),detailM].filter(Boolean).forEach(dialog=>dialog.addEventListener('click',event=>{
   const rect=dialog.getBoundingClientRect();
   if(event.clientX<rect.left || event.clientX>rect.right || event.clientY<rect.top || event.clientY>rect.bottom) dialog.close();
 }));
