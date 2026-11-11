@@ -665,55 +665,201 @@ const paintUser=()=>{
   if(user)$('#uname').textContent=user.displayName||user.email?.split('@')[0]||'User';
 };
 
-let detailToken=0;
-async function openDetail(col,id) {
-  currentDetail = {col,id};
-  const record=(store[col]||[]).find(item=>item.id===id)||(searchIndexBySection[col]||[]).find(item=>item.id===id)||pageState[col]?.loaded.get(id);
+let activeReviewUnsub=null;
+function getResource(col,id) {
+  return (store[col]||[]).find(item=>item.id===id)||
+    (searchIndexBySection[col]||[]).find(item=>item.id===id)||
+    pageState[col]?.loaded.get(id)||null;
+}
+function youtubeInfo(value) {
+  try{
+    const url=new URL(value),host=url.hostname.replace(/^www\./,'');
+    if(host==='youtu.be')return {video:url.pathname.slice(1),list:url.searchParams.get('list')||''};
+    if(host.endsWith('youtube.com')){
+      return {video:url.searchParams.get('v')||(url.pathname.match(/\/embed\/([^/]+)/)||[])[1]||'',list:url.searchParams.get('list')||''};
+    }
+  }catch{}
+  return null;
+}
+function detailSidebarMarkup(col,selected) {
+  if(!['data','courses'].includes(col))return '';
+  const values=col==='data'?DATA_CATEGORIES:COURSE_CATEGORIES;
+  return '<h3>'+t('categoriesHeading')+'</h3><nav class="category-nav">'+
+    '<button type="button" data-detail-filter="'+col+'" data-filter-category="" class="'+(!selected?'active':'')+'">'+t('allCategories')+'</button>'+
+    values.map(value=>'<button type="button" data-detail-filter="'+col+'" data-filter-category="'+esc(value)+'" class="'+(selected===value?'active':'')+'">'+esc(categoryLabel(col,value))+'</button>').join('')+
+    '</nav>';
+}
+function openDetail(col,id) {
+  const record=getResource(col,id);
   if(!record)return;
-  detailToken++;
-  const token=detailToken;
-  $('#detailCategory').textContent=t(col);
-  $('#detailFormat').textContent=record.format||'';
-  $('#detailPublisher').textContent=record.publisherName||'—';
-  $('#detailDate').textContent=record.date||'';
-  $('#detailSubjectCategory').textContent=categoryLabel(col,record.category)||'—';
-  $('#detailCourseLanguage').textContent=col==='courses'&&record.courseLanguage?t('language'+(record.courseLanguage==='ar'?'Ar':record.courseLanguage==='en'?'En':'Both')):'—';
-  $('#detailTitle').textContent=record.title||'';
-  $('#detailDescription').textContent=record.details||'';
-  $('#detailSource').textContent=record.sourceName||record.publisherName||'—';
-  $('#detailTheme').textContent=record.theme||'';
-  $('#detailCoverage').textContent=record.coverage||'';
-  $('#detailLicense').textContent=record.license||'';
-  const safeLink=record.link&&(record.link.startsWith('https://')||record.link.startsWith('http://'))?record.link:'#';
-  $('#detailVisit').href=safeLink;
-  $('#detailVisit').hidden=!(record.link&&/^https?:\/\//i.test(record.link));
-  $('#detailMachine').textContent=t('machine');
-  if(!detailM.open)detailM.showModal();
-  const target=lang;
-  const fields=['title','details','format','license','theme','coverage'];
-  const values=await Promise.all(fields.map(field=>localizedField(record,field,target)));
-  if(token!==detailToken||!detailM.open||target!==lang)return;
-  $('#detailTitle').textContent=values[0];
-  $('#detailDescription').textContent=values[1];
-  if(values[2])$('#detailFormat').textContent=values[2];
-  if(values[3])$('#detailLicense').textContent=values[3];
-  if(values[4])$('#detailTheme').textContent=values[4];
-  if(values[5])$('#detailCoverage').textContent=values[5];
+  currentDetail={col,id};
+  location.hash='#resource/'+col+'/'+encodeURIComponent(id);
+  route();
+}
+async function renderResourceDetail() {
+  if(!currentDetail)return;
+  const {col,id}=currentDetail,record=getResource(col,id),content=$('#resourceDetailContent');
+  if(!content)return;
+  if(!record){
+    content.innerHTML='<p class="empty">'+t('loadError')+'</p>';
+    return;
+  }
+  const sidebar=$('#detailCategorySidebar'),playlist=$('#coursePlaylistSidebar'),shell=$('.resource-page-shell');
+  const hasCategories=col==='data'||col==='courses';
+  sidebar.hidden=!hasCategories;
+  sidebar.innerHTML=hasCategories?detailSidebarMarkup(col,record.category):'';
+  const yt=col==='courses'?youtubeInfo(record.link||''):null;
+  const safeLink=/^https:\/\//i.test(record.link||'')?record.link:'';
+  const title=record['title_'+lang]||record.title||'';
+  const category=record.category?categoryLabel(col,record.category):t(col);
+  const date=resourceDate(record);
+  const owner=record.publisherName||record.sourceName||'GEOData';
+  let videoHtml='',playlistHtml='';
+  if(yt&&(yt.video||yt.list)){
+    const videoId=yt.video?encodeURIComponent(yt.video):'';
+    const listId=yt.list?encodeURIComponent(yt.list):'';
+    const embed=yt.video
+      ?'https://www.youtube-nocookie.com/embed/'+videoId+(listId?'?list='+listId:'')
+      :'https://www.youtube-nocookie.com/embed/videoseries?list='+listId;
+    videoHtml='<div class="course-player-wrap"><iframe class="course-video-frame" src="'+embed+'" title="'+esc(title)+'" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>';
+    if(listId)playlistHtml='<h3>'+t('playlistHeading')+'</h3><iframe src="https://www.youtube-nocookie.com/embed/videoseries?list='+listId+'" title="'+esc(title)+' — playlist" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe><p class="playlist-caption">'+esc(title)+'</p>';
+  }else if(col==='courses'){
+    videoHtml='<p class="empty">'+t('noCourseVideo')+'</p>';
+  }
+  playlist.hidden=!playlistHtml;
+  playlist.innerHTML=playlistHtml;
+  shell.classList.toggle('no-side-playlist',!playlistHtml);
+  shell.classList.toggle('no-side-category',!hasCategories);
+  const metadata=[
+    [t('publisher'),owner],[t('date'),date],[t('categoryLabel'),category],
+    [t('format'),record.format||''],[t('courseLanguage'),record.courseLanguage?t('language'+(record.courseLanguage==='ar'?'Ar':record.courseLanguage==='en'?'En':'Both')):''],
+    [t('source'),record.sourceName||''],[t('theme'),record.theme||''],[t('coverage'),record.coverage||''],[t('license'),record.license||'']
+  ].filter(pair=>pair[1]);
+  const reportButton='<button class="report-link" type="button" data-report-col="'+esc(col)+'" data-report-id="'+esc(id)+'" data-report-title="'+esc(title)+'">'+t('report')+'</button>';
+  content.innerHTML=
+    '<div class="resource-breadcrumb"><a href="#'+(col==='data'?'data':col)+'">'+t(col)+'</a><span>›</span><span>'+esc(category)+'</span><span>›</span><span>'+t('details')+'</span></div>'+
+    '<div class="resource-detail-heading"><span class="tag">'+esc(category)+'</span><h1 data-local-field="title">'+esc(title)+'</h1>'+
+    '<div class="resource-row-meta"><span>'+esc(owner)+'</span>'+(date?'<span>'+esc(date)+'</span>':'')+(record.format?'<span>'+esc(record.format)+'</span>':'')+'</div></div>'+
+    videoHtml+
+    '<p class="resource-detail-description" data-local-field="details">'+esc(record.details||'')+'</p>'+
+    '<div class="resource-detail-meta">'+metadata.map(pair=>'<div><small>'+esc(pair[0])+'</small><b>'+esc(pair[1])+'</b></div>').join('')+'</div>'+
+    '<div class="resource-detail-actions">'+(safeLink?'<a class="btn" href="'+esc(safeLink)+'" target="_blank" rel="noopener noreferrer">'+t('openOriginal')+'</a>':'')+
+      reportButton+'<a class="btn ghost" href="#'+col+'">'+t('backToList')+'</a></div>'+
+    (col==='courses'&&safeLink?'<div class="course-attribution">'+t('sourceCredit')+': <a href="'+esc(safeLink)+'" target="_blank" rel="noopener noreferrer">'+esc(record.sourceName||owner)+' — YouTube</a></div>':'')+
+    '<section class="review-section"><h2>'+t('reviewsHeading')+'</h2>'+
+      '<div class="review-summary"><strong id="reviewAverage">—</strong><span class="review-stars" id="reviewAverageStars">☆☆☆☆☆</span><span id="reviewCount">0</span></div>'+
+      '<form id="reviewForm" class="review-form"><label>'+t('yourRating')+'</label><div class="rating-picker" id="ratingPicker" role="radiogroup" aria-label="'+t('yourRating')+'">'+[1,2,3,4,5].map(n=>'<button type="button" data-rating-value="'+n+'" aria-label="'+n+' '+t('ratingLabel')+'">★</button>').join('')+'</div>'+
+      '<label for="reviewComment">'+t('writeComment')+'</label><textarea id="reviewComment" name="comment" maxlength="1200" placeholder="'+t('writeComment')+'"></textarea>'+
+      '<div class="review-controls"><small id="reviewLoginHint">'+(user?'':t('reviewLogin'))+'</small><button class="btn" type="submit">'+t('submitReview')+'</button></div></form>'+
+      '<div id="reviewList" class="review-list"><p class="empty">'+t('loading')+'</p></div></section>';
+  await localizeElements(content,record);
+  loadResourceReviews(col,id,record);
+}
+let selectedRating=0;
+function loadResourceReviews(col,id,record) {
+  if(activeReviewUnsub){activeReviewUnsub();activeReviewUnsub=null;}
+  selectedRating=0;
+  const key=col+'_'+id;
+  const list=$('#reviewList');if(!list)return;
+  activeReviewUnsub=onSnapshot(query(collection(db,'reviews'),where('resourceKey','==',key)),snapshot=>{
+    const rows=snapshot.docs.map(item=>({id:item.id,...item.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const avg=rows.length?rows.reduce((sum,row)=>sum+(Number(row.rating)||0),0)/rows.length:0;
+    $('#reviewAverage').textContent=rows.length?avg.toFixed(1):'—';
+    $('#reviewAverageStars').textContent=Array.from({length:5},(_,i)=>i<Math.round(avg)?'★':'☆').join('');
+    $('#reviewCount').textContent=rows.length+' '+t('ratingLabel');
+    const own=rows.find(row=>user&&row.uid===user.uid);
+    selectedRating=own?.rating||0;
+    if($('#reviewComment'))$('#reviewComment').value=own?.comment||'';
+    updateRatingPicker();
+    list.innerHTML=rows.length?rows.map(row=>
+      '<article class="review-item"><div class="review-item-head"><b>'+esc(row.userName||'GEOData user')+'</b><span class="review-stars">'+Array.from({length:5},(_,i)=>i<Number(row.rating||0)?'★':'☆').join('')+'</span></div>'+
+      (row.comment?'<p>'+esc(row.comment)+'</p>':'')+'</article>'
+    ).join(''):'<p class="empty">'+t('noReviews')+'</p>';
+  },error=>{console.warn('GEOData reviews unavailable:',error);list.innerHTML='<p class="empty">'+t('loadError')+'</p>';});
+}
+function updateRatingPicker() {
+  $$('#ratingPicker button').forEach(button=>button.classList.toggle('selected',Number(button.dataset.ratingValue)<=selectedRating));
 }
 document.addEventListener('click',event=>{
-  const button=event.target.closest('[data-detail-col]');
-  if(button)openDetail(button.dataset.detailCol,button.dataset.detailId);
+  const detailButton=event.target.closest('[data-detail-col]');
+  if(detailButton){openDetail(detailButton.dataset.detailCol,detailButton.dataset.detailId);return;}
   const suggestion=event.target.closest('[data-suggest-col]');
-  if(suggestion){ $$('.search-suggestions').forEach(box=>box.hidden=true); openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId); }
+  if(suggestion){$$('.search-suggestions').forEach(box=>box.hidden=true);openDetail(suggestion.dataset.suggestCol,suggestion.dataset.suggestId);return;}
+  const categoryButton=event.target.closest('[data-filter-category]');
+  if(categoryButton){
+    const nav=categoryButton.closest('[data-category-nav]'),detailFilter=categoryButton.closest('[data-detail-filter]');
+    const col=nav?.dataset.categoryNav||detailFilter?.dataset.detailFilter;
+    if(col){resetAndLoad(col,{category:categoryButton.dataset.filterCategory||''});if(detailFilter)location.hash='#'+col;}
+    return;
+  }
+  const languageButton=event.target.closest('[data-filter-language]');
+  if(languageButton){resetAndLoad('courses',{courseLanguage:languageButton.dataset.filterLanguage||''});return;}
+  const ratingButton=event.target.closest('[data-rating-value]');
+  if(ratingButton){selectedRating=Number(ratingButton.dataset.ratingValue);updateRatingPicker();return;}
+  const reportButton=event.target.closest('[data-report-col]');
+  if(reportButton){
+    const col=reportButton.dataset.reportCol,id=reportButton.dataset.reportId,record=getResource(col,id);
+    currentReport={col,id,title:reportButton.dataset.reportTitle||record?.title||''};
+    $('#reportResourceTitle').textContent=currentReport.title;
+    $('#reportReason').value='';$('#reportM').showModal();return;
+  }
+});
+let currentReport=null;
+document.addEventListener('submit',async event=>{
+  if(event.target.id==='reviewForm'){
+    event.preventDefault();
+    if(!user){toast(t('reviewLogin'));authM.showModal();return;}
+    if(!selectedRating){toast(lang==='ar'?'اختار عدد النجوم الأول.':'Choose a star rating first.');return;}
+    const record=currentDetail&&getResource(currentDetail.col,currentDetail.id);
+    if(!record)return;
+    const key=currentDetail.col+'_'+currentDetail.id;
+    const reviewId=encodeURIComponent(key+'_'+user.uid);
+    const comment=$('#reviewComment').value.trim();
+    const review={
+      resourceKey:key,uid:user.uid,userName:user.displayName||user.email?.split('@')[0]||'GEOData user',
+      ownerUid:record.publisherUid||'',rating:selectedRating,comment,
+      updatedAt:serverTimestamp(),createdAt:serverTimestamp()
+    };
+    const submit=$('button[type="submit"]',event.target);submit.disabled=true;
+    try{
+      await setDoc(doc(db,'reviews',reviewId),review,{merge:true});
+      if(record.publisherUid&&record.publisherUid!==user.uid){
+        const notificationId='review_'+reviewId;
+        await setDoc(doc(db,'notifications',notificationId),{
+          toUid:record.publisherUid,fromUid:user.uid,fromName:review.userName,
+          reviewId,resourceKey:key,resourceTitle:record.title||'',rating:selectedRating,
+          createdAt:serverTimestamp(),read:false
+        });
+      }
+      toast(t('reviewSaved'));
+    }catch(error){console.error('Review save failed:',error);toast(t('fail')+error.message);}
+    finally{submit.disabled=false;}
+  }
+  if(event.target.id==='reportForm'){
+    event.preventDefault();
+    if(!user){toast(t('reportLogin'));authM.showModal();return;}
+    const reason=$('#reportReason').value.trim();
+    if(!reason){toast(t('reportReasonRequired'));return;}
+    if(!currentReport)return;
+    const submit=$('button[type="submit"]',event.target);submit.disabled=true;
+    try{
+      await addDoc(collection(db,'reports'),{
+        resourceKey:currentReport.col+'_'+currentReport.id,resourceCol:currentReport.col,
+        resourceId:currentReport.id,resourceTitle:currentReport.title,reason,
+        reporterUid:user.uid,reporterEmail:user.email||'',status:'new',createdAt:serverTimestamp()
+      });
+      $('#reportM').close();event.target.reset();toast(t('reportSaved'));
+    }catch(error){console.error('Report save failed:',error);toast(t('fail')+error.message);}
+    finally{submit.disabled=false;}
+  }
 });
 
-/* Translate a submission before it is saved; original text is always retained. */
+/* Translate a submission before it is saved; original text is always retained. *//* Translate a submission before it is saved; original text is always retained. */
 async function prepareBilingual(record) {
   const bilingual=await bilingualFields(record);
   return {...record,...bilingual,translationProvider:'MyMemory'};
 }
 applyTheme(); applyLang(); route();
-setInterval(updateHeroGreeting,60000);
 
 /* ---------- Firebase ---------- */
 const FirebaseURL='https://www.gstatic.com/firebasejs/10.12.0/';
