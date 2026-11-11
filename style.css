@@ -1120,3 +1120,53 @@ dialog.details-dialog{background:var(--g-bg),color-mix(in srgb,var(--bg) 52%,tra
   .about{padding:22px}
   .geo-ai-widget{bottom:12px}
 }
+
+/* ===== Mobile layout and globe visibility correction ===== */
+@media (max-width:760px), (pointer:coarse){
+  html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:clip;
+  }
+  body{position:relative}
+
+  /* Put the canvas above the page background but below every content layer. */
+  #earth{z-index:0!important}
+  .bg{z-index:1!important}
+  main,footer{position:relative;z-index:2;width:100%;min-width:0}
+  .nav-clock-shell{min-width:0;max-width:100%}
+  .nav-clock-shell>.nav{width:100%;min-width:0}
+  .page,#home,.hero{min-width:0;max-width:100%}
+  .hero{width:100%;overflow-x:clip}
+  .orbit{width:min(100%,860px)!important;max-width:100%;}
+
+  /* The search input was taking 100% width in addition to its submit button. */
+  .hsearch{width:100%;min-width:0;max-width:640px}
+  .hsearch input{flex:1 1 0%;width:0;min-width:0}
+  .hsearch .btn{flex:0 0 auto;white-space:nowrap}
+
+  /* Compact the header's inner controls so the Home page never widens the viewport. */
+  .nav{width:100%;min-width:0;padding-inline:10px;gap:6px}
+  .brand{min-width:0;flex:0 1 auto}
+  .brand img{height:48px;max-width:clamp(88px,29vw,132px);object-fit:contain}
+  .actions{min-width:0;flex:0 0 auto;gap:4px}
+  .actions .ibtn{width:36px;height:36px;flex:0 0 36px}
+  .actions #login{width:36px;height:36px;min-width:36px;padding:0;justify-content:center}
+  .actions #user{max-width:92px;min-width:0;gap:4px;padding:2px 4px}
+  .actions #logout{font-size:.72rem;white-space:nowrap}
+}
+@media (max-width:520px){
+  .page{padding-inline:12px}
+  .hero{margin-top:3vh}
+  .hero h1{font-size:clamp(1.65rem,7vw,2.15rem);line-height:1.4;overflow-wrap:anywhere}
+  .lead{font-size:.96rem;padding-inline:4px;margin-bottom:20px}
+  .hsearch{gap:5px;padding:6px}
+  .hsearch input{font-size:.88rem;padding-inline:9px}
+  .hsearch .btn{padding-inline:13px;font-size:.84rem}
+  .cats{gap:7px}
+  .cats a{padding:8px 11px;font-size:.84rem}
+  .nav{padding-inline:8px}
+  .brand img{height:44px;max-width:clamp(82px,27vw,112px)}
+  .actions{gap:3px}
+  .actions .ibtn,.actions #login{width:34px;height:34px;min-width:34px;flex-basis:34px}
+}
