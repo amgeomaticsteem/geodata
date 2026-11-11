@@ -1200,3 +1200,300 @@ dialog.details-dialog{background:var(--g-bg),color-mix(in srgb,var(--bg) 52%,tra
     border-color:rgba(30,30,30,.14)!important;
   }
 }
+
+
+
+/* =========================================================
+   GEOData / Esri-inspired redesign v1
+   The original interaction styles for auth, admin, notifications
+   and the AI assistant remain available below this layer.
+   ========================================================= */
+:root{
+  --nh:78px;--brand:#1688df;--brand-deep:#0869b2;--navy:#0b2038;
+  --ink:#172b42;--muted:#66788d;--paper:#fff;--soft:#f3f6f9;
+  --line:#dfe6ed;--line-strong:#cbd6e0;--blue-soft:#e9f4fc;
+  --bg:#fff;--tx:#172b42;--mu:#66788d;--ac:#1688df;--ink-on-ac:#fff;
+  --g-bg:#fff;--g-bd:#dfe6ed;--g-sh:0 2px 12px rgba(17,45,75,.06);
+  --g-in:#f7f9fb;--g-on:#edf5fb;--gold:#e49b22;
+  color-scheme:light;
+}
+html,body{width:100%;min-width:320px;max-width:100%;overflow-x:clip;background:#fff;color:var(--ink)}
+html{scroll-behavior:smooth}
+body{display:flex;flex-direction:column;min-height:100vh;font-family:'Sora','Cairo',Arial,sans-serif;line-height:1.65}
+body.lang-ar{font-family:'Cairo','Sora',Arial,sans-serif}
+body:not(.ready){visibility:hidden}
+.bg{position:fixed;inset:0;z-index:-1;background:#fff;pointer-events:none}
+.bg::before,.bg::after,.bg i{display:none!important}
+#earth{display:block;width:100%;height:100%;position:absolute;inset:0;filter:none!important;opacity:1;pointer-events:none}
+.nav-clock-shell{position:sticky;top:0;z-index:80;width:100%;background:rgba(255,255,255,.97);border-bottom:1px solid #e6ebf0;box-shadow:0 2px 12px rgba(16,40,64,.035);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.nav{position:relative;top:auto;height:var(--nh);max-width:1440px;width:100%;margin:0 auto;padding:0 clamp(16px,3vw,42px);display:flex;align-items:center;gap:clamp(12px,2vw,26px);border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.brand{display:flex;align-items:center;flex:0 0 auto}
+.brand img{height:52px;width:auto;max-width:170px;object-fit:contain}
+.brand .logo-l{display:block!important}.brand .logo-d{display:none!important}
+#links{display:flex;align-items:center;gap:2px;margin-inline:auto;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#links a{padding:9px 13px;border-radius:5px;border:0;color:#3d5269;font-weight:600;font-size:.93rem;transition:color .18s,background .18s}
+#links a:hover,#links a.on{color:#087bc8;background:#eef6fc;border:0;box-shadow:none}
+#links em{background:#d94b4b}
+.actions{display:flex;align-items:center;gap:7px;margin-inline-start:0;flex:0 0 auto}
+.actions .ibtn{width:39px;height:39px;border:1px solid transparent;background:transparent;box-shadow:none;color:#223c55;padding:0}
+.actions .ibtn:hover{background:#edf5fb;border-color:#deebf5}
+.actions #lang{font-size:.78rem;font-weight:800;border:1px solid #d8e3ec;width:42px;height:36px}
+.actions .btn.ghost{background:#fff;border:1px solid #d6e0e8;color:#253c54;box-shadow:none}
+#user{background:#f5f8fa;border:1px solid #e1e8ee;box-shadow:none;color:#20384f}
+#user .ico{filter:none}
+.link{color:#bd4545}
+.ibtn.burger{display:none}
+.ico{width:19px;height:19px;object-fit:contain}
+.btn,.ibtn{font-family:inherit;transition:background .18s,border-color .18s,color .18s,transform .18s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:10px 22px;border-radius:4px;background:var(--brand);border:1px solid var(--brand);box-shadow:none;color:#fff;font-size:.94rem;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--brand-deep);border-color:var(--brand-deep);filter:none;transform:translateY(-1px)}
+.btn.ghost{background:#fff;color:#263d55;border:1px solid #ced9e3;box-shadow:none}
+.btn.ghost:hover{background:#f2f7fa;border-color:#9bb3c7}
+.btn.sm{min-height:34px;padding:6px 13px;border-radius:4px;font-size:.84rem}
+input,select,textarea{font-family:inherit;width:100%;padding:11px 13px;border:1px solid #cbd7e1;border-radius:4px;background:#fff;color:#20364b;box-shadow:none}
+input::placeholder,textarea::placeholder{color:#8393a4}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(22,136,223,.17);border-color:#1688df}
+select option{background:#fff;color:#20364b}
+main{flex:1;width:100%;max-width:100%}
+.page{display:none;padding:clamp(26px,4vw,54px) clamp(16px,4.2vw,64px);min-height:62vh}
+.page.on{display:block;animation:esriFade .24s ease}
+@keyframes esriFade{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}
+#home.page{padding:0;min-height:0}
+.hero-esri{direction:ltr;display:grid;grid-template-columns:minmax(0, .95fr) minmax(0,1.05fr);min-height:min(700px,calc(100vh - var(--nh)));background:#071321;overflow:hidden}
+body.lang-ar .hero-esri{direction:rtl}
+.hero-copy{direction:ltr;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:clamp(34px,6.2vw,90px);background:linear-gradient(135deg,#071725 0%,#0a2238 58%,#092c4a 100%);color:#f7fbff;position:relative;z-index:2}
+body.lang-ar .hero-copy{align-items:flex-start}
+.hero-copy::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 10% 90%,rgba(27,137,218,.2),transparent 55%)}
+.hero-copy>*{position:relative;z-index:1}
+.eyebrow{display:block;margin:0 0 18px;color:#75bde9;letter-spacing:.15em;text-transform:uppercase;font-size:.72rem;font-weight:800}
+.hero-copy h1{font-size:clamp(2.15rem,4.35vw,4.2rem);line-height:1.22;letter-spacing:-.035em;font-weight:800;max-width:690px;margin:0 0 22px;color:#fff}
+body.lang-ar .hero-copy h1{line-height:1.55;letter-spacing:0}
+.hero-copy h1 .hero-blue{color:#38a7f5}
+.hero-copy .lead{margin:0 0 28px;max-width:590px;color:#c7d5e2;font-size:clamp(.98rem,1.22vw,1.12rem);line-height:1.9;text-align:start}
+.hero-actions{display:flex;align-items:center;gap:12px;margin:0 0 32px;flex-wrap:wrap}
+.hero-actions .btn{min-width:132px;min-height:48px}
+.hero-actions .hero-primary{background:#168ce2;border-color:#168ce2;color:#fff}
+.hero-actions .hero-secondary{background:#16283a;border-color:#536b7e;color:#fff}
+.hero-actions .hero-secondary:hover{background:#223c52;border-color:#7b94a8}
+.hero-copy .hsearch{width:min(560px,100%);max-width:560px;margin:0;padding:5px;display:flex;gap:6px;background:#fff;border:1px solid rgba(255,255,255,.45);border-radius:4px;box-shadow:0 7px 28px rgba(0,0,0,.14);backdrop-filter:none;-webkit-backdrop-filter:none}
+.hero-copy .hsearch input{min-width:0;flex:1;border:0;background:transparent;color:#20364b;box-shadow:none;padding:10px 14px}
+.hero-copy .hsearch .btn{min-height:40px;padding-inline:20px}
+.hero-copy .hsearch input::placeholder{color:#7e8d9d}
+.hero-copy .search-suggestions{position:relative;width:min(560px,100%);margin-top:7px;background:#fff;color:#20364b;border:1px solid #dce5ec;border-radius:4px;box-shadow:0 12px 24px rgba(0,0,0,.2)}
+.hero-copy .suggestion{color:#20364b}
+.hero-stats{display:flex;gap:28px;margin-top:32px;padding-top:22px;border-top:1px solid rgba(227,241,252,.16);width:min(560px,100%);color:#d9e7f1}
+.hero-stats span{display:flex;flex-direction:column;gap:2px}
+.hero-stats b{font-size:1.28rem;color:#fff;font-weight:800}
+.hero-stats small{font-size:.75rem;color:#9eb6c9}
+.hero-space{position:relative;min-height:500px;overflow:hidden;background:#020812;isolation:isolate}
+.hero-space::before{content:"";position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 48% 48%,rgba(20,86,134,.24),transparent 57%),linear-gradient(90deg,rgba(5,17,29,.25),transparent 48%)}
+.hero-space::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(4,14,26,.24),transparent 24%),linear-gradient(0deg,rgba(4,14,26,.45),transparent 36%)}
+.space-stars{position:absolute;inset:0;z-index:0;opacity:.62;background-image:radial-gradient(1px 1px at 9% 14%,#fff 55%,transparent 60%),radial-gradient(1px 1px at 22% 61%,#b8dcff 55%,transparent 60%),radial-gradient(1.5px 1.5px at 71% 19%,#fff 55%,transparent 60%),radial-gradient(1px 1px at 89% 72%,#c3e2ff 55%,transparent 60%),radial-gradient(1px 1px at 52% 83%,#fff 55%,transparent 60%),radial-gradient(1px 1px at 35% 31%,#fff 55%,transparent 60%);background-size:290px 240px}
+.hero-space #earth{position:absolute;inset:0;width:100%;height:100%;z-index:1;filter:none;pointer-events:none}
+.globe-caption{position:absolute;z-index:3;bottom:24px;left:28px;color:rgba(225,240,252,.65);font-size:.67rem;letter-spacing:.16em;text-transform:uppercase}
+.home-feature-strip{display:flex;justify-content:space-between;align-items:center;gap:20px;max-width:1320px;margin:0 auto;padding:22px clamp(18px,4vw,58px);color:#486078;font-size:.9rem}
+.home-feature-strip a{color:#087fc9;font-weight:800;white-space:nowrap}
+.phead{max-width:1380px;margin:0 auto 22px}
+.phead h2{font-size:clamp(1.65rem,3vw,2.45rem);line-height:1.3;margin:0 0 7px;color:#18354e;font-weight:800}
+.phead p{color:#6a7e91;margin:0 0 20px;max-width:800px}
+.phead .eyebrow{margin-bottom:9px}
+.tools{display:flex;align-items:center;gap:10px;max-width:100%;flex-wrap:nowrap}
+.tools .search-wrap{flex:1 1 520px;min-width:0;position:relative}
+.tools .q{width:100%;height:47px;padding-inline:17px 48px;border:1px solid #cbd8e2;border-radius:4px;background:#fff;color:#1c344b;box-shadow:0 2px 8px rgba(15,45,72,.04)}
+.tools .search-wrap::before{content:"⌕";position:absolute;z-index:2;inset-inline-start:17px;top:3px;font-size:1.65rem;color:#668197;pointer-events:none}
+.tools .btn{flex:0 0 auto}
+.catalog-layout{display:grid;grid-template-columns:248px minmax(0,1fr);gap:clamp(20px,3vw,42px);max-width:1380px;margin:0 auto;align-items:start}
+.catalog-sidebar,.detail-category-sidebar,.course-playlist-sidebar{position:sticky;top:calc(var(--nh) + 22px);align-self:start;padding:17px 0;background:#fff;border:0;border-inline-end:1px solid #e1e8ef;min-width:0}
+.catalog-sidebar h3,.detail-category-sidebar h3,.course-playlist-sidebar h3{margin:0 0 12px;padding-inline:15px;color:#28465f;font-size:.94rem;font-weight:800}
+.category-nav{display:flex;flex-direction:column;gap:3px;padding-inline:0}
+.category-nav button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:41px;padding:8px 14px;border:0;border-inline-start:3px solid transparent;border-radius:0;background:transparent;color:#51687e;text-align:start;font:inherit;font-size:.88rem;cursor:pointer;transition:background .16s,color .16s}
+.category-nav button:hover{background:#f2f7fa;color:#1d496d}
+.category-nav button.active{background:#eaf4fb;border-inline-start-color:#1688df;color:#096eaf;font-weight:800}
+.category-nav button small{font-size:.73rem;color:#8a9aaa}
+.catalog-content{min-width:0}
+.catalog-content .tools{margin-bottom:18px}
+.resource-list{border-top:1px solid #dfe6ed;background:#fff;min-width:0}
+.resource-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,230px) auto;align-items:center;gap:20px;padding:19px 17px;border-bottom:1px solid #e4eaf0;min-width:0;transition:background .16s}
+.resource-row:hover{background:#f7fafc}
+.resource-row-main{min-width:0}
+.resource-row h3{margin:0 0 5px;color:#176fae;font-size:1.02rem;font-weight:800;line-height:1.55;overflow-wrap:anywhere}
+.resource-row h3 button{display:inline;text-align:start;padding:0;margin:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.resource-row h3 button:hover{text-decoration:underline;text-underline-offset:3px}
+.resource-row p{margin:0;color:#64788b;font-size:.85rem;line-height:1.75;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.resource-row-meta{display:flex;flex-direction:column;gap:3px;min-width:0;color:#75879a;font-size:.78rem}
+.resource-row-meta span{overflow-wrap:anywhere}
+.resource-row-meta .meta-category{color:#387eae;font-weight:700}
+.resource-row-actions{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.resource-row-actions .btn{min-height:35px;padding:6px 13px;font-size:.82rem}
+.resource-row .tag{font-size:.72rem;border:0;background:#edf5fa;color:#397ba7;border-radius:3px;padding:2px 8px}
+.resource-row .del{top:5px;inset-inline-end:5px;width:24px;height:24px}
+.empty{padding:45px 14px;text-align:center;color:#71859a}
+.pagination{max-width:none;margin:24px auto 0;gap:7px;color:#708296}
+.page-arrow,.page-number{min-width:36px;height:36px;padding:0 10px;border-radius:4px;border:1px solid #d6e0e8;background:#fff;color:#314c65;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.page-arrow:hover:not(:disabled),.page-number:hover:not(:disabled){transform:none;border-color:#1688df;background:#f0f7fc}
+.page-number.active{background:#1688df;color:#fff;border-color:#1688df;box-shadow:none}
+.page-status{font-size:.78rem}
+.sites-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}
+.site-tile{display:flex;flex-direction:column;gap:11px;min-width:0;min-height:230px;padding:20px;background:#fff;border:1px solid #e1e7ed;border-radius:4px;box-shadow:0 3px 12px rgba(13,45,70,.035);transition:transform .18s,box-shadow .18s}
+.site-tile:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(13,45,70,.09)}
+.site-tile-top{display:flex;align-items:center;gap:12px}
+.site-tile img{width:42px;height:42px;object-fit:contain;padding:5px;border:1px solid #e6edf2;border-radius:5px;background:#fff}
+.site-tile h3{margin:0;color:#1475b8;font-size:1.02rem;font-weight:800;overflow-wrap:anywhere}
+.site-tile h3 a{color:inherit}
+.site-tile h3 a:hover{text-decoration:underline}
+.site-tile p{margin:0;color:#677c90;font-size:.86rem;line-height:1.8;overflow-wrap:anywhere}
+.site-tile small{margin-top:auto;color:#8a98a7}
+.resource-page-shell{display:grid;grid-template-columns:230px minmax(0,1fr) 310px;gap:30px;max-width:1380px;margin:0 auto;align-items:start}
+.resource-page-shell.no-side-playlist{grid-template-columns:230px minmax(0,1fr)}
+.detail-category-sidebar{border-inline-end:1px solid #e1e8ef}
+.detail-category-sidebar .category-nav button{font-size:.83rem}
+.resource-detail-content{min-width:0;padding:5px 0}
+.resource-breadcrumb{display:flex;gap:8px;align-items:center;color:#7a8b9b;font-size:.82rem;margin-bottom:18px}
+.resource-breadcrumb a{color:#147bbd;font-weight:700}
+.resource-detail-heading{padding-bottom:20px;border-bottom:1px solid #e1e8ef}
+.resource-detail-heading .tag{display:inline-flex;margin-bottom:9px;border:0;border-radius:3px;background:#eaf4fb;color:#2378ad;padding:3px 9px}
+.resource-detail-heading h1{font-size:clamp(1.55rem,3vw,2.45rem);line-height:1.4;color:#173953;margin:0 0 12px;overflow-wrap:anywhere}
+.resource-detail-description{color:#50677c;line-height:2;margin:22px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.resource-detail-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;border-top:1px solid #e5ebf0}
+.resource-detail-meta div{padding:12px 0;border-bottom:1px solid #e5ebf0;min-width:0}
+.resource-detail-meta small{display:block;color:#8291a0;font-size:.76rem;margin-bottom:3px}
+.resource-detail-meta b{display:block;color:#29465e;font-size:.88rem;overflow-wrap:anywhere}
+.resource-detail-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 30px}
+.review-section{border-top:1px solid #dfe7ee;padding-top:22px;margin-top:28px}
+.review-section h2{font-size:1.25rem;margin:0 0 14px;color:#1f405a}
+.review-summary{display:flex;align-items:center;gap:12px;margin-bottom:15px;color:#587086}
+.review-summary strong{font-size:1.4rem;color:#193f5c}
+.review-stars{display:flex;gap:3px;color:#edaa27;font-size:1.5rem;letter-spacing:1px}
+.review-form{display:grid;gap:11px;padding:17px;background:#f7fafc;border:1px solid #e2e9ef;border-radius:4px;margin:18px 0}
+.review-form label{color:#486278;font-size:.84rem;font-weight:700}
+.review-form textarea{min-height:94px;resize:vertical}
+.review-form .review-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rating-picker{display:flex;gap:6px;direction:ltr}
+.rating-picker button{padding:2px;border:0;background:transparent;color:#c5ced6;font-size:1.7rem;cursor:pointer}
+.rating-picker button.selected,.rating-picker button:hover{color:#e9a528}
+.review-list{display:grid;gap:10px}
+.review-item{padding:14px 0;border-bottom:1px solid #e7edf2}
+.review-item-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.review-item-head b{color:#2b4a63;font-size:.9rem}
+.review-item p{margin:7px 0 0;color:#65798c;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.report-link{border:0;background:none;color:#b14c4c;text-decoration:underline;text-underline-offset:3px;font:inherit;font-size:.82rem;cursor:pointer;padding:6px 0}
+.course-playlist-sidebar{border:1px solid #e1e7ed;padding:16px;background:#f9fbfc;border-radius:4px}
+.course-playlist-sidebar iframe{width:100%;aspect-ratio:9/16;max-height:450px;border:0;background:#0c1722}
+.course-playlist-sidebar.is-video iframe{aspect-ratio:16/9;max-height:none}
+.course-playlist-sidebar .playlist-caption{font-size:.78rem;color:#728496;line-height:1.7;margin:9px 0 0}
+.course-video-frame{width:100%;aspect-ratio:16/9;border:0;background:#0b1826}
+.course-attribution{margin-top:10px;color:#667c90;font-size:.82rem}
+.course-attribution a{color:#087fc8;text-decoration:underline}
+.about-esri{max-width:1080px;margin:30px auto;padding:clamp(26px,6vw,65px);background:#f4f8fb;border-inline-start:5px solid #1688df}
+.about-esri h2{margin:0 0 16px;font-size:clamp(1.7rem,3vw,2.4rem);color:#173953}
+.about-esri p{max-width:850px;margin:0 0 25px;color:#566f83;line-height:2;font-size:1.05rem}
+.admin-subhead{max-width:1380px;margin:32px auto 13px;color:#23445d;font-size:1.05rem}
+.review-card{background:#fff;border:1px solid #e1e7ed;box-shadow:none;border-radius:4px;color:#233d53}
+.review-card p{color:#63788c}
+.card{background:#fff;border:1px solid #e1e7ed;box-shadow:none;border-radius:4px;backdrop-filter:none}
+.card h3{color:#1c4768}.card p,.card small{color:#697d8f}
+.tag{color:#237bb4;border-color:#b7d6e9;border-radius:3px}
+.empty{color:#718499}
+footer{padding:24px 16px;text-align:center;color:#8292a2;background:#f7f9fb;border-top:1px solid #e9eef2;font-size:.8rem}
+#toast{background:#102b42;color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 30px rgba(0,0,0,.22);backdrop-filter:blur(12px)}
+dialog{color:#20394f;background:#fff;border:1px solid #d8e3eb;border-radius:8px;box-shadow:0 24px 80px rgba(13,44,70,.22);backdrop-filter:none;-webkit-backdrop-filter:none}
+dialog::backdrop{background:rgba(7,24,40,.56);backdrop-filter:blur(3px)}
+dialog .x{position:absolute;top:13px;inset-inline-end:13px;width:35px;height:35px;border:1px solid #e0e8ee;border-radius:4px;background:#f7fafc;color:#34536d;cursor:pointer}
+dialog form{display:grid;gap:12px;padding:28px 10px 8px}
+dialog h3{margin:0;color:#173953}
+.tabs{display:flex;gap:8px;margin-bottom:8px}
+.tabs button{flex:1;padding:10px;border:1px solid #d7e1e9;background:#f7fafc;color:#486077;border-radius:4px;font:inherit;cursor:pointer}
+.tabs button.on{background:#e9f4fb;color:#126fae;border-color:#a7cfe8;font-weight:800}
+.nitem{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #e4ebf0;background:transparent;color:#27435a;box-shadow:none;border-radius:0}
+.nitem small{display:block;color:#8090a0}
+.st.pending{color:#ad720e}.st.approved{color:#22834d}.st.rejected{color:#bd4545}
+.auth-error{color:#a52f2f;background:#fff0f0;border:1px solid #f0cccc}
+.category-filter,.language-filter{display:none!important}
+#admin .grid{max-width:1380px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.details-dialog{display:none!important}
+@media(max-width:1160px){
+  .nav{gap:12px}
+  #links a{padding:8px 9px;font-size:.85rem}
+  .resource-page-shell{grid-template-columns:200px minmax(0,1fr) 270px;gap:20px}
+}
+@media(max-width:920px){
+  .ibtn.burger{display:inline-flex}
+  #links{display:none;position:absolute;top:calc(100% + 1px);inset-inline:0;margin:0;padding:9px 14px;background:#fff;border:1px solid #e0e8ef;border-top:0;box-shadow:0 12px 24px rgba(13,45,70,.12);border-radius:0 0 7px 7px;flex-direction:column;align-items:stretch;z-index:90}
+  #links.show{display:flex}
+  #links a{padding:11px 13px;border-radius:4px}
+  .hero-esri{grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:620px}
+  .hero-copy{padding:34px}
+  .resource-page-shell{grid-template-columns:190px minmax(0,1fr)}
+  .course-playlist-sidebar{grid-column:2;position:relative;top:auto}
+}
+@media(max-width:680px){
+  :root{--nh:66px}
+  .nav{height:var(--nh);padding:0 12px;gap:8px}
+  .brand img{height:43px;max-width:128px}
+  .actions{gap:3px}
+  .actions .ibtn{width:35px;height:35px}
+  .actions #lang{width:38px;height:34px}
+  .actions #login{min-height:35px;padding:5px 9px;font-size:.78rem;gap:5px}
+  .actions #login .ico{width:16px;height:16px}
+  #user{max-width:112px;gap:4px;padding:4px 7px;font-size:.76rem}
+  #uname{max-width:48px;overflow:hidden;text-overflow:ellipsis}
+  #logout{font-size:.72rem}
+  .hero-esri{display:flex;flex-direction:column;min-height:0}
+  body.lang-ar .hero-esri{direction:rtl}
+  .hero-copy{order:1;padding:34px 22px 32px}
+  .hero-copy h1{font-size:clamp(2rem,8vw,2.8rem);line-height:1.45}
+  .hero-copy .lead{font-size:.96rem;margin-bottom:22px}
+  .hero-space{order:2;min-height:340px;height:48vh;max-height:430px}
+  .hero-actions{margin-bottom:22px}
+  .hero-stats{gap:17px;margin-top:23px;padding-top:17px}
+  .hero-stats b{font-size:1.1rem}
+  .hero-stats small{font-size:.67rem}
+  .home-feature-strip{align-items:flex-start;flex-direction:column;gap:8px;padding:19px 22px}
+  .page{padding:26px 15px;min-height:58vh}
+  .phead{margin-bottom:17px}
+  .phead h2{font-size:1.7rem}
+  .tools{flex-wrap:nowrap}
+  .tools .search-wrap{flex:1 1 100%;min-width:0}
+  .tools .btn{min-height:43px;padding-inline:12px;font-size:.82rem}
+  .catalog-layout{display:flex;flex-direction:column;gap:13px}
+  .catalog-sidebar{position:relative;top:auto;width:100%;padding:10px 0 6px;border:0;border-bottom:1px solid #e2e8ee;overflow:hidden}
+  .catalog-sidebar h3{padding-inline:4px;margin-bottom:6px}
+  .category-nav{flex-direction:row;overflow-x:auto;overflow-y:hidden;gap:6px;padding:0 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .category-nav button{flex:0 0 auto;width:auto;min-height:36px;padding:6px 11px;border:1px solid #dfe7ed;border-radius:4px;white-space:nowrap;scroll-snap-align:start;font-size:.78rem}
+  .category-nav button.active{border-color:#1688df;border-inline-start:1px solid #1688df;background:#eaf4fb}
+  .catalog-content{width:100%}
+  .resource-row{grid-template-columns:minmax(0,1fr) auto;gap:8px 11px;padding:15px 11px}
+  .resource-row-meta{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:6px 13px;font-size:.72rem}
+  .resource-row-actions{grid-column:2;grid-row:1;align-self:center}
+  .resource-row h3{font-size:.94rem}
+  .resource-row p{font-size:.8rem;-webkit-line-clamp:2}
+  .resource-row-actions .btn{min-height:32px;padding:4px 10px;font-size:.74rem}
+  .sites-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .site-tile{min-height:190px;padding:13px;gap:9px}
+  .site-tile img{width:33px;height:33px}
+  .site-tile h3{font-size:.84rem}
+  .site-tile p{font-size:.76rem;line-height:1.65}
+  .resource-page-shell{display:flex;flex-direction:column;gap:14px}
+  .detail-category-sidebar{position:relative;top:auto;width:100%;padding:8px 0 4px;border:0;border-bottom:1px solid #e2e8ee;order:0}
+  .detail-category-sidebar h3{padding-inline:4px;margin-bottom:5px}
+  .detail-category-sidebar .category-nav{flex-direction:row;overflow-x:auto}
+  .resource-detail-content{width:100%;order:1}
+  .course-playlist-sidebar{width:100%;order:2;position:relative;top:auto}
+  .resource-detail-heading h1{font-size:1.55rem}
+  .resource-detail-meta{grid-template-columns:1fr 1fr;gap:0 14px}
+  .review-form{padding:12px}
+  .review-form .review-controls{align-items:flex-start;flex-direction:column}
+  .review-item-head{align-items:flex-start;flex-wrap:wrap}
+  .course-playlist-sidebar iframe{aspect-ratio:16/9;max-height:300px}
+  .about-esri{margin:4px auto;padding:27px 21px}
+  footer{padding:20px 12px}
+}
+@media(max-width:380px){
+  .brand img{max-width:104px}
+  .actions #login span{display:none}
+  .sites-tiles{grid-template-columns:1fr}
+  .hero-copy{padding-inline:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
