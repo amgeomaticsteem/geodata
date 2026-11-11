@@ -1540,3 +1540,9 @@ dialog h3{margin:0;color:#173953}
   .lang-ar .hero-copy{direction:rtl}
   .hero-space{min-height:320px}
 }
+
+/* Place the editorial copy on the left and the Earth visual on the right, like the reference. */
+@media(min-width:681px){
+  .hero-space{grid-column:2;grid-row:1}
+  .hero-copy{grid-column:1;grid-row:1}
+}
