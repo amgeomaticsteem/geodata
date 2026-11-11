@@ -7,7 +7,7 @@ if (canvas) {
   const mobile = matchMedia('(max-width: 680px), (pointer: coarse)').matches;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const frameInterval = mobile ? 1000 / 26 : 1000 / 48;
-  let renderer, scene, camera, earth, clouds, animationId = 0, lastFrame = 0, ready = false;
+  let renderer, scene, camera, earth, clouds, frameId = 0, timerId = 0, lastFrame = 0, ready = false, inView = true;
 
   const startFallback = () => {
     canvas.style.background =
@@ -29,33 +29,47 @@ if (canvas) {
     camera.updateProjectionMatrix();
   };
 
+  const stop = () => {
+    if (timerId) clearTimeout(timerId);
+    if (frameId) cancelAnimationFrame(frameId);
+    timerId = 0; frameId = 0; lastFrame = 0;
+  };
+  const schedule = () => {
+    if (reducedMotion || !ready || document.hidden || !inView || timerId || frameId) return;
+    timerId = setTimeout(() => {
+      timerId = 0;
+      frameId = requestAnimationFrame(tick);
+    }, frameInterval);
+  };
   const tick = now => {
-    animationId = 0;
-    if (!ready || document.hidden) return;
-    if (!reducedMotion && now - lastFrame >= frameInterval) {
-      const delta = lastFrame ? Math.min(.05, (now - lastFrame) / 1000) : .016;
-      lastFrame = now;
-      earth.rotation.y += delta * (mobile ? .075 : .095);
-      if (clouds) clouds.rotation.y += delta * (mobile ? .082 : .105);
-      renderer.render(scene, camera);
-    }
-    animationId = requestAnimationFrame(tick);
+    frameId = 0;
+    if (!ready || document.hidden || !inView) return;
+    const delta = lastFrame ? Math.min(.05, (now - lastFrame) / 1000) : frameInterval / 1000;
+    lastFrame = now;
+    earth.rotation.y += delta * (mobile ? .075 : .095);
+    if (clouds) clouds.rotation.y += delta * (mobile ? .082 : .105);
+    renderer.render(scene, camera);
+    schedule();
   };
   const wake = () => {
     if (reducedMotion) {
       if (renderer && scene && camera && earth) renderer.render(scene, camera);
       return;
     }
-    if (!animationId && ready && !document.hidden) animationId = requestAnimationFrame(tick);
+    schedule();
   };
 
   addEventListener('resize', resize, { passive: true });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (animationId) cancelAnimationFrame(animationId);
-      animationId = 0;
-    } else wake();
+    if (document.hidden) stop(); else wake();
   });
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      inView = Boolean(entries[0]?.isIntersecting);
+      if (inView) wake(); else stop();
+    }, { threshold: 0.04 });
+    observer.observe(host);
+  }
 
   (async () => {
     try {
