@@ -6,13 +6,20 @@ const lowMemory = (navigator.deviceMemory || 8) <= 4;
 const lowCpu = (navigator.hardwareConcurrency || 8) <= 4;
 const saveData = Boolean(navigator.connection?.saveData);
 const lite = coarsePointer || smallScreen || lowMemory || lowCpu || saveData;
-const still = matchMedia('(prefers-reduced-motion: reduce)').matches || lite;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const continuous = !lite && !reducedMotion;
 const S = lite ? .28 : .5; // smaller canvas on mobile and low-power devices
-let W, H, mx = 0, my = 0, sx = 0, sy = 0, px = innerWidth / 2, py = innerHeight * .3, gx = px, gy = py, rot = 0;
+let W, H, mx = 0, my = 0, sx = 0, sy = 0, px = innerWidth / 2, py = innerHeight * .3, gx = px, gy = py, rot = 0, targetRot = 0, frameQueued = false;
 const resize = () => { W = innerWidth; H = innerHeight; cv.width = Math.max(1, Math.round(W * S)); cv.height = Math.max(1, Math.round(H * S)); };
-addEventListener('resize', () => { resize(); if (still) frame(); });
+const queueFrame = () => { if (frameQueued) return; frameQueued = true; requestAnimationFrame(() => { frameQueued = false; frame(); }); };
+addEventListener('resize', () => { resize(); queueFrame(); }, { passive: true });
 resize();
-if (!lite && !still) addEventListener('pointermove', e => { mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY; });
+// Desktop keeps its ambient motion. On phones, pointer/touch movement wakes the globe only while it is moving.
+if (!reducedMotion) addEventListener('pointermove', e => {
+  mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY;
+  targetRot = mx * 1.25;
+  if (!continuous) queueFrame();
+}, { passive: true });
 
 // dots on a sphere stored flat as [longitude, cos(lat), sin(lat)]
 const grid = (step, test = () => true) => {
@@ -37,13 +44,14 @@ let sea = grid(lite ? 12 : 6), land = new Float32Array(0);
     }));
     const d = x.getImageData(0, 0, 360, 180).data;
     land = grid(lite ? 5 : 2, (lo, la) => d[((Math.min(179, Math.floor(90 - la)) * 360) + Math.min(359, Math.floor(lo + 180))) * 4 + 3] > 100);
-    if (still) frame();
+    if (!continuous) queueFrame();
   } catch (e) { console.warn('Globe land data not loaded', e); }
 })();
 
 function frame() {
   sx += (mx - sx) * .05; sy += (my - sy) * .05; gx += (px - gx) * .09; gy += (py - gy) * .09;
-  if (!still) rot += .0014 + sx * .0035; // moving the pointer left/right changes the spin
+  if (continuous) rot += .0014 + sx * .0035; // desktop ambient spin follows pointer direction
+  else rot += (targetRot - rot) * .16; // mobile rotation eases toward the finger/pointer direction
   const dark = document.body.dataset.theme !== 'light', w = W * S, h = H * S;
   const R = Math.min(w * .55, h * .62), cx = w / 2 - sx * w * .02, cy = h * (lite ? .82 : .93) - sy * h * .02, tilt = .38 + sy * .15, ct = Math.cos(tilt), st = Math.sin(tilt);
   g.clearRect(0, 0, w, h);
@@ -66,6 +74,6 @@ function frame() {
   dots(land, R * .029, dark ? '150,238,255' : '15,60,150', dark ? [.2, .38, .58] : [.3, .5, .72]);
   bg.style.setProperty('--mx', sx.toFixed(3)); bg.style.setProperty('--my', sy.toFixed(3));
   bg.style.setProperty('--gx', gx.toFixed(0) + 'px'); bg.style.setProperty('--gy', gy.toFixed(0) + 'px');
-  if (!still) requestAnimationFrame(frame);
+  if (continuous || Math.abs(targetRot - rot) > .002) queueFrame();
 }
 frame();
