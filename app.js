@@ -279,7 +279,7 @@ function observeCards(container) {
         localizeCard(entry.target);
       }
     });
-  }, {rootMargin:'180px 0px'});
+  }, {rootMargin:matchMedia('(max-width:760px), (pointer:coarse)').matches?'72px 0px':'180px 0px'});
   cards.forEach(card => observer.observe(card));
 }
 async function localizeCard(cardEl) {
