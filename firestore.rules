@@ -4,16 +4,77 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && request.auth.token.email == 'refathany2005@gmail.com';
     }
-    // Public content: anyone can read, ONLY the admin can write
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Published GEOData catalog: public read, admin-only direct writes.
     match /{col}/{id} {
       allow read: if col in ['projects', 'courses', 'programs', 'sites'];
       allow write: if isAdmin() && col in ['projects', 'courses', 'programs', 'sites'];
     }
-    // Submissions: signed-in users create pending items and read only their own; the admin reviews
+
+    // User submissions are private to their owner and the admin.
     match /submissions/{id} {
-      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && request.resource.data.status == 'pending';
-      allow read: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow update, delete: if isAdmin();
+    }
+
+    // One editable review per signed-in user and resource.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.resourceKey is string
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 1200;
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.resourceKey == resource.data.resourceKey
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() <= 1200;
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // A creator can only read their own notification. Creation is tied to
+    // a persisted review document owned by the sender and its resource owner.
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.toUid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.toUid is string
+        && request.resource.data.toUid != request.auth.uid
+        && request.resource.data.reviewId is string
+        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid;
+      allow update: if signedIn()
+        && resource.data.toUid == request.auth.uid
+        && request.resource.data.toUid == resource.data.toUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin();
+    }
+
+    // Reports are visible only to the admin and cannot be edited by reporters.
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.status == 'new'
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 3
+        && request.resource.data.reason.size() <= 1200
+        && request.resource.data.resourceKey is string
+        && request.resource.data.resourceCol in ['projects', 'courses', 'programs', 'sites'];
+      allow read, update, delete: if isAdmin();
     }
   }
 }
