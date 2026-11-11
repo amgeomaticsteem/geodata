@@ -1,88 +1,152 @@
-/* Blurred Earth + animated mesh that reacts to the mouse on desktop.
-   Mobile renders a lightweight static globe: no touch tracking and no animation loop. */
-const cv = document.getElementById('earth'), g = cv.getContext('2d'), bg = document.querySelector('.bg');
-const mobile = matchMedia('(max-width: 760px), (pointer: coarse)').matches;
-const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const animate = !mobile && !reducedMotion;
-const S = mobile ? .34 : 1; // crisp desktop canvas; small static canvas on phones
-let W, H, mx = 0, my = 0, sx = 0, sy = 0, px = innerWidth / 2, py = innerHeight * .3, gx = px, gy = py, rot = 0;
-const resize = () => { W = innerWidth; H = innerHeight; cv.width = Math.max(1, Math.round(W * S)); cv.height = Math.max(1, Math.round(H * S)); };
-addEventListener('resize', () => { resize(); frame(); }, { passive: true }); resize();
-if (animate) addEventListener('pointermove', e => {
-  mx = e.clientX / W * 2 - 1; my = e.clientY / H * 2 - 1; px = e.clientX; py = e.clientY;
-}, { passive: true });
+/* GEOData realistic 3D Earth.
+   Desktop and mobile use the same globe; mobile caps DPR, geometry and frame rate.
+   No pointer/touch listeners: the planet rotates on its own. */
+const canvas = document.getElementById('earth');
+if (canvas) {
+  const host = canvas.parentElement;
+  const mobile = matchMedia('(max-width: 680px), (pointer: coarse)').matches;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const frameInterval = mobile ? 1000 / 26 : 1000 / 48;
+  let renderer, scene, camera, earth, clouds, animationId = 0, lastFrame = 0, ready = false;
 
-// Dots on a sphere stored flat as [longitude, cos(lat), sin(lat)].
-const grid = (step, test = () => true) => {
-  const a = [];
-  for (let la = -88; la <= 88; la += step) for (let lo = -180; lo < 180; lo += step)
-    if (test(lo, la)) a.push(lo * Math.PI / 180, Math.cos(la * Math.PI / 180), Math.sin(la * Math.PI / 180));
-  return Float32Array.from(a);
-};
-let sea = grid(mobile ? 12 : 6), land = new Float32Array(0);
-
-(async () => {
-  try {
-    const [{ feature }, topo] = await Promise.all([
-      import('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm'),
-      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json').then(r => r.json())
-    ]);
-    const f = feature(topo, topo.objects.land), c = document.createElement('canvas'); c.width = 360; c.height = 180;
-    const x = c.getContext('2d'); x.fillStyle = '#000';
-    (f.features ? f.features.map(q => q.geometry) : [f.geometry]).forEach(geo =>
-      (geo.type === 'Polygon' ? [geo.coordinates] : geo.coordinates).forEach(poly => {
-        x.beginPath();
-        poly.forEach(r => { r.forEach(([lo, la], i) => x[i ? 'lineTo' : 'moveTo'](lo + 180, 90 - la)); x.closePath(); });
-        x.fill('evenodd');
-      })
-    );
-    const d = x.getImageData(0, 0, 360, 180).data;
-    land = grid(mobile ? 5 : 2, (lo, la) =>
-      d[((Math.min(179, Math.floor(90 - la)) * 360) + Math.min(359, Math.floor(lo + 180))) * 4 + 3] > 100
-    );
-    frame();
-  } catch (e) { console.warn('Globe land data not loaded', e); }
-})();
-
-function frame() {
-  if (animate) {
-    sx += (mx - sx) * .05; sy += (my - sy) * .05;
-    gx += (px - gx) * .09; gy += (py - gy) * .09;
-    rot += .0014 + sx * .0035;
-  }
-  const dark = document.body.dataset.theme !== 'light', w = W * S, h = H * S;
-  const R = Math.min(w * .55, h * .62), cx = w / 2 - sx * w * .02;
-  const cy = h * (mobile ? .82 : .93) - sy * h * .02;
-  const tilt = .38 + sy * .15, ct = Math.cos(tilt), st = Math.sin(tilt);
-  g.clearRect(0, 0, w, h);
-  let gr = g.createRadialGradient(cx, cy, R * .9, cx, cy, R * 1.2);
-  gr.addColorStop(0, dark ? 'rgba(92,225,230,.4)' : 'rgba(40,110,255,.3)');
-  gr.addColorStop(1, 'rgba(0,0,0,0)');
-  g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.2, 0, 7); g.fill();
-  gr = g.createRadialGradient(cx - R * .35, cy - R * .4, R * .1, cx, cy, R);
-  gr.addColorStop(0, dark ? 'rgba(60,140,255,.42)' : 'rgba(255,255,255,.8)');
-  gr.addColorStop(1, dark ? 'rgba(10,25,90,.6)' : 'rgba(90,140,255,.4)');
-  g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fill();
-  const dots = (a, size, rgb, alphas) => {
-    const P = [new Path2D(), new Path2D(), new Path2D()];
-    for (let i = 0; i < a.length; i += 3) {
-      const l = a[i] + rot, c = a[i + 1], s = a[i + 2];
-      const z0 = c * Math.cos(l), y = s * ct - z0 * st, z = s * st + z0 * ct;
-      if (z <= 0) continue;
-      const d = size * (.55 + .45 * z);
-      P[z < .35 ? 0 : z < .7 ? 1 : 2].rect(
-        cx + R * c * Math.sin(l) - d / 2, cy - R * y - d / 2, d, d
-      );
-    }
-    P.forEach((p, k) => { g.fillStyle = `rgba(${rgb},${alphas[k]})`; g.fill(p); });
+  const startFallback = () => {
+    canvas.style.background =
+      'radial-gradient(circle at 45% 42%,rgba(32,106,165,.18),transparent 56%),' +
+      'radial-gradient(circle at 50% 48%,#09233b 0%,#030914 68%)';
+    const fallback = document.createElement('div');
+    fallback.className = 'earth-fallback';
+    fallback.setAttribute('aria-hidden', 'true');
+    fallback.innerHTML = '<span></span>';
+    host.append(fallback);
   };
-  dots(sea, R * .012, dark ? '130,190,255' : '40,90,200', [.12, .22, .32]);
-  dots(land, R * .029, dark ? '150,238,255' : '15,60,150',
-    dark ? [.2, .38, .58] : [.3, .5, .72]);
-  if (bg) {
-    bg.style.setProperty('--mx', sx.toFixed(3)); bg.style.setProperty('--my', sy.toFixed(3));
-    bg.style.setProperty('--gx', gx.toFixed(0) + 'px'); bg.style.setProperty('--gy', gy.toFixed(0) + 'px');
-  }
-  if (animate) requestAnimationFrame(frame);
+
+  const resize = () => {
+    if (!renderer || !camera) return;
+    const width = Math.max(1, host.clientWidth);
+    const height = Math.max(1, host.clientHeight);
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  };
+
+  const tick = now => {
+    animationId = 0;
+    if (!ready || document.hidden) return;
+    if (!reducedMotion && now - lastFrame >= frameInterval) {
+      const delta = lastFrame ? Math.min(.05, (now - lastFrame) / 1000) : .016;
+      lastFrame = now;
+      earth.rotation.y += delta * (mobile ? .075 : .095);
+      if (clouds) clouds.rotation.y += delta * (mobile ? .082 : .105);
+      renderer.render(scene, camera);
+    }
+    animationId = requestAnimationFrame(tick);
+  };
+  const wake = () => {
+    if (reducedMotion) {
+      if (renderer && scene && camera && earth) renderer.render(scene, camera);
+      return;
+    }
+    if (!animationId && ready && !document.hidden) animationId = requestAnimationFrame(tick);
+  };
+
+  addEventListener('resize', resize, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = 0;
+    } else wake();
+  });
+
+  (async () => {
+    try {
+      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+      renderer = new THREE.WebGLRenderer({
+        canvas, alpha: true, antialias: !mobile,
+        powerPreference: 'low-power', failIfMajorPerformanceCaveat: false
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.15 : 1.7));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setClearColor(0x020812, 0);
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(38, Math.max(1, host.clientWidth) / Math.max(1, host.clientHeight), .1, 60);
+      camera.position.set(0, 0, 3.02);
+
+      const ambient = new THREE.AmbientLight(0x9bbfe0, .78);
+      const sun = new THREE.DirectionalLight(0xffffff, 2.35);
+      sun.position.set(-3, 1.8, 4);
+      const rim = new THREE.DirectionalLight(0x287cc3, .72);
+      rim.position.set(3, -.8, -2);
+      scene.add(ambient, sun, rim);
+
+      const loader = new THREE.TextureLoader();
+      const textureRoot = 'https://threejs.org/examples/textures/planets/';
+      const loadTexture = (name, color = false) => new Promise((resolve, reject) => {
+        loader.load(textureRoot + name, texture => {
+          if (color) texture.colorSpace = THREE.SRGBColorSpace;
+          resolve(texture);
+        }, undefined, reject);
+      });
+      const [day, normal, specular, cloudMap] = await Promise.all([
+        loadTexture('earth_atmos_2048.jpg', true),
+        loadTexture('earth_normal_2048.jpg'),
+        loadTexture('earth_specular_2048.jpg'),
+        loadTexture('earth_clouds_1024.png', true).catch(() => null)
+      ]);
+
+      const segments = mobile ? [52, 40] : [88, 64];
+      const geometry = new THREE.SphereGeometry(1, segments[0], segments[1]);
+      const material = new THREE.MeshPhongMaterial({
+        map: day, normalMap: normal, normalScale: new THREE.Vector2(.32, .32),
+        specularMap: specular, specular: new THREE.Color(0x263d57), shininess: 10
+      });
+      earth = new THREE.Mesh(geometry, material);
+      earth.rotation.set(-.12, 1.35, -.20);
+      scene.add(earth);
+
+      if (cloudMap) {
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+          map: cloudMap, transparent: true, opacity: .21,
+          depthWrite: false, blending: THREE.AdditiveBlending
+        });
+        clouds = new THREE.Mesh(new THREE.SphereGeometry(1.008, segments[0], segments[1]), cloudMaterial);
+        clouds.rotation.copy(earth.rotation);
+        scene.add(clouds);
+      }
+
+      const atmosphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1.055, mobile ? 36 : 56, mobile ? 28 : 44),
+        new THREE.MeshBasicMaterial({
+          color: 0x2a8fd8, transparent: true, opacity: .105,
+          side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false
+        })
+      );
+      scene.add(atmosphere);
+
+      const starCount = mobile ? 380 : 950;
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const radius = 5 + Math.random() * 13;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        starPositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        starPositions[i * 3 + 1] = radius * Math.cos(phi);
+        starPositions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+      }
+      const starGeometry = new THREE.BufferGeometry();
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({
+        color: 0xd5eaff, size: mobile ? .018 : .014, transparent: true, opacity: .72,
+        sizeAttenuation: true
+      }));
+      scene.add(stars);
+
+      resize();
+      ready = true;
+      renderer.render(scene, camera);
+      wake();
+    } catch (error) {
+      console.warn('3D Earth could not initialize:', error);
+      startFallback();
+    }
+  })();
 }
-frame();
