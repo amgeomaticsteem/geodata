@@ -652,7 +652,7 @@ document.addEventListener('click',event=>{
     $('#heroSuggestions').hidden=true;
   }
 });
-$('.tabs button').forEach(button=>button.onclick=()=>{
+$$('.tabs button').forEach(button=>button.onclick=()=>{
   authF.dataset.mode=button.dataset.mode;
   $('#authError').hidden=true;$('#authError').textContent='';$('#authError').classList.remove('success');
   $$('.tabs button').forEach(item=>item.classList.toggle('on',item===button));
@@ -670,7 +670,7 @@ document.addEventListener('click',event=>{
 });
 $('#login').onclick=()=>{
   authF.dataset.mode='login';$('#authError').hidden=true;$('#authError').classList.remove('success');
-  $('.tabs button').forEach(button=>button.classList.toggle('on',button.dataset.mode==='login'));
+  $$('.tabs button').forEach(button=>button.classList.toggle('on',button.dataset.mode==='login'));
   authM.showModal();
 };
 $('#forgotPassword').onclick=async()=>{
