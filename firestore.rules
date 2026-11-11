@@ -68,8 +68,7 @@ service cloud.firestore {
         && request.resource.data.reviewId is string
         && exists(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId))
         && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.uid == request.auth.uid
-        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid
-        && get(/databases/$(database)/documents/$(get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.resourceCol)/$(get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.resourceId)).data.publisherUid == request.resource.data.toUid;
+        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid;
       allow update: if signedIn()
         && resource.data.toUid == request.auth.uid
         && request.resource.data.toUid == resource.data.toUid
