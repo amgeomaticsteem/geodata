@@ -1054,3 +1054,16 @@ body.lang-en .nav-clock-shell>#heroClock{
 .geo-ai-resource-extra{display:flex;flex-wrap:wrap;gap:7px;padding:0 3px}
 .geo-ai-resource-extra a{display:inline-flex;align-items:center;padding:3px 9px;border:1px solid var(--g-bd);border-radius:999px;color:var(--ac);font-size:.7rem;font-weight:700;text-decoration:none}
 .geo-ai-resource-extra a:hover{background:var(--g-in)}
+
+
+/* ===== GEOData identity: graphite + orange (the planet is untouched) ===== */
+[data-theme=dark]{--bg:#0a0a0c;--c1:rgba(255,104,0,.55);--c2:rgba(96,96,104,.42);--c3:rgba(40,40,46,.2);--c4:rgba(255,150,40,.26);--c5:rgba(255,140,50,.14)}
+[data-theme=light]{--bg:#efede9;--c1:rgba(255,128,32,.42);--c2:rgba(255,255,255,.9);--c3:rgba(150,150,158,.3);--c4:rgba(255,168,76,.32);--c5:rgba(255,255,255,.5)}
+.bg::before{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 28%,transparent),transparent 60%)}
+.b4{top:16vh;bottom:auto;right:-10vmax}
+
+/* ===== Details window: blur everything behind it so the text is readable ===== */
+dialog.details-dialog::backdrop{background:rgba(6,6,8,.4)!important;-webkit-backdrop-filter:blur(20px) saturate(130%)!important;backdrop-filter:blur(20px) saturate(130%)!important}
+[data-theme=light] dialog.details-dialog::backdrop{background:rgba(255,255,255,.25)!important}
+dialog.details-dialog{background:var(--g-bg),color-mix(in srgb,var(--bg) 52%,transparent)!important;-webkit-backdrop-filter:blur(40px) saturate(170%)!important;backdrop-filter:blur(40px) saturate(170%)!important}
+@media(prefers-reduced-transparency:reduce){dialog.details-dialog{background:rgba(14,14,16,.94)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}}
