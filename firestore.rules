@@ -60,18 +60,25 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow read: if signedIn() && resource.data.toUid == request.auth.uid;
+      allow read: if signedIn()
+        && (resource.data.toUid == request.auth.uid
+          || resource.data.toEmail == request.auth.token.email);
       allow create: if signedIn()
         && request.resource.data.fromUid == request.auth.uid
-        && request.resource.data.toUid is string
-        && request.resource.data.toUid != request.auth.uid
         && request.resource.data.reviewId is string
         && exists(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId))
         && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.uid == request.auth.uid
-        && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid;
+        && (
+          (request.resource.data.toUid is string
+            && request.resource.data.toUid != request.auth.uid
+            && get(/databases/$(database)/documents/reviews/$(request.resource.data.reviewId)).data.ownerUid == request.resource.data.toUid)
+          ||
+          (request.resource.data.toEmail == 'refathany2005@gmail.com'
+            && request.auth.token.email != 'refathany2005@gmail.com')
+        );
       allow update: if signedIn()
-        && resource.data.toUid == request.auth.uid
-        && request.resource.data.toUid == resource.data.toUid
+        && (resource.data.toUid == request.auth.uid
+          || resource.data.toEmail == request.auth.token.email)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
       allow delete: if isAdmin();
     }
