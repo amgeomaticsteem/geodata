@@ -405,13 +405,14 @@ function categoryNavMarkup(col) {
     values.map(value=>'<button type="button" data-filter-category="'+esc(value)+'" class="'+(state.category===value?'active':'')+'">'+esc(categoryLabel(col,value))+'</button>').join('');
 }
 function updateCategoryControls() {
+  const languageLabel=value=>t(value==='ar'?'languageAr':value==='en'?'languageEn':'languageBoth');
   if($('#dataCategory'))$('#dataCategory').innerHTML=DATA_CATEGORIES.map(v=>'<option value="'+esc(v)+'">'+esc(t('cat_'+v))+'</option>').join('');
   if($('#courseCategory'))$('#courseCategory').innerHTML=COURSE_CATEGORIES.map(v=>'<option value="'+esc(v)+'">'+esc(t('course_'+v))+'</option>').join('');
-  if($('#courseLanguage'))$('#courseLanguage').innerHTML=COURSE_LANGUAGES.map(v=>'<option value="'+esc(v)+'">'+esc(t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both'))+'</option>').join('');
+  if($('#courseLanguage'))$('#courseLanguage').innerHTML=COURSE_LANGUAGES.map(v=>'<option value="'+esc(v)+'">'+esc(languageLabel(v))+'</option>').join('');
   $$('[data-category-nav]').forEach(nav=>{const col=nav.dataset.categoryNav;nav.innerHTML=categoryNavMarkup(col);});
   $$('[data-language-nav]').forEach(nav=>{
     nav.innerHTML='<button type="button" data-filter-language="" class="'+(!pageState.courses.courseLanguage?'active':'')+'">'+esc(t('allLanguages'))+'</button>'+
-      COURSE_LANGUAGES.map(v=>'<button type="button" data-filter-language="'+v+'" class="'+(pageState.courses.courseLanguage===v?'active':'')+'">'+esc(t('language'+(v==='ar'?'Ar':v==='en'?'En':'Both'))+'</button>').join('');
+      COURSE_LANGUAGES.map(v=>'<button type="button" data-filter-language="'+v+'" class="'+(pageState.courses.courseLanguage===v?'active':'')+'">'+esc(languageLabel(v))+'</button>').join('');
   });
 }
 function pageButtons(section) {
@@ -432,7 +433,7 @@ function renderGlobalPagination(totalPages) {
   nav.innerHTML='<button type="button" class="page-arrow" data-global-page="'+(globalSearchPage-1)+'"'+(globalSearchPage<=1?' disabled':'')+'>'+t('previousPage')+'</button><div class="page-numbers">'+nums+'</div><button type="button" class="page-arrow" data-global-page="'+(globalSearchPage+1)+'"'+(globalSearchPage>=totalPages?' disabled':'')+'>'+t('nextPage')+'</button>';
   $('#globalResults').after(nav);
 }
-function filteredQuery(section,state) {return state.category?[where('category','==',state.category)]:[];}
+function filteredQuery(section,state) {const filters=[];if(state.category)filters.push(where('category','==',state.category));if(section==='courses'&&state.courseLanguage)filters.push(where('courseLanguage','==',state.courseLanguage));return filters;}
 async function loadPage(section,target=1) {
   const state=pageState[section];if(!state||state.loading)return;target=Math.max(1,target);
   if(state.pages[target]){state.page=target;store[section]=state.pages[target];draw(section);if(location.hash==='#search')drawSearch();return;}
