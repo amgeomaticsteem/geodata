@@ -54,32 +54,71 @@
   }
 
 
-  /* v3: user-approved white canvas, black full-width navigation */
-  html,body{background:#fff!important;color:#203246!important;min-height:100%!important}
+
+  /* v4: the agreed layout — white explanatory half, black Earth half, white catalog */
+  :root{color-scheme:light!important;background:#fff!important}
+  html,body{width:100%!important;min-height:100%!important;background:#fff!important;color:#203246!important}
   body{visibility:visible!important;background:#fff!important}
   .bg{background:#fff!important}
-  main{display:block!important;background:#fff!important;color:#203246!important;min-height:calc(100vh - 78px)!important}
+  main{display:block!important;min-height:calc(100vh - 78px)!important;background:#fff!important;color:#203246!important}
   .page{background:#fff!important;color:#203246!important}
   .page.on{display:block!important;visibility:visible!important;opacity:1!important}
-  #home.page{display:none!important;padding:0!important;background:#fff!important}
+  #home.page{display:none!important;padding:0!important;min-height:0!important;background:#fff!important}
   #home.page.on{display:block!important}
-  .hero-esri{background:#fff!important}
-  .hero-copy{
-    background:#fff!important;color:#1d3043!important;
-    border:0!important;
+  .nav-clock-shell{position:sticky!important;top:0!important;left:0!important;right:0!important;z-index:999!important;width:100%!important;max-width:none!important;margin:0!important;background:#05080d!important;border-bottom:1px solid #1c3042!important;box-shadow:0 5px 22px rgba(0,0,0,.22)!important}
+  #mainNav.nav{display:flex!important;width:100%!important;max-width:none!important;height:78px!important;margin:0!important;padding:0 clamp(16px,4vw,56px)!important;background:#05080d!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+  .brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:130px!important}
+  .brand .logo-d{display:block!important;visibility:visible!important;opacity:1!important;height:54px!important;width:auto!important;max-width:180px!important;object-fit:contain!important}
+  #links{display:flex!important;align-items:stretch!important;align-self:stretch!important;gap:clamp(3px,1vw,15px)!important;margin-inline:auto!important;padding:0!important;background:transparent!important;border:0!important}
+  #links a{position:relative!important;display:inline-flex!important;align-items:center!important;gap:8px!important;height:100%!important;padding:0 14px!important;color:#cbd6df!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:.92rem!important}
+  #links a::before{content:""!important;position:absolute!important;left:10px!important;right:10px!important;bottom:0!important;height:3px!important;background:#168ce2!important;transform:scaleX(0)!important;transition:transform .18s ease!important}
+  #links a:hover,#links a:focus-visible,#links a.on{color:#fff!important;background:transparent!important}
+  #links a:hover::before,#links a:focus-visible::before,#links a.on::before{transform:scaleX(1)!important}
+  #links a::after{content:none!important;display:none!important}
+  #links a[data-menu-arrow]::after{content:"⌄"!important;display:inline-block!important;margin-inline-start:7px!important;color:#a3b4c3!important;font:15px/1 Arial,sans-serif!important}
+  #links a[data-menu-arrow]:hover::after,#links a[data-menu-arrow].on::after{color:#168ce2!important}
+  #links a[href="#home"]::before,#links a[href="#about"]::before{display:none!important}
+  .actions{display:flex!important;align-items:center!important;gap:12px!important}
+  .actions #login.nav-login-link{
+    position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    gap:8px!important;min-height:42px!important;padding:0 3px 4px!important;
+    border:0!important;border-radius:0!important;background:transparent!important;
+    box-shadow:none!important;color:#fff!important;font:600 .9rem/1.2 inherit!important;
   }
-  .hero-copy h1{color:#1b3045!important}
-  .hero-copy .lead{color:#53687b!important}
-  .hero-copy .eyebrow{color:#147fc4!important}
-  .hero-actions .hero-secondary{background:#14283a!important;color:#fff!important;border-color:#14283a!important}
-  .hero-stats{color:#5e7182!important;border-color:#dbe3e9!important}
+  .actions #login.nav-login-link::after{content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;height:2px!important;background:#168ce2!important;transform:scaleX(.72)!important;transition:transform .18s ease!important}
+  .actions #login.nav-login-link:hover::after{transform:scaleX(1)!important}
+  .actions #login.nav-login-link .profile-avatar{display:block!important;visibility:visible!important;width:21px!important;height:21px!important;object-fit:contain!important;filter:brightness(0) invert(1)!important}
+  .actions #lang.language-toggle{
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;
+    border:1.5px solid #fff!important;border-radius:50%!important;background:transparent!important;
+    color:#fff!important;box-shadow:none!important;font-size:.72rem!important;font-weight:800!important;
+  }
+  .actions #lang.language-toggle:hover{background:rgba(255,255,255,.12)!important}
+  .actions #bell{color:#fff!important}
+  .actions #user{display:flex;align-items:center;gap:7px;background:transparent!important;border:0!important;color:#fff!important;box-shadow:none!important}
+  .actions #user .ico{display:block!important;width:22px!important;height:22px!important;filter:brightness(0) invert(1)!important}
+  .actions #logout{color:#ff9b9b!important}
+  .hero-esri{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;min-height:min(700px,calc(100vh - 78px))!important;background:#fff!important;direction:ltr!important}
+  .hero-copy{grid-column:1!important;grid-row:1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;padding:clamp(32px,6vw,82px)!important;background:#fff!important;color:#203246!important;text-align:start!important}
+  .hero-copy h1{color:#1c344b!important}
+  .hero-copy .lead{color:#5b7084!important}
+  .hero-copy .eyebrow{color:#1683cb!important}
+  .hero-stats{color:#526a7d!important;border-color:#dce5ec!important}
   .hero-stats b{color:#20364b!important}
-  .hero-stats small{color:#687d90!important}
-  .hero-space{background:#020812!important}
+  .hero-stats small{color:#6e8294!important}
+  .hero-space{grid-column:2!important;grid-row:1!important;position:relative!important;display:block!important;min-height:560px!important;height:auto!important;overflow:hidden!important;background:#020812!important;isolation:isolate!important}
+  .hero-space::before{background:radial-gradient(ellipse at 48% 48%,rgba(20,86,134,.24),transparent 57%),linear-gradient(90deg,rgba(5,17,29,.25),transparent 48%)!important}
+  .hero-space #earth{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:2!important;visibility:visible!important;opacity:1!important}
+  .hero-space .earth-fallback{z-index:1!important;opacity:1!important}
+  .hero-space .earth-fallback[hidden]{display:none!important}
+  .hero-space .globe-caption{z-index:3!important}
   .home-feature-strip{background:#fff!important;color:#52677b!important;border-top:1px solid #e7edf2!important}
   .home-feature-strip a{color:#147fc4!important}
   .phead h2,.resource-detail-heading h1,.about-esri h2{color:#1e354a!important}
   .phead p,.resource-row p,.resource-detail-description,.about-esri p{color:#586e82!important}
+  #data.page,#courses.page,#programs.page,#sites.page,#resource.page,#search.page,#about.page,#admin.page{background:#fff!important;color:#203246!important}
+  .catalog-layout,.catalog-content{background:#fff!important}
   .catalog-sidebar,.detail-category-sidebar{background:#fff!important;border-color:#dce5ec!important}
   .catalog-sidebar h3,.detail-category-sidebar h3{color:#29455d!important}
   .category-nav button{color:#4b6278!important}
@@ -90,53 +129,47 @@
   .resource-row h3,.resource-row h3 button,.site-tile h3,.site-tile h3 a{color:#1476b5!important}
   .resource-row p,.site-tile p{color:#5b7185!important}
   .resource-row-meta,.site-tile small{color:#71869a!important}
+  .resource-detail-content{color:#20364a!important}
+  .resource-detail-heading h1,.review-section h2{color:#25435b!important}
+  .resource-detail-description,.review-item p{color:#586e82!important}
   .resource-detail-meta b,.review-item-head b{color:#2a465e!important}
-  .resource-detail-meta small,.review-item p{color:#71869a!important}
-  .review-section h2{color:#25435b!important}
+  .resource-detail-meta small{color:#71869a!important}
   .review-form{background:#f7fafc!important;border-color:#e0e8ef!important}
+  .review-form label{color:#486278!important}
   .review-form textarea{background:#fff!important;color:#20364a!important}
   .about-esri{background:#f5f8fa!important}
+  .course-playlist-sidebar{background:#f8fafc!important;border-color:#e0e7ed!important}
+  .course-playlist-sidebar .playlist-caption,.course-attribution{color:#657c90!important}
   footer{background:#f6f8fa!important;color:#71869a!important;border-color:#e4ebf0!important}
-  .actions #login.nav-login-link{
-    position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
-    min-height:42px!important;padding:0 4px 3px!important;border:0!important;border-radius:0!important;
-    background:transparent!important;box-shadow:none!important;color:#fff!important;
-    font-family:inherit!important;font-size:.9rem!important;font-weight:600!important;
-  }
-  .actions #login.nav-login-link::after{
-    content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;
-    height:2px!important;background:#168ce2!important;transform:scaleX(.72)!important;transition:transform .18s ease!important;
-  }
-  .actions #login.nav-login-link:hover::after{transform:scaleX(1)!important}
-  .actions #login.nav-login-link .ico{display:none!important}
-  .actions #lang.language-toggle{
-    display:inline-flex!important;align-items:center!important;justify-content:center!important;
-    width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;
-    border:1px solid #fff!important;border-radius:50%!important;background:#fff!important;
-    color:#14283a!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-size:.72rem!important;font-weight:800!important;
-  }
-  #links a::after{content:none!important;display:none!important}
-  #links a[data-menu-arrow]::after{content:"⌄"!important;display:inline-block!important;margin-inline-start:7px!important;color:#9fb2c3!important;font:15px/1 Arial,sans-serif!important}
-  #links a[data-menu-arrow]:hover::after,#links a[data-menu-arrow].on::after{color:#168ce2!important}
+  .load-diagnostic{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:9px!important;max-width:100%!important;margin:18px 0!important;padding:18px!important;background:#fff8ed!important;border:1px solid #f0d3a9!important;border-inline-start:4px solid #d88923!important;border-radius:5px!important;color:#5b4120!important}
+  .load-diagnostic strong{font-size:.94rem!important;color:#6c4717!important}
+  .load-diagnostic small{font:.78rem/1.65 ui-monospace,monospace!important;color:#835f32!important;overflow-wrap:anywhere!important}
+  .load-diagnostic .btn{min-height:35px!important;padding:6px 13px!important}
+  .runtime-status{position:fixed!important;z-index:10000!important;bottom:16px!important;left:16px!important;right:16px!important;max-width:780px!important;margin:auto!important;padding:12px 15px!important;border:1px solid #d28a32!important;border-radius:6px!important;background:#fff8ed!important;color:#754914!important;font:12px/1.6 ui-monospace,monospace!important;box-shadow:0 8px 26px rgba(0,0,0,.18)!important;overflow-wrap:anywhere!important}
   @media(max-width:920px){
-    main{min-height:calc(100vh - 72px)!important}
-    .page{min-height:calc(100vh - 72px)!important}
-    #home.page.on{display:block!important}
-    .hero-esri{display:flex!important;flex-direction:column!important;min-height:0!important}
-    .hero-copy{order:1!important}
-    .hero-space{order:2!important;min-height:390px!important;height:52vh!important}
+    #mainNav.nav{height:72px!important;padding:0 14px!important}
+    #links{display:none!important;position:absolute!important;top:100%!important;left:0!important;right:0!important;height:auto!important;align-items:stretch!important;flex-direction:column!important;padding:8px 14px!important;background:#05080d!important;border:1px solid #263d51!important;box-shadow:0 16px 25px rgba(0,0,0,.4)!important}
+    #links.show{display:flex!important}
+    #links a{height:46px!important;justify-content:flex-start!important;border-bottom:1px solid #1a2e40!important}
+    #links a::before{left:0!important;right:auto!important;top:7px!important;bottom:7px!important;width:3px!important;height:auto!important;transform:scaleY(0)!important}
+    #links a:hover::before,#links a.on::before{transform:scaleY(1)!important}
     #links a[data-menu-arrow]::after{margin-inline-start:auto!important}
+    .hero-esri{display:flex!important;flex-direction:column!important;min-height:0!important}
+    .hero-copy{order:1!important;padding:34px 28px!important}
+    .hero-space{order:2!important;min-height:390px!important;height:52vh!important}
   }
   @media(max-width:680px){
     main{min-height:calc(100vh - 66px)!important}
     .page{min-height:calc(100vh - 66px)!important}
+    #mainNav.nav{height:66px!important;padding:0 11px!important}
+    .brand{min-width:100px!important}
+    .brand .logo-d{height:43px!important;max-width:125px!important}
+    .hero-copy{padding:30px 20px!important}
     .hero-space{min-height:320px!important;height:46vh!important}
     .actions #lang.language-toggle{width:35px!important;height:35px!important;min-width:35px!important}
+    .actions #login.nav-login-link{gap:5px!important;font-size:.78rem!important}
+    .actions #login.nav-login-link .profile-avatar{width:18px!important;height:18px!important}
   }
-  .load-diagnostic{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:9px!important;max-width:100%!important;margin:18px 0!important;padding:18px!important;background:#fff8ed!important;border:1px solid #f0d3a9!important;border-inline-start:4px solid #d88923!important;border-radius:5px!important;color:#5b4120!important}
-  .load-diagnostic strong{font-size:.94rem!important;color:#6c4717!important}
-  .load-diagnostic small{font: .78rem/1.65 ui-monospace,monospace!important;color:#835f32!important;overflow-wrap:anywhere!important}
-  .load-diagnostic .btn{min-height:35px!important;padding:6px 13px!important}
 </style>
 
 </head>
@@ -160,7 +193,7 @@
   <div class="actions">
     <button class="ibtn language-toggle" id="lang" aria-label="Language">EN</button>
     <button class="ibtn" id="bell" hidden aria-label="Notifications"><img class="ico" src="assets/icon-bell.png" alt=""><i id="dot" hidden></i></button>
-    <button class="nav-login-link" id="login"><img class="ico" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
+    <button class="nav-login-link" id="login"><img class="ico profile-avatar" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
     <div id="user" hidden><img class="ico" src="assets/icon-user.png" alt=""><b id="uname"></b><button class="link" id="logout" data-i="logout"></button></div>
     <button class="ibtn burger" id="burger" aria-label="Menu">☰</button>
   </div>
@@ -172,6 +205,7 @@
     <div class="hero-esri">
       <div class="hero-space" aria-hidden="true">
         <div class="space-stars"></div>
+        <div class="earth-fallback" aria-hidden="true"><span></span></div>
         <canvas id="earth" aria-label="Rotating Earth globe"></canvas>
         <div class="globe-caption">GEOdata · Explore the world</div>
       </div>
@@ -348,7 +382,25 @@
   </button>
 </div>
 
+<div id="runtimeStatus" class="runtime-status" role="alert" hidden></div>
 <div id="toast" role="status"></div>
+<script>
+(function(){
+  function showRuntimeError(message){
+    var box=document.getElementById('runtimeStatus');
+    if(!box)return;
+    box.hidden=false;
+    box.textContent='GEOData preview error: '+String(message||'Unknown error').slice(0,260);
+  }
+  window.addEventListener('error',function(event){
+    if(event&&event.message)showRuntimeError(event.message);
+  });
+  window.addEventListener('unhandledrejection',function(event){
+    var reason=event&&event.reason;
+    showRuntimeError(reason&&reason.message?reason.message:reason);
+  });
+})();
+</script>
 <script type="module" src="globe.js?v=geodata-esri-v1-20261111-11"></script>
 <script type="module" src="app.js?v=geodata-esri-v1-20261111-11"></script>
 </body>
