@@ -52,6 +52,64 @@
     .brand{min-width:100px!important}
     .brand .logo-d{height:43px!important;max-width:125px!important}
   }
+
+  /* v2 corrective details requested after visual review */
+  html,body{background:#07121e!important;color:#eaf3fb!important}
+  body{background:#07121e!important;min-height:100vh!important}
+  .bg{background:#07121e!important}
+  main{display:block!important;flex:1 0 auto!important;min-height:calc(100vh - 78px)!important;background:#07121e!important}
+  .page{display:none!important;background:#0b1a29!important;color:#eaf3fb!important;min-height:calc(100vh - 78px)!important}
+  .page.on{display:block!important;visibility:visible!important;opacity:1!important}
+  #home.page{padding:0!important;background:#050c15!important}
+  #home.page.on{display:block!important}
+  .hero-esri{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;min-height:min(700px,calc(100vh - 78px))!important}
+  .hero-copy{grid-column:1!important;grid-row:1!important;display:flex!important;visibility:visible!important;opacity:1!important}
+  .hero-space{grid-column:2!important;grid-row:1!important;display:block!important;visibility:visible!important;opacity:1!important;min-height:500px!important}
+  .hero-space #earth{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;height:100%!important}
+  .hero-actions,.hero-stats,.hero-copy h1,.hero-copy .lead,.hero-copy .hsearch{visibility:visible!important;opacity:1!important}
+  #links a::after{content:none!important;display:none!important}
+  #links a[data-menu-arrow]::after{content:"⌄"!important;display:inline-block!important;margin-inline-start:7px!important;color:#9fb2c3!important;font:15px/1 Arial,sans-serif!important}
+  #links a[data-menu-arrow]:hover::after,#links a[data-menu-arrow].on::after{color:#168ce2!important}
+  .actions #login.nav-login-link{
+    position:relative!important;display:inline-flex!important;align-items:center!important;
+    justify-content:center!important;min-height:42px!important;padding:0 3px!important;
+    border:0!important;border-radius:0!important;background:transparent!important;
+    box-shadow:none!important;color:#f5f8fb!important;font:600 .9rem/1.2 inherit!important;
+  }
+  .actions #login.nav-login-link::after{
+    content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:2px!important;
+    height:2px!important;background:#168ce2!important;transform:scaleX(.72)!important;
+    transform-origin:center!important;transition:transform .18s ease!important;
+  }
+  .actions #login.nav-login-link:hover::after{transform:scaleX(1)!important}
+  .actions #login.nav-login-link .ico{display:none!important}
+  .actions #lang.language-toggle{
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;
+    border:1px solid #fff!important;border-radius:50%!important;background:#fff!important;
+    color:#14283a!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;
+    font-size:.72rem!important;font-weight:800!important;
+  }
+  .actions #lang.language-toggle:hover{background:#edf5fb!important;color:#0b2038!important;border-color:#edf5fb!important}
+  .actions #bell{color:#fff!important}
+  .actions #user{background:transparent!important;border:0!important;color:#fff!important;box-shadow:none!important}
+  .actions #user .ico{filter:brightness(0) invert(1)!important}
+  #links a[href="#home"]::before,#links a[href="#about"]::before{display:none!important}
+  @media(max-width:920px){
+    main{min-height:calc(100vh - 72px)!important}
+    .page{min-height:calc(100vh - 72px)!important}
+    .hero-esri{display:flex!important;flex-direction:column!important;min-height:0!important}
+    .hero-copy{order:1!important}
+    .hero-space{order:2!important;min-height:390px!important;height:52vh!important}
+    #links a[data-menu-arrow]::after{margin-inline-start:auto!important}
+  }
+  @media(max-width:680px){
+    main{min-height:calc(100vh - 66px)!important}
+    .page{min-height:calc(100vh - 66px)!important}
+    .hero-space{min-height:320px!important;height:46vh!important}
+    .actions #lang.language-toggle{width:35px!important;height:35px!important;min-width:35px!important}
+  }
+
 </style>
 
 </head>
@@ -65,17 +123,17 @@
   </a>
   <nav id="links">
     <a href="#home" data-i="home"></a>
-    <a href="#data" data-i="data"></a>
-    <a href="#courses" data-i="courses"></a>
+    <a href="#data" data-i="data" data-menu-arrow></a>
+    <a href="#courses" data-i="courses" data-menu-arrow></a>
     <a href="#programs" data-i="programs"></a>
     <a href="#sites" data-i="sites"></a>
     <a href="#about" data-i="about"></a>
     <a href="#admin" id="adminLink" hidden><span data-i="admin"></span><em id="pc"></em></a>
   </nav>
   <div class="actions">
-    <button class="ibtn" id="lang" aria-label="Language">EN</button>
+    <button class="ibtn language-toggle" id="lang" aria-label="Language">EN</button>
     <button class="ibtn" id="bell" hidden aria-label="Notifications"><img class="ico" src="assets/icon-bell.png" alt=""><i id="dot" hidden></i></button>
-    <button class="btn ghost" id="login"><img class="ico" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
+    <button class="nav-login-link" id="login"><img class="ico" src="assets/icon-user.png" alt=""><span data-i="login"></span></button>
     <div id="user" hidden><img class="ico" src="assets/icon-user.png" alt=""><b id="uname"></b><button class="link" id="logout" data-i="logout"></button></div>
     <button class="ibtn burger" id="burger" aria-label="Menu">☰</button>
   </div>
