@@ -14,6 +14,13 @@ const LABEL = {
   explore:['استكشف','Explore'],aboutAction:['حول GEOData','About GEOData'],
   statData:['بيانات مكانية','Geospatial data'],statLearning:['تعلم GIS','GIS learning'],statTools:['برامج وأدوات','Software & tools'],
   featureLine:['بيانات جغرافية مفتوحة تساعدك تبدأ مشروعك من غير تكلفة.','Open geospatial resources to help you start without a paywall.'],browseData:['تصفح البيانات','Browse data'],
+  whyEyebrow:['منصة واحدة لاحتياجاتك الجغرافية','One platform for your geospatial needs'], whyTitle:['لماذا تحتاج إلى GEOData؟','Why GEOData?'], whyIntro:['تجمع GEOData الموارد الجغرافية الأساسية في مكان واحد، لتصل إلى البيانات والدورات والأدوات ومصادرها بسهولة، وتوفّر وقت البحث وتساعدك على بدء أعمالك ومشروعاتك بثقة.','GEOData brings essential geospatial resources together, making it easier to find data, courses, tools and original sources while saving research time and helping you start projects with confidence.'],
+  benefitDataTitle:['بيانات مكانية منظّمة','Organized geospatial data'], benefitDataText:['تصفّح ملفات Shapefile وقواعد البيانات الجغرافية والبيانات النقطية والمتجهة، مع عرض التصنيف والوصف والمصدر ونوع المورد.','Explore Shapefiles, geodatabases, raster and vector data, with category, description, source and resource type clearly presented.'],
+  benefitCoursesTitle:['دورات ومسارات تعليمية','Courses and learning paths'], benefitCoursesText:['اعثر على مواد تعليمية في نظم المعلومات الجغرافية والاستشعار عن بُعد والتحليل المكاني والبرمجة والمساحة.','Find learning resources in GIS, remote sensing, spatial analysis, programming and surveying.'],
+  benefitToolsTitle:['برامج وأدوات متخصصة','Specialized software and tools'], benefitToolsText:['اكتشف البرامج والأدوات التي تدعم أعمال الخرائط والتحليل المكاني ومعالجة المرئيات والبيانات الجغرافية.','Discover software and tools for mapping, spatial analysis, imagery processing and geospatial data workflows.'],
+  benefitSourcesTitle:['مصادر وروابط واضحة','Clear original sources'], benefitSourcesText:['ارجع إلى المصدر الأصلي لكل مورد، وراجع بيانات الناشر والترخيص قبل الاستخدام أو إعادة النشر.','Go back to each resource’s original source and review publisher and license details before using or redistributing it.'],
+  benefitSearchTitle:['بحث وتصنيفات تسهّل الوصول','Search and useful categories'], benefitSearchText:['استخدم البحث والتصنيفات ولغة الدورة لتضييق النتائج والوصول إلى الموارد الأقرب إلى احتياجك.','Use search, categories and course-language filters to narrow results and reach relevant resources faster.'],
+  benefitCommunityTitle:['مشاركة المعرفة والمراجعة','Community contributions and review'], benefitCommunityText:['يمكن للمستخدمين اقتراح موارد جديدة وإضافة تقييمات وبلاغات، مع مراجعة طلبات النشر قبل اعتمادها.','Users can suggest resources, add ratings and report issues, while publication submissions are reviewed before approval.'],
   categoriesHeading:['التصنيفات','Categories'],openDetails:['التفاصيل','Details'],report:['إبلاغ','Report'],
   reviewsHeading:['تقييمات وتعليقات المجتمع','Community ratings & comments'],yourRating:['تقييمك','Your rating'],writeComment:['اكتب تعليقك (اختياري)','Write a comment (optional)'],submitReview:['إرسال التقييم','Submit review'],
   noReviews:['لسه مفيش تقييمات. كن أول واحد يشارك رأيه.','No reviews yet. Be the first to share feedback.'],
@@ -27,6 +34,7 @@ const LABEL = {
   heroPh:['ابحث عن بيانات أو دورة أو برنامج…','Search for data, courses or software…'], sPh:['ابحث داخل القسم…','Search this section…'], search:['بحث','Search'],
   searchTitle:['نتائج البحث','Search results'], searchHint:['نتائج من كل أقسام GEOData','Results from every GEOData section'],
   login:['تسجيل الدخول','Log in'], logout:['خروج','Log out'], register:['حساب جديد','Create account'], go:['متابعة','Continue'],
+  forgotPassword:['هل نسيت كلمة المرور؟','Forgot password?'], resetNeedEmail:['أدخل بريدك الإلكتروني أولًا لإرسال رابط إعادة تعيين كلمة المرور.','Enter your email address first to receive a password reset link.'], resetSent:['تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.','A password reset link has been sent to your email.'],
   add:['إضافة','Add'], publish:['إرسال للمراجعة','Submit for review'], name:['الاسم','Name'], email:['البريد الإلكتروني','Email'], pass:['كلمة المرور','Password'],
   title:['العنوان','Title'], details:['الوصف والتفاصيل','Description and details'], link:['الرابط (https://…)','Resource URL (https://…)'],
   aboutP:['أهلًا بيك في GEOData، مكتبة مفتوحة للبيانات والأدوات والموارد الجغرافية.','Welcome to GEOData, an open library for geospatial data, tools and learning resources.'],
@@ -644,9 +652,9 @@ document.addEventListener('click',event=>{
     $('#heroSuggestions').hidden=true;
   }
 });
-$$('.tabs button').forEach(button=>button.onclick=()=>{
+$('.tabs button').forEach(button=>button.onclick=()=>{
   authF.dataset.mode=button.dataset.mode;
-  $('#authError').hidden=true;$('#authError').textContent='';
+  $('#authError').hidden=true;$('#authError').textContent='';$('#authError').classList.remove('success');
   $$('.tabs button').forEach(item=>item.classList.toggle('on',item===button));
 });
 [authM,addM,$('#notifM'),$('#reportM'),detailM].filter(Boolean).forEach(dialog=>dialog.addEventListener('click',event=>{
@@ -661,9 +669,23 @@ document.addEventListener('click',event=>{
   $('#addT').textContent=t('add')+': '+t(addTo); addM.showModal();
 });
 $('#login').onclick=()=>{
-  authF.dataset.mode='login';$('#authError').hidden=true;
-  $$('.tabs button').forEach(button=>button.classList.toggle('on',button.dataset.mode==='login'));
+  authF.dataset.mode='login';$('#authError').hidden=true;$('#authError').classList.remove('success');
+  $('.tabs button').forEach(button=>button.classList.toggle('on',button.dataset.mode==='login'));
   authM.showModal();
+};
+$('#forgotPassword').onclick=async()=>{
+  const email=String(authF.elements.email.value||'').trim();
+  const errorBox=$('#authError'),button=$('#forgotPassword');
+  errorBox.classList.remove('success');errorBox.hidden=true;errorBox.textContent='';
+  if(!email){errorBox.textContent=t('resetNeedEmail');errorBox.hidden=false;authF.elements.email.focus();return;}
+  button.disabled=true;
+  try{
+    await sendPasswordResetEmail(auth,email);
+    errorBox.textContent=t('resetSent');errorBox.classList.add('success');errorBox.hidden=false;
+  }catch(error){
+    errorBox.textContent=authErrorText(error,false);errorBox.hidden=false;
+    console.error('GEOData password reset failed:',error.code||error.message);
+  }finally{button.disabled=false;}
 };
 function authErrorText(error,isRegister) {
   const code=error?.code||'';
@@ -911,7 +933,7 @@ try {
   showPreviewFailure(error);
   throw error;
 }
-const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,setDoc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}]=firebaseModules;
+const [{initializeApp},{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendPasswordResetEmail,onAuthStateChanged,signOut,updateProfile},{getFirestore,collection,addDoc,onSnapshot,deleteDoc,doc,setDoc,serverTimestamp,query,where,updateDoc,getDocs,getCountFromServer,limit,startAfter}]=firebaseModules;
 const firebaseApp=initializeApp({
   apiKey:'AIzaSyCmGYoMqvaTDafiHb7q9Vk7vE4n1w2tWBI',authDomain:'am-a-geo.firebaseapp.com',projectId:'am-a-geo',
   storageBucket:'am-a-geo.firebasestorage.app',messagingSenderId:'724200458201',appId:'1:724200458201:web:14f851dbaf89d49170bbc8'
