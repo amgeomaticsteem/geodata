@@ -39,7 +39,7 @@ if (canvas) {
     timerId = setTimeout(() => {
       timerId = 0;
       frameId = requestAnimationFrame(tick);
-    }, frameInterval);
+    }, Math.max(0, frameInterval - 16));
   };
   const tick = now => {
     frameId = 0;
