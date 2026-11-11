@@ -10,6 +10,50 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=geodata-esri-v1-20261111-6">
+
+<style id="geodata-preview-critical">
+  :root{color-scheme:dark!important;background:#091521!important}
+  html,body{min-height:100%;background:#091521!important;color:#edf5fb!important}
+  body{visibility:visible!important;background:linear-gradient(180deg,#091521 0%,#0b1926 100%)!important}
+  body:not(.ready) #home.page{display:block!important}
+  .page{background:#0b1926!important;color:#edf5fb!important}
+  #home.page{background:#050b12!important}
+  .nav-clock-shell{display:block!important;position:sticky!important;top:0!important;left:0!important;right:0!important;width:100%!important;max-width:none!important;margin:0!important;z-index:999!important;background:#05080d!important;border-bottom:1px solid #20364a!important}
+  #mainNav.nav{display:flex!important;width:100%!important;max-width:none!important;height:78px!important;margin:0!important;padding:0 clamp(16px,4vw,56px)!important;border:0!important;border-radius:0!important;background:#05080d!important;box-shadow:0 5px 22px rgba(0,0,0,.28)!important}
+  .brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:130px!important}
+  .brand .logo-d{display:block!important;visibility:visible!important;opacity:1!important;height:54px!important;width:auto!important;max-width:180px!important;object-fit:contain!important}
+  .brand-fallback{color:#fff!important;font:800 27px/1 Arial,sans-serif!important;letter-spacing:-1px!important}
+  #links{display:flex!important;align-items:stretch!important;align-self:stretch!important;gap:8px!important;margin-inline:auto!important;padding:0!important;background:transparent!important;border:0!important}
+  #links a{position:relative!important;display:inline-flex!important;align-items:center!important;gap:8px!important;height:100%!important;padding:0 14px!important;color:#cbd6df!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;font-size:.92rem!important}
+  #links a::before{content:""!important;position:absolute!important;left:10px!important;right:10px!important;bottom:0!important;height:3px!important;background:#168ce2!important;transform:scaleX(0)!important;transition:transform .18s ease!important}
+  #links a::after{content:"⌄"!important;display:inline-block!important;margin-top:-5px!important;color:#9aaebe!important;font:15px/1 Arial,sans-serif!important}
+  #links a:hover,#links a:focus-visible,#links a.on{color:#fff!important;background:transparent!important}
+  #links a:hover::before,#links a:focus-visible::before,#links a.on::before{transform:scaleX(1)!important}
+  #links a:hover::after,#links a.on::after{color:#168ce2!important}
+  main{background:transparent!important;color:#edf5fb!important}
+  .hero-copy{background:linear-gradient(135deg,#07121e,#0a1b2a 58%,#0b2b46)!important;color:#fff!important}
+  .hero-space{background:#020812!important}
+  .catalog-sidebar,.detail-category-sidebar{background:#0d1b28!important}
+  .resource-list,.resource-row,.site-tile,.review-card,.card{background:#0d1b28!important;color:#edf5fb!important;border-color:#294257!important}
+  .phead h2,.resource-detail-heading h1,.about-esri h2{color:#f1f6fa!important}
+  .phead p,.resource-row p,.resource-detail-description,.about-esri p{color:#b4c4d1!important}
+  footer{background:#060c13!important;color:#91a6b8!important}
+  @media(max-width:920px){
+    #mainNav.nav{height:72px!important;padding:0 14px!important}
+    #links{display:none!important;position:absolute!important;top:100%!important;left:0!important;right:0!important;height:auto!important;align-items:stretch!important;flex-direction:column!important;padding:8px 14px!important;background:#070c12!important;border:1px solid #263d51!important;box-shadow:0 16px 25px rgba(0,0,0,.4)!important}
+    #links.show{display:flex!important}
+    #links a{height:46px!important;justify-content:flex-start!important;border-bottom:1px solid #1a2e40!important}
+    #links a::before{left:0!important;right:auto!important;top:7px!important;bottom:7px!important;width:3px!important;height:auto!important;transform:scaleY(0)!important}
+    #links a:hover::before,#links a.on::before{transform:scaleY(1)!important}
+    #links a::after{margin-inline-start:auto!important}
+  }
+  @media(max-width:680px){
+    #mainNav.nav{height:66px!important;padding:0 11px!important}
+    .brand{min-width:100px!important}
+    .brand .logo-d{height:43px!important;max-width:125px!important}
+  }
+</style>
+
 </head>
 <body class="lang-ar" data-theme="dark">
 <div class="bg" aria-hidden="true"></div>
@@ -17,7 +61,7 @@
 <div class="nav-clock-shell">
 <header id="mainNav" class="nav">
   <a class="brand" href="#home" aria-label="GEOData">
-    <img class="logo-d" src="assets/logo-for-dark.png" alt="GEOData">
+    <img class="logo-d" src="assets/logo-for-dark.png" alt="GEOData" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="brand-fallback" hidden>GEOData</span>
   </a>
   <nav id="links">
     <a href="#home" data-i="home"></a>
