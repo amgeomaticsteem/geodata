@@ -437,7 +437,7 @@ function filteredQuery(section,state) {const filters=[];if(state.category)filter
 async function loadPage(section,target=1) {
   const state=pageState[section];if(!state||state.loading)return;target=Math.max(1,target);
   if(state.pages[target]){state.page=target;store[section]=state.pages[target];draw(section);if(location.hash==='#search')drawSearch();return;}
-  state.loading=true;renderPagination(section);
+  state.loading=true;draw(section);renderPagination(section);
   try{
     if(!state.countPromise){
       const base=collection(db,COLS[section]);
@@ -460,6 +460,8 @@ async function loadPage(section,target=1) {
     const code=error?.code||error?.name||'network-error';
     const message=String(error?.message||'').slice(0,220);
     if(container)container.innerHTML='<div class="load-diagnostic" role="alert"><strong>'+t('loadError')+'</strong><small>'+esc(code)+': '+esc(message)+'</small><button type="button" class="btn sm ghost" data-retry-section="'+esc(section)+'">'+(lang==='ar'?'إعادة المحاولة':'Try again')+'</button></div>';
+    const status=$('#runtimeStatus');
+    if(status){status.hidden=false;status.textContent='Firestore '+section+': '+code+' — '+message;}
     toast(t('loadError'));
   }
   finally{state.loading=false;renderPagination(section);}
@@ -886,12 +888,14 @@ applyTheme(); applyLang(); route();
 function showPreviewFailure(error) {
   const code=error?.code||error?.name||'runtime-error';
   const message=String(error?.message||error||'').slice(0,220);
+  const status=$('#runtimeStatus');
+  if(status){status.hidden=false;status.textContent='GEOData preview error: '+code+' — '+message;}
   ['data','courses','programs','sites'].forEach(section=>{
     const holder=section==='sites'?$('.sites-tiles',$('#sites')):$('.resource-list',$('#'+section));
     if(!holder)return;
     holder.innerHTML='<div class="load-diagnostic" role="alert"><strong>'+
       (lang==='ar'?'تعذر تحميل بيانات المعاينة':'Preview data could not be loaded')+
-      '</strong><small>'+esc(code)+': '+esc(message)+'</small></div>';
+      '</strong><small>'+esc(code)+': '+esc(message)+'</small><button type="button" class="btn sm ghost" data-retry-section="'+section+'">'+(lang==='ar'?'إعادة المحاولة':'Try again')+'</button></div>';
   });
   console.error('GEOData preview runtime failure:',error);
 }
