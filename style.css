@@ -1546,3 +1546,187 @@ dialog h3{margin:0;color:#173953}
   .hero-space{grid-column:2;grid-row:1}
   .hero-copy{grid-column:1;grid-row:1}
 }
+
+
+/* ---------- Preview correction: true dark Esri-inspired shell ---------- */
+:root{
+  --paper:#0a1520;--soft:#0f1e2c;--ink:#edf5fb;--muted:#a8b8c7;
+  --line:#23384a;--line-strong:#385066;--navy:#05090e;
+  --bg:#091521;--tx:#edf5fb;--mu:#a8b8c7;--ac:#168ce2;--ink-on-ac:#fff;
+  --g-bg:#101f2d;--g-bd:#263c50;--g-sh:0 8px 30px rgba(0,0,0,.18);
+  --g-in:#122537;--g-on:#17344a;color-scheme:dark;
+}
+html,body{background:#091521!important;color:#edf5fb!important}
+body{background:linear-gradient(180deg,#09131e 0%,#0b1926 100%)!important}
+.bg{background:#091521!important}
+main{background:transparent}
+.page{background:#0b1926;color:#edf5fb}
+#home.page{background:#050b12}
+.nav-clock-shell{
+  width:100%;max-width:none;margin:0;top:0;left:0;right:0;
+  background:#05080d!important;border-bottom:1px solid #172b3d;
+  box-shadow:0 5px 22px rgba(0,0,0,.25);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+.nav{
+  width:100%;max-width:none;height:78px;margin:0;padding:0 clamp(18px,4vw,58px);
+  background:#05080d!important;border:0;border-radius:0;box-shadow:none;
+  display:flex;align-items:center;gap:clamp(16px,2.3vw,34px);
+}
+.brand .logo-l{display:none!important}
+.brand .logo-d{display:block!important;height:54px;max-width:174px;object-fit:contain}
+#links{
+  display:flex;align-items:stretch;align-self:stretch;gap:clamp(3px,1vw,15px);
+  margin-inline:auto;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;
+}
+#links a{
+  position:relative;display:inline-flex;align-items:center;gap:9px;
+  height:100%;padding:0 clamp(10px,1.15vw,18px);margin:0;
+  color:#c7d2dc!important;background:transparent!important;border:0!important;
+  border-radius:0!important;box-shadow:none!important;font-size:.92rem;font-weight:600;
+  transition:color .18s ease;
+}
+#links a::before{
+  content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;
+  background:#168ce2;transform:scaleX(0);transform-origin:center;
+  transition:transform .2s ease;
+}
+#links a::after{
+  content:"⌄";display:inline-block;margin-top:-5px;color:#91a5b7;
+  font-family:Arial,sans-serif;font-size:15px;line-height:1;
+  transition:color .18s ease,transform .18s ease;
+}
+#links a:hover,#links a:focus-visible,#links a.on{
+  color:#fff!important;background:transparent!important;
+}
+#links a:hover::before,#links a:focus-visible::before,#links a.on::before{transform:scaleX(1)}
+#links a:hover::after,#links a.on::after{color:#168ce2;transform:translateY(2px)}
+#links em{position:relative;z-index:1}
+.actions{align-self:center}
+.actions .ibtn{color:#edf5fb;background:transparent;border-color:transparent}
+.actions .ibtn:hover{color:#fff;background:#142536;border-color:#28435b}
+.actions #lang{border:1px solid #263e53;color:#e4edf5}
+.actions #login{background:#0e1c29;color:#edf5fb;border-color:#30485e}
+.actions #login:hover{background:#17344a;border-color:#168ce2}
+#user{background:#102131;color:#edf5fb;border-color:#263e53}
+#user .ico{filter:none}
+#logout{color:#ff8585}
+.hero-esri{background:#050b12}
+.hero-copy{background:linear-gradient(135deg,#07121e 0%,#0a1b2a 58%,#0b2b46 100%);color:#f2f7fb}
+.hero-copy h1{color:#fff}
+.hero-copy .lead{color:#c0d0dd}
+.hero-space{background:#020812}
+.home-feature-strip{background:#0d1b28;color:#aebdcc;border-top:1px solid #1a3043}
+.home-feature-strip a{color:#43adf4}
+.phead h2{color:#f1f6fa}
+.phead p{color:#a6b7c6}
+.eyebrow{color:#56b6f6}
+.catalog-layout{background:transparent}
+.catalog-sidebar,.detail-category-sidebar{
+  background:#0d1b28;border-inline-end:1px solid #263c50;
+}
+.catalog-sidebar h3,.detail-category-sidebar h3,.course-playlist-sidebar h3{color:#e4eef6}
+.category-nav button{color:#b0c0ce}
+.category-nav button:hover{background:#122a3d;color:#fff}
+.category-nav button.active{background:#12344e;color:#66beff;border-inline-start-color:#168ce2}
+.category-nav button small{color:#8ea5b8}
+.catalog-content{background:transparent}
+.tools .q{background:#101f2d;color:#f1f6fa;border-color:#31495e;box-shadow:none}
+.tools .q::placeholder{color:#8da2b5}
+.tools .search-wrap::before{color:#9db4c7}
+.resource-list{background:#0c1a27;border-top:1px solid #2a4054}
+.resource-row{background:#0d1b28;border-bottom:1px solid #263b4e}
+.resource-row:hover{background:#11273a}
+.resource-row h3,.resource-row h3 button{color:#58b7f5}
+.resource-row p{color:#b2c1ce}
+.resource-row-meta{color:#8fa3b5}
+.resource-row-meta .meta-category{color:#73c3fb}
+.resource-row .tag{background:#142c40;color:#8acfff}
+.resource-row-actions .btn.ghost{background:#12283a;border-color:#35536d;color:#dceaf5}
+.resource-row-actions .btn.ghost:hover{background:#173c58;border-color:#168ce2}
+.report-link{color:#ff9292}
+.sites-tiles{background:transparent}
+.site-tile{background:#0d1b28;border-color:#263e52;box-shadow:0 6px 22px rgba(0,0,0,.16)}
+.site-tile h3,.site-tile h3 a{color:#6ec2fb}
+.site-tile p{color:#b5c3cf}
+.site-tile small{color:#90a5b7}
+.site-tile img{background:#f7fafc;border-color:#d5e1ea}
+.resource-page-shell{background:transparent}
+.resource-detail-content{color:#e8f1f7}
+.resource-breadcrumb{color:#91a5b7}
+.resource-breadcrumb a{color:#62bdf8}
+.resource-detail-heading{border-color:#294257}
+.resource-detail-heading h1{color:#f3f8fc}
+.resource-detail-description{color:#bac8d3}
+.resource-detail-meta{border-color:#294257}
+.resource-detail-meta div{border-color:#294257}
+.resource-detail-meta small{color:#8ea5b8}
+.resource-detail-meta b{color:#e0eaf2}
+.review-section{border-color:#2a4054}
+.review-section h2{color:#f0f6fa}
+.review-summary{color:#adc0ce}
+.review-summary strong{color:#f5f9fc}
+.review-form{background:#102131;border-color:#2b455b}
+.review-form label{color:#c4d4e0}
+.review-form textarea{background:#091723;border-color:#334e64;color:#eff6fb}
+.review-item{border-color:#263d51}
+.review-item-head b{color:#e2edf5}
+.review-item p{color:#aebfcd}
+.course-playlist-sidebar{background:#0f2030;border-color:#294156}
+.course-playlist-sidebar .playlist-caption,.course-attribution{color:#a9bac8}
+.course-attribution a{color:#67c0fa}
+.about-esri{background:#0e1f2e;border-inline-start-color:#168ce2}
+.about-esri h2{color:#f0f6fb}
+.about-esri p{color:#b5c5d2}
+.admin-subhead{color:#e4eef6}
+.review-card,.card{background:#102131;border-color:#294257;color:#edf5fb;box-shadow:none}
+.review-card p,.card p,.card small{color:#b4c3cf}
+.card h3{color:#74c5ff}
+.tag{color:#79c8ff;border-color:#315c7d;background:#122b3f}
+footer{background:#060c13;border-color:#1d3041;color:#8ea3b5}
+#toast{background:#071521;color:#f2f7fb;border-color:#30506b}
+input,select,textarea{background:#102131;border-color:#314c63;color:#edf5fb}
+input::placeholder,textarea::placeholder{color:#8ea4b7}
+select option{background:#102131;color:#edf5fb}
+dialog{background:#0e1d2b;color:#edf5fb;border-color:#2b4358}
+dialog::backdrop{background:rgba(0,5,12,.76)}
+dialog .x{background:#132a3c;border-color:#38536b;color:#f1f6fa}
+dialog h3{color:#f0f6fb}
+.tabs button{background:#102536;border-color:#304b62;color:#cad8e3}
+.tabs button.on{background:#153a55;border-color:#168ce2;color:#fff}
+.nitem{color:#dce7ef;border-color:#2b4054}
+.nitem small{color:#9aafc0}
+#notifL{color:#e6eef4}
+.pagination{color:#a9bac7}
+.page-arrow,.page-number{background:#102131;border-color:#2c455a;color:#d8e5ee}
+.page-arrow:hover:not(:disabled),.page-number:hover:not(:disabled){background:#16344a;border-color:#168ce2;color:#fff}
+.empty{color:#98adbf}
+.search-suggestions{background:#102131;border-color:#2b465c;color:#e8f1f7}
+.suggestion{color:#e8f1f7}
+.suggestion:hover,.suggestion:focus-visible{background:#173249}
+.suggestion-category{color:#72c3fa;border-color:#2c5b7a}
+.search-wrap{color:#edf5fb}
+#globalResults{border-color:#284055}
+@media(max-width:920px){
+  .nav{height:72px;padding:0 16px}
+  #links{position:absolute;top:100%;left:0;right:0;background:#070c12;border:1px solid #22384b;border-top:0;box-shadow:0 16px 25px rgba(0,0,0,.4)}
+  #links a{height:auto;min-height:48px;color:#d4e0e9!important;border-bottom:1px solid #172a3b!important}
+  #links a::before{left:0;right:auto;top:8px;bottom:8px;width:3px;height:auto;transform:scaleY(0)}
+  #links a:hover::before,#links a.on::before{transform:scaleY(1)}
+  #links a::after{margin-inline-start:auto}
+}
+@media(max-width:680px){
+  .nav{height:66px;padding:0 12px}
+  .brand .logo-d{height:43px;max-width:128px}
+  .catalog-sidebar,.detail-category-sidebar{background:transparent;border-color:#294257}
+  .category-nav button{background:#112334;border-color:#294257;color:#cad8e3}
+  .category-nav button.active{background:#143c59;color:#83ceff;border-color:#168ce2}
+  .resource-row{background:#0d1b28}
+  .resource-row-meta{color:#91a7b9}
+  .sites-tiles{background:transparent}
+  .site-tile{background:#0f2030}
+  .home-feature-strip{background:#0b1b29}
+}
+@media(prefers-reduced-motion:reduce){
+  #links a::before,#links a::after{transition:none}
+}
