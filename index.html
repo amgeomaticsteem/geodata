@@ -48,7 +48,7 @@
       </div>
       <div class="hero-copy">
         <span class="eyebrow" data-i="heroEyebrow">OPEN GEOSPATIAL LIBRARY</span>
-        <h1 data-i="h1"></h1>
+        <h1 id="heroTitle" data-i="h1"></h1>
         <p class="lead" data-i="lead"></p>
         <div class="hero-actions">
           <a class="btn hero-primary" href="#data" data-i="explore"></a>
@@ -150,6 +150,18 @@
     <textarea name="details" rows="4" data-ph="details"></textarea>
     <input type="url" name="link" data-ph="link" required>
     <button class="btn" data-i="publish"></button>
+  </form>
+</dialog>
+
+<dialog id="reportM" class="report-dialog">
+  <button class="x" type="button" aria-label="Close" onclick="this.closest('dialog').close()">✕</button>
+  <form id="reportForm">
+    <h3 data-i="reportTitle">الإبلاغ عن محتوى</h3>
+    <p id="reportResourceTitle" class="report-resource-title"></p>
+    <label for="reportReason" data-i="reportReasonLabel">سبب البلاغ</label>
+    <textarea id="reportReason" name="reason" maxlength="1200" rows="5" required data-ph="reportReasonPh"></textarea>
+    <button class="btn" type="submit" data-i="sendReport">إرسال البلاغ</button>
+    <small data-i="reportPrivacy">سيظهر البلاغ في مركز التحكم لمراجعته.</small>
   </form>
 </dialog>
 
