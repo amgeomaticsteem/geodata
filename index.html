@@ -53,33 +53,59 @@
     .brand .logo-d{height:43px!important;max-width:125px!important}
   }
 
-  /* v2 corrective details requested after visual review */
-  html,body{background:#07121e!important;color:#eaf3fb!important}
-  body{background:#07121e!important;min-height:100vh!important}
-  .bg{background:#07121e!important}
-  main{display:block!important;flex:1 0 auto!important;min-height:calc(100vh - 78px)!important;background:#07121e!important}
-  .page{display:none!important;background:#0b1a29!important;color:#eaf3fb!important;min-height:calc(100vh - 78px)!important}
+
+  /* v3: user-approved white canvas, black full-width navigation */
+  html,body{background:#fff!important;color:#203246!important;min-height:100%!important}
+  body{visibility:visible!important;background:#fff!important}
+  .bg{background:#fff!important}
+  main{display:block!important;background:#fff!important;color:#203246!important;min-height:calc(100vh - 78px)!important}
+  .page{background:#fff!important;color:#203246!important}
   .page.on{display:block!important;visibility:visible!important;opacity:1!important}
-  #home.page{padding:0!important;background:#050c15!important}
+  #home.page{display:none!important;padding:0!important;background:#fff!important}
   #home.page.on{display:block!important}
-  .hero-esri{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;min-height:min(700px,calc(100vh - 78px))!important}
-  .hero-copy{grid-column:1!important;grid-row:1!important;display:flex!important;visibility:visible!important;opacity:1!important}
-  .hero-space{grid-column:2!important;grid-row:1!important;display:block!important;visibility:visible!important;opacity:1!important;min-height:500px!important}
-  .hero-space #earth{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;height:100%!important}
-  .hero-actions,.hero-stats,.hero-copy h1,.hero-copy .lead,.hero-copy .hsearch{visibility:visible!important;opacity:1!important}
-  #links a::after{content:none!important;display:none!important}
-  #links a[data-menu-arrow]::after{content:"⌄"!important;display:inline-block!important;margin-inline-start:7px!important;color:#9fb2c3!important;font:15px/1 Arial,sans-serif!important}
-  #links a[data-menu-arrow]:hover::after,#links a[data-menu-arrow].on::after{color:#168ce2!important}
+  .hero-esri{background:#fff!important}
+  .hero-copy{
+    background:#fff!important;color:#1d3043!important;
+    border:0!important;
+  }
+  .hero-copy h1{color:#1b3045!important}
+  .hero-copy .lead{color:#53687b!important}
+  .hero-copy .eyebrow{color:#147fc4!important}
+  .hero-actions .hero-secondary{background:#14283a!important;color:#fff!important;border-color:#14283a!important}
+  .hero-stats{color:#5e7182!important;border-color:#dbe3e9!important}
+  .hero-stats b{color:#20364b!important}
+  .hero-stats small{color:#687d90!important}
+  .hero-space{background:#020812!important}
+  .home-feature-strip{background:#fff!important;color:#52677b!important;border-top:1px solid #e7edf2!important}
+  .home-feature-strip a{color:#147fc4!important}
+  .phead h2,.resource-detail-heading h1,.about-esri h2{color:#1e354a!important}
+  .phead p,.resource-row p,.resource-detail-description,.about-esri p{color:#586e82!important}
+  .catalog-sidebar,.detail-category-sidebar{background:#fff!important;border-color:#dce5ec!important}
+  .catalog-sidebar h3,.detail-category-sidebar h3{color:#29455d!important}
+  .category-nav button{color:#4b6278!important}
+  .category-nav button:hover{background:#eff6fb!important;color:#126da8!important}
+  .category-nav button.active{background:#eaf4fb!important;color:#0878bd!important;border-inline-start-color:#168ce2!important}
+  .resource-list,.resource-row,.site-tile,.review-card,.card{background:#fff!important;color:#20364a!important;border-color:#e0e7ed!important}
+  .resource-row:hover{background:#f7fafc!important}
+  .resource-row h3,.resource-row h3 button,.site-tile h3,.site-tile h3 a{color:#1476b5!important}
+  .resource-row p,.site-tile p{color:#5b7185!important}
+  .resource-row-meta,.site-tile small{color:#71869a!important}
+  .resource-detail-meta b,.review-item-head b{color:#2a465e!important}
+  .resource-detail-meta small,.review-item p{color:#71869a!important}
+  .review-section h2{color:#25435b!important}
+  .review-form{background:#f7fafc!important;border-color:#e0e8ef!important}
+  .review-form textarea{background:#fff!important;color:#20364a!important}
+  .about-esri{background:#f5f8fa!important}
+  footer{background:#f6f8fa!important;color:#71869a!important;border-color:#e4ebf0!important}
   .actions #login.nav-login-link{
-    position:relative!important;display:inline-flex!important;align-items:center!important;
-    justify-content:center!important;min-height:42px!important;padding:0 3px!important;
-    border:0!important;border-radius:0!important;background:transparent!important;
-    box-shadow:none!important;color:#f5f8fb!important;font:600 .9rem/1.2 inherit!important;
+    position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    min-height:42px!important;padding:0 4px 3px!important;border:0!important;border-radius:0!important;
+    background:transparent!important;box-shadow:none!important;color:#fff!important;
+    font-family:inherit!important;font-size:.9rem!important;font-weight:600!important;
   }
   .actions #login.nav-login-link::after{
-    content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:2px!important;
-    height:2px!important;background:#168ce2!important;transform:scaleX(.72)!important;
-    transform-origin:center!important;transition:transform .18s ease!important;
+    content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;
+    height:2px!important;background:#168ce2!important;transform:scaleX(.72)!important;transition:transform .18s ease!important;
   }
   .actions #login.nav-login-link:hover::after{transform:scaleX(1)!important}
   .actions #login.nav-login-link .ico{display:none!important}
@@ -87,17 +113,15 @@
     display:inline-flex!important;align-items:center!important;justify-content:center!important;
     width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;
     border:1px solid #fff!important;border-radius:50%!important;background:#fff!important;
-    color:#14283a!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;
-    font-size:.72rem!important;font-weight:800!important;
+    color:#14283a!important;box-shadow:0 2px 7px rgba(0,0,0,.18)!important;font-size:.72rem!important;font-weight:800!important;
   }
-  .actions #lang.language-toggle:hover{background:#edf5fb!important;color:#0b2038!important;border-color:#edf5fb!important}
-  .actions #bell{color:#fff!important}
-  .actions #user{background:transparent!important;border:0!important;color:#fff!important;box-shadow:none!important}
-  .actions #user .ico{filter:brightness(0) invert(1)!important}
-  #links a[href="#home"]::before,#links a[href="#about"]::before{display:none!important}
+  #links a::after{content:none!important;display:none!important}
+  #links a[data-menu-arrow]::after{content:"⌄"!important;display:inline-block!important;margin-inline-start:7px!important;color:#9fb2c3!important;font:15px/1 Arial,sans-serif!important}
+  #links a[data-menu-arrow]:hover::after,#links a[data-menu-arrow].on::after{color:#168ce2!important}
   @media(max-width:920px){
     main{min-height:calc(100vh - 72px)!important}
     .page{min-height:calc(100vh - 72px)!important}
+    #home.page.on{display:block!important}
     .hero-esri{display:flex!important;flex-direction:column!important;min-height:0!important}
     .hero-copy{order:1!important}
     .hero-space{order:2!important;min-height:390px!important;height:52vh!important}
@@ -109,7 +133,10 @@
     .hero-space{min-height:320px!important;height:46vh!important}
     .actions #lang.language-toggle{width:35px!important;height:35px!important;min-width:35px!important}
   }
-
+  .load-diagnostic{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:9px!important;max-width:100%!important;margin:18px 0!important;padding:18px!important;background:#fff8ed!important;border:1px solid #f0d3a9!important;border-inline-start:4px solid #d88923!important;border-radius:5px!important;color:#5b4120!important}
+  .load-diagnostic strong{font-size:.94rem!important;color:#6c4717!important}
+  .load-diagnostic small{font: .78rem/1.65 ui-monospace,monospace!important;color:#835f32!important;overflow-wrap:anywhere!important}
+  .load-diagnostic .btn{min-height:35px!important;padding:6px 13px!important}
 </style>
 
 </head>
@@ -141,7 +168,7 @@
 </div>
 
 <main>
-  <section id="home" class="page">
+  <section id="home" class="page on">
     <div class="hero-esri">
       <div class="hero-space" aria-hidden="true">
         <div class="space-stars"></div>
